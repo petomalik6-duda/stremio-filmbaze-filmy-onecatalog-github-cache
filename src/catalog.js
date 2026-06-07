@@ -75,6 +75,8 @@ function toMeta(item, tmdb = null) {
       tmdbId: tmdb?.tmdbId || null,
       imdbId,
       dateAdded: item.dateAdded,
+      channelOrder: Number.isFinite(item.channelOrder) ? item.channelOrder : 999999,
+      page: item.page || null,
       sourceTitle: item.name
     }
   };
@@ -232,17 +234,26 @@ export async function getMetaById(id) {
   return cache.byId.get(id) || null;
 }
 
+function sortByFilmbazeChannelOrder(a, b) {
+  const ao = Number.isFinite(a._addon?.channelOrder) ? a._addon.channelOrder : 999999;
+  const bo = Number.isFinite(b._addon?.channelOrder) ? b._addon.channelOrder : 999999;
+
+  if (ao !== bo) return ao - bo;
+
+  return String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || ''));
+}
+
 export function filterCatalog(metas, id, type) {
   if (id === 'filmbaze-filmy' && type === 'movie') {
     return [...metas]
       .filter(meta => meta.type === 'movie')
-      .sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
+      .sort(sortByFilmbazeChannelOrder);
   }
 
   if (id === 'filmbaze-serialy' && type === 'series') {
     return [...metas]
       .filter(meta => meta.type === 'series')
-      .sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
+      .sort(sortByFilmbazeChannelOrder);
   }
 
   return [];

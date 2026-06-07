@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "type": "module",
-  "description": "Filmbaze addon using real /api/v1/channel pagination endpoint.",
+  "description": "Filmbaze addon with API pagination and catalog sorted by Filmbaze channel order.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -245,7 +245,14 @@ async function fetchChannelItems({ url, type, maxItems }) {
 
     const pageItems = content.data
       .map(item => normalizeFilmbazeTitle(item, type, url))
-      .filter(Boolean);
+      .filter(Boolean)
+      .map((item, index) => ({
+        ...item,
+        // Filmbáze API už vracia kanál zoradený podľa channelables.created_at:desc.
+        // Toto poradie musíme zachovať, nie radiť podľa release_date.
+        channelOrder: all.length + index,
+        page: nextPage
+      }));
 
     const signature = content.data.map(x => x?.id).filter(Boolean).join(',');
     if (signature && seenPageSignatures.has(signature)) {

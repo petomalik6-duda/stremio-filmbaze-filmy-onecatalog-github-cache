@@ -204,3 +204,14 @@ https://filmbaze.cz/api/v1/channel/48884?returnContentOnly=true&restriction=&ord
 ```
 
 Filmy používajú channel `48884`, seriály `50427`.
+
+
+## v2.9 radenie podľa poradia vo Filmbáze kanáli
+
+Filmbáze API vracia položky zoradené podľa:
+
+```text
+channelables.created_at:desc
+```
+
+Táto verzia ukladá `channelOrder` a katalógy v Stremiu radí podľa neho, nie podľa `release_date`.
