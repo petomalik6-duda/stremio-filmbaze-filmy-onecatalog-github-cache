@@ -64,6 +64,8 @@ function toMeta(item, tmdb = null) {
     cast: tmdb?.cast || [],
     director: tmdb?.director || [],
     behaviorHints: { defaultVideoId: id },
+    videos: item.type === 'series' ? (tmdb?.videos || []) : undefined,
+    seriesInfo: item.type === 'series' ? { episodeCount: (tmdb?.videos || []).length } : undefined,
     links: [
       item.id ? { name: 'Filmbáze', category: 'Info', url: `https://filmbaze.cz/title/${item.id}` } : null,
       tmdb?.tmdbId ? { name: 'TMDB', category: 'Info', url: `https://www.themoviedb.org/movie/${tmdb.tmdbId}` } : null,
@@ -77,6 +79,7 @@ function toMeta(item, tmdb = null) {
       dateAdded: item.dateAdded,
       channelOrder: Number.isFinite(item.channelOrder) ? item.channelOrder : 999999,
       page: item.page || null,
+      episodeCount: item.type === 'series' ? (tmdb?.videos || []).length : 0,
       sourceTitle: item.name
     }
   };

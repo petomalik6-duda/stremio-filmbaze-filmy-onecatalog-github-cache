@@ -204,3 +204,26 @@ https://filmbaze.cz/api/v1/channel/48884?returnContentOnly=true&restriction=&ord
 ```
 
 Filmy používajú channel `48884`, seriály `50427`.
+
+
+## v3.0 seriály so sezónami a epizódami
+
+Seriály sa po TMDB spárovaní obohatia o epizódy cez TMDB TV API.
+
+Pridaj do Render Environment:
+
+```env
+ENABLE_TMDB=true
+TMDB_API_KEY=tvoj_kluc
+ENABLE_TMDB_EPISODES=true
+MAX_EPISODE_SEASONS=20
+MAX_EPISODES_PER_SERIES=500
+```
+
+Potom spusti:
+
+```text
+/refresh?full=1
+```
+
+V `/stats` stále uvidíš počet seriálov, ale v `/meta/series/...` už bude `videos` so sezónami a epizódami.

@@ -7,6 +7,9 @@ const ENABLE_TMDB = String(process.env.ENABLE_TMDB || 'false').toLowerCase() ===
 const TMDB_STRICT_MATCH = String(process.env.TMDB_STRICT_MATCH || 'true').toLowerCase() !== 'false';
 const TMDB_YEAR_TOLERANCE = Number(process.env.TMDB_YEAR_TOLERANCE || 1);
 const TMDB_RUNTIME_TOLERANCE = Number(process.env.TMDB_RUNTIME_TOLERANCE || 15);
+const ENABLE_TMDB_EPISODES = String(process.env.ENABLE_TMDB_EPISODES || 'true').toLowerCase() !== 'false';
+const MAX_EPISODE_SEASONS = Number(process.env.MAX_EPISODE_SEASONS || 20);
+const MAX_EPISODES_PER_SERIES = Number(process.env.MAX_EPISODES_PER_SERIES || 500);
 
 function tmdbEnabled() {
   return ENABLE_TMDB && TMDB_API_KEY;
@@ -56,6 +59,13 @@ export async function tmdbSearch(name, year, type = 'movie', expectedRuntime = n
     return TMDB_STRICT_MATCH ? null : (candidates[0] || null);
   }
 
+  if (mediaType === 'tv' && ENABLE_TMDB_EPISODES) {
+    best.videos = await fetchSeriesEpisodes(best.tmdbId, best.name).catch(error => {
+      console.error('[tmdb] episodes failed:', best.name, error.message);
+      return [];
+    });
+  }
+
   delete best._score;
   delete best._accepted;
   return best;
@@ -64,6 +74,47 @@ export async function tmdbSearch(name, year, type = 'movie', expectedRuntime = n
 async function fetchDetails(mediaType, id) {
   const detailsUrl = `https://api.themoviedb.org/3/${mediaType}/${id}?api_key=${TMDB_API_KEY}&language=${TMDB_LANGUAGE}&append_to_response=external_ids,credits`;
   return (await getWithRetry(detailsUrl)).data;
+}
+
+async function fetchSeriesEpisodes(tmdbTvId, seriesName) {
+  if (!tmdbTvId) return [];
+
+  const details = await fetchDetails('tv', tmdbTvId);
+  const seasons = Array.isArray(details.seasons)
+    ? details.seasons
+        .filter(s => Number(s.season_number) > 0)
+        .slice(0, MAX_EPISODE_SEASONS)
+    : [];
+
+  const videos = [];
+
+  for (const season of seasons) {
+    if (videos.length >= MAX_EPISODES_PER_SERIES) break;
+
+    const seasonNumber = Number(season.season_number);
+    const url = `https://api.themoviedb.org/3/tv/${tmdbTvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}&language=${TMDB_LANGUAGE}`;
+    const seasonData = (await getWithRetry(url)).data;
+    const episodes = Array.isArray(seasonData.episodes) ? seasonData.episodes : [];
+
+    for (const ep of episodes) {
+      if (videos.length >= MAX_EPISODES_PER_SERIES) break;
+
+      const episodeNumber = Number(ep.episode_number);
+      if (!episodeNumber) continue;
+
+      videos.push({
+        id: `tmdb:tv:${tmdbTvId}:${seasonNumber}:${episodeNumber}`,
+        title: ep.name || `${seriesName} S${String(seasonNumber).padStart(2, '0')}E${String(episodeNumber).padStart(2, '0')}`,
+        season: seasonNumber,
+        episode: episodeNumber,
+        released: ep.air_date || undefined,
+        overview: ep.overview || undefined,
+        thumbnail: ep.still_path ? `https://image.tmdb.org/t/p/w500${ep.still_path}` : undefined
+      });
+    }
+  }
+
+  return videos;
 }
 
 function normalizeDetails(details, first, mediaType, fallbackName) {
@@ -88,7 +139,8 @@ function normalizeDetails(details, first, mediaType, fallbackName) {
     cast: Array.isArray(details.credits?.cast) ? details.credits.cast.slice(0, 8).map(x => x.name) : [],
     director: Array.isArray(details.credits?.crew)
       ? details.credits.crew.filter(x => x.job === 'Director' || x.job === 'Creator').map(x => x.name)
-      : []
+      : [],
+    videos: []
   };
 }
 
