@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "type": "module",
-  "description": "Filmbaze Stremio addon with real API pagination, strict TMDB matching, and series episodes via TMDB.",
+  "description": "Filmbaze addon v3.1 with separate series TMDB enrichment limit and episode stats.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

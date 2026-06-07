@@ -227,3 +227,25 @@ Potom spusti:
 ```
 
 V `/stats` stále uvidíš počet seriálov, ale v `/meta/series/...` už bude `videos` so sezónami a epizódami.
+
+
+## v3.1 seriály prednostne s epizódami
+
+Ak sa seriály stále správajú ako filmy, príčina býva `ENRICH_LIMIT`: obohatia sa len prvé filmy a seriály už nedostanú TMDB epizódy.
+
+Nové env:
+
+```env
+ENRICH_MOVIE_LIMIT=50
+ENRICH_SERIES_LIMIT=150
+ENABLE_TMDB_EPISODES=true
+```
+
+Po refreshe sleduj `/stats`:
+
+```text
+seriesWithEpisodes
+totalEpisodes
+```
+
+Ak `seriesWithEpisodes` je 0, seriály ešte neboli TMDB obohatené.

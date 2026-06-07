@@ -4,6 +4,8 @@ import { readStore, writeStore, storePath } from './store.js';
 
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_HOURS || 24) * 60 * 60 * 1000;
 const ENRICH_LIMIT = Number(process.env.ENRICH_LIMIT || 0);
+const ENRICH_MOVIE_LIMIT = Number(process.env.ENRICH_MOVIE_LIMIT || ENRICH_LIMIT || 0);
+const ENRICH_SERIES_LIMIT = Number(process.env.ENRICH_SERIES_LIMIT || ENRICH_LIMIT || 0);
 
 let cache = { at: 0, metas: [], items: [], byId: new Map(), sourceHash: '', lastError: null };
 let running = null;
@@ -63,7 +65,9 @@ function toMeta(item, tmdb = null) {
     imdbRating: tmdb?.rating || (item.rating ? String(item.rating) : undefined),
     cast: tmdb?.cast || [],
     director: tmdb?.director || [],
-    behaviorHints: { defaultVideoId: id },
+    behaviorHints: item.type === 'series'
+      ? { defaultVideoId: (tmdb?.videos || [])[0]?.id || id }
+      : { defaultVideoId: id },
     videos: item.type === 'series' ? (tmdb?.videos || []) : undefined,
     seriesInfo: item.type === 'series' ? { episodeCount: (tmdb?.videos || []).length } : undefined,
     links: [
@@ -158,7 +162,8 @@ export async function refreshCache({ forceFull = false } = {}) {
       );
 
       const metas = [];
-      let enriched = 0;
+      let enrichedMovies = 0;
+      let enrichedSeries = 0;
 
       setStage('build-metadata');
 
@@ -170,9 +175,14 @@ export async function refreshCache({ forceFull = false } = {}) {
           continue;
         }
 
-        if (ENRICH_LIMIT > 0 && enriched < ENRICH_LIMIT) {
+        const isSeries = item.type === 'series';
+        const limit = isSeries ? ENRICH_SERIES_LIMIT : ENRICH_MOVIE_LIMIT;
+        const used = isSeries ? enrichedSeries : enrichedMovies;
+
+        if (limit > 0 && used < limit) {
           metas.push(await enrichItem(item));
-          enriched += 1;
+          if (isSeries) enrichedSeries += 1;
+          else enrichedMovies += 1;
         } else {
           metas.push(toMeta(item));
         }
@@ -291,6 +301,8 @@ export async function getCatalogStats() {
     series: metas.filter(m => m.type === 'series').length,
     withFilmbaze: metas.filter(m => m._addon?.filmbazeId).length,
     withImdb: metas.filter(m => m._addon?.imdbId).length,
-    withTmdb: metas.filter(m => m._addon?.tmdbId).length
+    withTmdb: metas.filter(m => m._addon?.tmdbId).length,
+    seriesWithEpisodes: metas.filter(m => m.type === 'series' && Array.isArray(m.videos) && m.videos.length > 0).length,
+    totalEpisodes: metas.filter(m => m.type === 'series' && Array.isArray(m.videos)).reduce((sum, m) => sum + m.videos.length, 0)
   };
 }
