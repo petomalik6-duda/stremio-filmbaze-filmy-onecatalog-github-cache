@@ -54,7 +54,7 @@ function normalizeStremioSeriesVideos(videos, seriesId) {
 
 
 function toMeta(item, tmdb = null) {
-  const imdbId = tmdb?.imdbId || null;
+  const imdbId = tmdb?.imdbId || item.imdbId || null;
   const id = imdbId || localId(item);
   const seriesVideos = item.type === 'series' ? normalizeStremioSeriesVideos(tmdb?.videos || [], id) : [];
 
@@ -93,26 +93,60 @@ function toMeta(item, tmdb = null) {
     _addon: {
       key: String(item.id),
       filmbazeId: item.id,
-      tmdbId: tmdb?.tmdbId || null,
+      tmdbId: tmdb?.tmdbId || item.tmdbId || null,
       imdbId,
       dateAdded: item.dateAdded,
       channelOrder: Number.isFinite(item.channelOrder) ? item.channelOrder : 999999,
       page: item.page || null,
       episodeCount: item.type === 'series' ? seriesVideos.length : 0,
+      originalName: item.originalName || null,
+      detailChecked: Boolean(item.detailChecked),
       sourceTitle: item.name
     }
   };
 }
 
+
+function tmdbFromFilmbazeItem(item) {
+  if (!item?.tmdbId && !item?.imdbId && !item?.originalName) return null;
+
+  return {
+    tmdbId: item.tmdbId || null,
+    imdbId: item.imdbId || null,
+    type: item.type,
+    name: item.originalName || item.name,
+    year: item.year,
+    poster: item.poster,
+    background: item.background,
+    description: item.description,
+    rating: item.rating,
+    runtime: item.runtime,
+    genres: ['CZ/SK'],
+    cast: [],
+    director: [],
+    videos: []
+  };
+}
+
 async function enrichItem(item) {
-  if (ENRICH_LIMIT <= 0) return toMeta(item);
+  const direct = tmdbFromFilmbazeItem(item);
+
+  if (direct?.imdbId || direct?.tmdbId) {
+    if (item.type !== 'series' || direct.videos?.length) {
+      return toMeta(item, direct);
+    }
+  }
+
+  if (ENRICH_LIMIT <= 0 && ENRICH_MOVIE_LIMIT <= 0 && ENRICH_SERIES_LIMIT <= 0) {
+    return toMeta(item, direct);
+  }
 
   try {
-    const tmdb = await tmdbSearch(item.name, item.year, item.type, item.runtime);
-    return toMeta(item, tmdb);
+    const tmdb = await tmdbSearch(item.originalName || item.name, item.year, item.type, item.runtime);
+    return toMeta(item, tmdb || direct);
   } catch (error) {
     console.error('[tmdb] enrich failed:', item.name, error.message);
-    return toMeta(item);
+    return toMeta(item, direct);
   }
 }
 
@@ -317,6 +351,7 @@ export async function getCatalogStats() {
     withFilmbaze: metas.filter(m => m._addon?.filmbazeId).length,
     withImdb: metas.filter(m => m._addon?.imdbId).length,
     withTmdb: metas.filter(m => m._addon?.tmdbId).length,
+    detailChecked: metas.filter(m => m._addon?.detailChecked).length,
     seriesWithEpisodes: metas.filter(m => m.type === 'series' && Array.isArray(m.videos) && m.videos.length > 0).length,
     totalEpisodes: metas.filter(m => m.type === 'series' && Array.isArray(m.videos)).reduce((sum, m) => sum + m.videos.length, 0)
   };

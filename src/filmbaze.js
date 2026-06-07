@@ -21,6 +21,8 @@ const MAX_ITEMS = Number(process.env.MAX_ITEMS || 2000);
 const MAX_SERIES_ITEMS = Number(process.env.MAX_SERIES_ITEMS || process.env.MAX_SERIES || 2000);
 const STRICT_MOVIE_FILTER = String(process.env.STRICT_MOVIE_FILTER || 'true').toLowerCase() !== 'false';
 const USE_READER_FALLBACK = String(process.env.USE_READER_FALLBACK || 'true').toLowerCase() !== 'false';
+const ENABLE_FILMBAZE_DETAIL = String(process.env.ENABLE_FILMBAZE_DETAIL || 'true').toLowerCase() !== 'false';
+const FILMBAZE_DETAIL_LIMIT = Number(process.env.FILMBAZE_DETAIL_LIMIT || 2000);
 
 let lastDebug = {
   movies: [],
@@ -346,6 +348,137 @@ function cleanTitle(value) {
     .trim();
 }
 
+
+async function fetchFilmbazeDetail(item) {
+  if (!ENABLE_FILMBAZE_DETAIL || !item?.id) return item;
+
+  const detailUrls = [
+    `https://filmbaze.cz/api/v1/title/${item.id}`,
+    `https://filmbaze.cz/api/v1/titles/${item.id}`,
+    `https://filmbaze.cz/api/title/${item.id}`,
+    `https://filmbaze.cz/title/${item.id}`
+  ];
+
+  for (const url of detailUrls) {
+    try {
+      const response = await getWithRetry(url, {
+        headers: {
+          Accept: url.includes('/api/') ? 'application/json,text/html;q=0.9,*/*;q=0.8' : 'text/html,application/json;q=0.9,*/*;q=0.8',
+          Referer: item.sourceUrl || 'https://filmbaze.cz/'
+        }
+      });
+
+      const payload = typeof response.data === 'object'
+        ? response.data
+        : extractJsonFromHtml(String(response.data || ''));
+
+      const ids = extractExternalIds(payload);
+      const originalName = extractOriginalName(payload);
+
+      if (ids.imdbId || ids.tmdbId || originalName) {
+        return {
+          ...item,
+          imdbId: ids.imdbId || item.imdbId || null,
+          tmdbId: ids.tmdbId || item.tmdbId || null,
+          originalName: originalName || item.originalName || null,
+          detailChecked: true
+        };
+      }
+    } catch {}
+  }
+
+  return { ...item, detailChecked: true };
+}
+
+function extractExternalIds(payload) {
+  const ids = { imdbId: null, tmdbId: null };
+
+  const scan = value => {
+    if (!value || (ids.imdbId && ids.tmdbId)) return;
+
+    if (typeof value === 'string') {
+      const imdb = value.match(/\btt\d{6,12}\b/i);
+      if (imdb && !ids.imdbId) ids.imdbId = imdb[0];
+
+      const tmdbUrl = value.match(/themoviedb\.org\/(?:movie|tv)\/(\d+)/i);
+      if (tmdbUrl && !ids.tmdbId) ids.tmdbId = Number(tmdbUrl[1]);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) scan(item);
+      return;
+    }
+
+    if (typeof value === 'object') {
+      for (const [key, val] of Object.entries(value)) {
+        const k = key.toLowerCase();
+
+        if (!ids.imdbId && typeof val === 'string' && ['imdb_id', 'imdbid', 'imdb'].includes(k)) {
+          const imdb = val.match(/\btt\d{6,12}\b/i);
+          if (imdb) ids.imdbId = imdb[0];
+        }
+
+        if (!ids.tmdbId && ['tmdb_id', 'tmdbid', 'tmdb'].includes(k)) {
+          const n = Number(val);
+          if (Number.isFinite(n) && n > 0) ids.tmdbId = n;
+        }
+
+        scan(val);
+      }
+    }
+  };
+
+  scan(payload);
+  return ids;
+}
+
+function extractOriginalName(payload) {
+  let found = null;
+  const keys = new Set(['original_name', 'original_title', 'originalname', 'originaltitle', 'english_name', 'english_title']);
+
+  const scan = value => {
+    if (!value || found) return;
+
+    if (Array.isArray(value)) {
+      for (const item of value) scan(item);
+      return;
+    }
+
+    if (typeof value === 'object') {
+      for (const [key, val] of Object.entries(value)) {
+        if (!found && keys.has(key.toLowerCase()) && typeof val === 'string' && val.trim().length > 1) {
+          found = val.trim();
+          return;
+        }
+        scan(val);
+      }
+    }
+  };
+
+  scan(payload);
+  return found;
+}
+
+async function enrichFilmbazeDetails(items) {
+  if (!ENABLE_FILMBAZE_DETAIL) return items;
+
+  const out = [];
+  let checked = 0;
+
+  for (const item of items) {
+    if (checked < FILMBAZE_DETAIL_LIMIT) {
+      out.push(await fetchFilmbazeDetail(item));
+      checked += 1;
+    } else {
+      out.push(item);
+    }
+  }
+
+  return out;
+}
+
+
 export async function fetchFilmbazeItems() {
   lastDebug = { movies: [], series: [], errors: [] };
 
@@ -367,7 +500,7 @@ export async function fetchFilmbazeItems() {
     lastDebug.errors.push({ type: 'series', error: series.reason.message });
   }
 
-  const items = [...movieItems, ...seriesItems];
+  const items = await enrichFilmbazeDetails([...movieItems, ...seriesItems]);
 
   const sourceHash = crypto.createHash('sha1')
     .update(items.map(x => `${x.type}|${x.id}|${x.name}|${x.releaseDate}`).join('|'))
@@ -409,6 +542,9 @@ function normalizeFilmbazeTitle(item, requestedType, sourceUrl) {
     dateAdded: releaseDate ? String(releaseDate).slice(0, 10) : '',
     lang: type === 'series' ? 'CZ' : 'CZ/SK',
     primaryVideo: item.primary_video || null,
+    imdbId: item.imdb_id || item.imdbId || null,
+    tmdbId: item.tmdb_id || item.tmdbId || null,
+    originalName: item.original_name || item.original_title || item.originalName || null,
     sourceUrl
   };
 }

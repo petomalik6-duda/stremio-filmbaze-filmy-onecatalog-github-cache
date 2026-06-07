@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "type": "module",
-  "description": "Filmbaze addon v3.2 with Stremio-compatible episode IDs for series.",
+  "description": "Filmbaze addon v3.3 with Filmbaze detail lookup for IMDb/TMDB IDs before TMDB search.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

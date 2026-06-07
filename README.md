@@ -267,3 +267,23 @@ tmdb:tv:276161:1:1
 ```
 
 Toto pomáha Stremiu správne zobraziť sezóny a epizódy.
+
+
+## v3.3 Filmbáze detail lookup
+
+Pred TMDB searchom addon skúsi detail Filmbáze titulu a hľadá v ňom:
+
+```text
+imdb_id
+tmdb_id
+original_title / original_name
+```
+
+Odporúčané env:
+
+```env
+ENABLE_FILMBAZE_DETAIL=true
+FILMBAZE_DETAIL_LIMIT=2000
+ENRICH_MOVIE_LIMIT=2000
+ENRICH_SERIES_LIMIT=150
+```
