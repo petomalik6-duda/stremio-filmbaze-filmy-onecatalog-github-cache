@@ -52,13 +52,7 @@ export async function tmdbSearch(name, year, type = 'movie', expectedRuntime = n
   const best = candidates.find(c => c._accepted) || null;
 
   if (!best) {
-    console.warn('[tmdb] no strict match:', name, year || '', expectedRuntime || '', candidates.slice(0, 3).map(c => ({
-      name: c.name,
-      year: c.year,
-      runtime: c.runtime,
-      imdbId: c.imdbId,
-      score: c._score
-    })));
+    console.warn('[tmdb] no strict match:', name, year || '', expectedRuntime || '');
     return TMDB_STRICT_MATCH ? null : (candidates[0] || null);
   }
 
@@ -117,6 +111,7 @@ function acceptMatch({ expectedYear, expectedRuntime, candidate, mediaType }) {
 
 function matchScore({ queryName, expectedYear, expectedRuntime, candidate, mediaType }) {
   let score = 0;
+
   const q = normalizeTitle(queryName);
   const cn = normalizeTitle(candidate.name);
   const co = normalizeTitle(candidate.originalName);
