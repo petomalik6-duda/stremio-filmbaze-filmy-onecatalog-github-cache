@@ -52,9 +52,6 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_LANGUAGE: cs-CZ
           ENRICH_LIMIT: 50
-          TMDB_STRICT_MATCH: "true"
-          TMDB_YEAR_TOLERANCE: 1
-          TMDB_RUNTIME_TOLERANCE: 15
           FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
 
       - name: Commit updated cache
