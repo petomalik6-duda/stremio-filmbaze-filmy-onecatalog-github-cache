@@ -39,9 +39,24 @@ function localId(item) {
   return `filmbaze:${item.type}:${item.id}`;
 }
 
+function normalizeStremioSeriesVideos(videos, seriesId) {
+  if (!Array.isArray(videos)) return [];
+
+  return videos
+    .filter(video => Number(video.season) > 0 && Number(video.episode) > 0)
+    .map(video => ({
+      ...video,
+      // Stremio je najstabilnejšie, keď episode id začína ID seriálu.
+      // Napr. tt34809853:1:1 namiesto tmdb:tv:276161:1:1
+      id: `${seriesId}:${Number(video.season)}:${Number(video.episode)}`
+    }));
+}
+
+
 function toMeta(item, tmdb = null) {
   const imdbId = tmdb?.imdbId || null;
   const id = imdbId || localId(item);
+  const seriesVideos = item.type === 'series' ? normalizeStremioSeriesVideos(tmdb?.videos || [], id) : [];
 
   const year = tmdb?.year || item.year;
   const poster = tmdb?.poster || item.poster;
@@ -66,13 +81,13 @@ function toMeta(item, tmdb = null) {
     cast: tmdb?.cast || [],
     director: tmdb?.director || [],
     behaviorHints: item.type === 'series'
-      ? { defaultVideoId: (tmdb?.videos || [])[0]?.id || id }
+      ? { defaultVideoId: seriesVideos[0]?.id || id }
       : { defaultVideoId: id },
-    videos: item.type === 'series' ? (tmdb?.videos || []) : undefined,
-    seriesInfo: item.type === 'series' ? { episodeCount: (tmdb?.videos || []).length } : undefined,
+    videos: item.type === 'series' ? seriesVideos : undefined,
+    seriesInfo: item.type === 'series' ? { episodeCount: seriesVideos.length } : undefined,
     links: [
       item.id ? { name: 'Filmbáze', category: 'Info', url: `https://filmbaze.cz/title/${item.id}` } : null,
-      tmdb?.tmdbId ? { name: 'TMDB', category: 'Info', url: `https://www.themoviedb.org/movie/${tmdb.tmdbId}` } : null,
+      tmdb?.tmdbId ? { name: 'TMDB', category: 'Info', url: (item.type === 'series' ? `https://www.themoviedb.org/tv/${tmdb.tmdbId}` : `https://www.themoviedb.org/movie/${tmdb.tmdbId}`) } : null,
       imdbId ? { name: 'IMDb', category: 'Info', url: `https://www.imdb.com/title/${imdbId}/` } : null
     ].filter(Boolean),
     _addon: {
@@ -83,7 +98,7 @@ function toMeta(item, tmdb = null) {
       dateAdded: item.dateAdded,
       channelOrder: Number.isFinite(item.channelOrder) ? item.channelOrder : 999999,
       page: item.page || null,
-      episodeCount: item.type === 'series' ? (tmdb?.videos || []).length : 0,
+      episodeCount: item.type === 'series' ? seriesVideos.length : 0,
       sourceTitle: item.name
     }
   };

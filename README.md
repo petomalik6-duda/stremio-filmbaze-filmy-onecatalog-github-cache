@@ -249,3 +249,21 @@ totalEpisodes
 ```
 
 Ak `seriesWithEpisodes` je 0, seriály ešte neboli TMDB obohatené.
+
+
+## v3.2 Stremio-compatible episode IDs
+
+Epizódy už majú ID odvodené od ID seriálu:
+
+```text
+tt34809853:1:1
+tt34809853:1:2
+```
+
+namiesto:
+
+```text
+tmdb:tv:276161:1:1
+```
+
+Toto pomáha Stremiu správne zobraziť sezóny a epizódy.

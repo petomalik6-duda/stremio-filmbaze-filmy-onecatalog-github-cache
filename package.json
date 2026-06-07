@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "type": "module",
-  "description": "Filmbaze addon v3.1 with separate series TMDB enrichment limit and episode stats.",
+  "description": "Filmbaze addon v3.2 with Stremio-compatible episode IDs for series.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
