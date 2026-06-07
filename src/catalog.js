@@ -1,108 +1,31 @@
-import { scrapeFilmovenovinky, itemKey } from './scrape.js';
-import { fetchCsfdMeta, searchCsfd } from './csfd.js';
-import { tmdbByImdb, tmdbSearch } from './tmdb.js';
+import { fetchFilmbazeItems } from './filmbaze.js';
+import { tmdbSearch } from './tmdb.js';
 import { readStore, writeStore, storePath } from './store.js';
 
-const MAX_ITEMS = Number(process.env.MAX_ITEMS || 1000);
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_HOURS || 24) * 60 * 60 * 1000;
-const REFRESH_NEW_ONLY = String(process.env.REFRESH_NEW_ONLY || 'true').toLowerCase() !== 'false';
-const CSFD_SEARCH_FALLBACK = String(process.env.CSFD_SEARCH_FALLBACK || 'false').toLowerCase() === 'true';
 const ENRICH_LIMIT = Number(process.env.ENRICH_LIMIT || 0);
-const REFRESH_LOCK_TIMEOUT_MS = Number(process.env.REFRESH_LOCK_TIMEOUT_MS || 180000);
-const HIDE_UNMATCHED_ITEMS = String(process.env.HIDE_UNMATCHED_ITEMS || 'false').toLowerCase() === 'true';
-const STRICT_MOVIE_FILTER = String(process.env.STRICT_MOVIE_FILTER || 'true').toLowerCase() !== 'false';
 
-let cache = { at: 0, metas: [], byId: new Map(), items: [], sourceHash: '', lastError: null };
+let cache = { at: 0, metas: [], items: [], byId: new Map(), sourceHash: '', lastError: null };
 let running = null;
 let runningStartedAt = 0;
 let stage = 'idle';
 
 function setStage(value) {
   stage = value;
-  console.log('[refresh-stage]', value);
+  console.log('[stage]', value);
 }
 
-function buildIndex(metas) { return new Map((metas || []).map(m => [m.id, m])); }
-function imdbIdFromUrl(url) {
-  const m = String(url || '').match(/title\/(tt\d+)/i);
-  return m ? m[1] : null;
-}
-function stremioId(item, csfd, tmdb) {
-  return tmdb?.imdbId || csfd?.imdbId || imdbIdFromUrl(item.imdbUrl) || `filmbaze:${Buffer.from(`${item.type}-${item.name}-${item.year}-${item.lang}`).toString('base64url')}`;
-}
-function score(meta) { const n = Number(meta.imdbRating || 0); return Number.isFinite(n) ? n : 0; }
-function tmdbUrl(type, id) { return `https://www.themoviedb.org/${type === 'series' ? 'tv' : 'movie'}/${id}`; }
-function placeholderPoster(name) { return `https://placehold.co/500x750?text=${encodeURIComponent(String(name || 'CZ/SK').slice(0, 35))}`; }
-
-function localMeta(item) {
-  return toMeta(item, {}, null);
-}
-
-function toMeta(item, csfd = {}, tmdb = null) {
-  const type = item.type === 'series' ? 'series' : 'movie';
-  const id = stremioId(item, csfd, tmdb);
-  const imdbId = tmdb?.imdbId || csfd?.imdbId || imdbIdFromUrl(item.imdbUrl) || null;
-  const displayName = item.name || tmdb?.name || 'Bez názvu';
-  const links = [
-    item.csfdUrl ? { name: 'ČSFD', category: 'Info', url: item.csfdUrl } : null,
-    imdbId ? { name: 'IMDb', category: 'Info', url: `https://www.imdb.com/title/${imdbId}/` } : null,
-    tmdb?.tmdbId ? { name: 'TMDB', category: 'Info', url: tmdbUrl(type, tmdb.tmdbId) } : null,
-    item.detailUrl ? { name: 'FilmovéNovinky', category: 'Info', url: item.detailUrl } : null,
-    item.sourceUrl ? { name: 'Zdroj', category: 'Info', url: item.sourceUrl } : null
-  ].filter(Boolean);
-
-  const descriptionParts = [
-    tmdb?.description || csfd.description || '',
-    item.originalName ? `Originálny názov: ${item.originalName}` : null,
-    `Dabing: ${item.lang || 'CZ/SK'}`,
-    item.dateAdded ? `Pridané: ${item.dateAdded}` : null,
-    item.csfdUrl ? `ČSFD: ${item.csfdUrl}` : null,
-    item.imdbUrl ? `IMDb URL: ${item.imdbUrl}` : null,
-    imdbId ? `IMDb: ${imdbId}` : null,
-    tmdb?.tmdbId ? `TMDB: ${tmdb.tmdbId}` : null
-  ].filter(Boolean);
-
-  return {
-    id,
-    type,
-    name: displayName,
-    poster: tmdb?.poster || csfd.poster || placeholderPoster(displayName),
-    background: tmdb?.background || tmdb?.poster || csfd.poster || placeholderPoster(displayName),
-    description: descriptionParts.join('\n\n'),
-    releaseInfo: tmdb?.releaseInfo || item.year || undefined,
-    year: Number(tmdb?.releaseInfo || item.year) || undefined,
-    runtime: tmdb?.runtime,
-    genres: [...new Set([...(tmdb?.genres || []), ...(csfd.genres || []), item.lang].filter(Boolean))],
-    imdbRating: tmdb?.imdbRating,
-    director: tmdb?.director,
-    cast: tmdb?.cast,
-    links,
-    behaviorHints: { defaultVideoId: id },
-    videos: tmdb?.trailer ? [{ id: `yt:${tmdb.trailer}`, title: 'Trailer', released: item.dateAdded }] : undefined,
-    _addon: { key: item.key || itemKey(item), dateAdded: item.dateAdded, lang: item.lang, csfdUrl: item.csfdUrl || null, imdbUrl: item.imdbUrl || null, imdbId, tmdbId: tmdb?.tmdbId || null, sourceType: type, titleRaw: item.titleRaw }
-  };
-}
-
-async function enrichItem(item) {
-  let csfdUrl = item.csfdUrl;
-
-  if (item.type !== 'series' && !csfdUrl && CSFD_SEARCH_FALLBACK) {
-    csfdUrl = await searchCsfd(item.originalName || item.name, item.year) || await searchCsfd(item.name, item.year);
-  }
-
-  const normalizedItem = { ...item, csfdUrl };
-  const csfd = item.type === 'series' ? {} : await fetchCsfdMeta(csfdUrl);
-
-  let tmdb = await tmdbByImdb(csfd.imdbId, item.type);
-  if (!tmdb) tmdb = await tmdbSearch(item.originalName || item.name, item.year, item.type);
-  if (!tmdb && item.originalName) tmdb = await tmdbSearch(item.name, item.year, item.type);
-
-  return toMeta(normalizedItem, csfd, tmdb);
+function buildIndex(metas) {
+  return new Map((metas || []).map(meta => [meta.id, meta]));
 }
 
 async function loadFromDisk() {
   const store = await readStore();
-  cache = { ...store, byId: buildIndex(store.metas), lastError: cache.lastError || store.lastError || null };
+  cache = {
+    ...store,
+    byId: buildIndex(store.metas),
+    lastError: cache.lastError || store.lastError || null
+  };
   return cache;
 }
 
@@ -110,33 +33,84 @@ function isStale() {
   return !cache.at || Date.now() - cache.at > CACHE_TTL_MS;
 }
 
-function runningExpired() {
-  return running && runningStartedAt && Date.now() - runningStartedAt > REFRESH_LOCK_TIMEOUT_MS;
+function localId(item) {
+  return `filmbaze:${item.id}`;
+}
+
+function toMeta(item, tmdb = null) {
+  const imdbId = tmdb?.imdbId || null;
+  const id = imdbId || localId(item);
+
+  const year = tmdb?.year || item.year;
+  const poster = tmdb?.poster || item.poster;
+  const background = tmdb?.background || item.background || poster;
+
+  return {
+    id,
+    type: 'movie',
+    name: tmdb?.name || item.name,
+    poster,
+    background,
+    description: [
+      tmdb?.description || item.description || '',
+      `Zdroj: Filmbáze`,
+      item.id ? `Filmbáze ID: ${item.id}` : null
+    ].filter(Boolean).join('\n\n'),
+    releaseInfo: year ? String(year) : undefined,
+    year,
+    runtime: tmdb?.runtime ? `${tmdb.runtime} min` : item.runtime ? `${item.runtime} min` : undefined,
+    genres: tmdb?.genres || ['CZ/SK'],
+    imdbRating: tmdb?.rating || (item.rating ? String(item.rating) : undefined),
+    cast: tmdb?.cast || [],
+    director: tmdb?.director || [],
+    behaviorHints: { defaultVideoId: id },
+    links: [
+      item.id ? { name: 'Filmbáze', category: 'Info', url: `https://filmbaze.cz/title/${item.id}` } : null,
+      tmdb?.tmdbId ? { name: 'TMDB', category: 'Info', url: `https://www.themoviedb.org/movie/${tmdb.tmdbId}` } : null,
+      imdbId ? { name: 'IMDb', category: 'Info', url: `https://www.imdb.com/title/${imdbId}/` } : null
+    ].filter(Boolean),
+    _addon: {
+      key: String(item.id),
+      filmbazeId: item.id,
+      tmdbId: tmdb?.tmdbId || null,
+      imdbId,
+      dateAdded: item.dateAdded,
+      sourceTitle: item.name
+    }
+  };
+}
+
+async function enrichItem(item) {
+  if (ENRICH_LIMIT <= 0) return toMeta(item);
+
+  try {
+    const tmdb = await tmdbSearch(item.name, item.year);
+    return toMeta(item, tmdb);
+  } catch (error) {
+    console.error('[tmdb] enrich failed:', item.name, error.message);
+    return toMeta(item);
+  }
 }
 
 export function isRefreshRunning() {
-  if (runningExpired()) {
-    cache.lastError = `Refresh lock expired after ${REFRESH_LOCK_TIMEOUT_MS}ms at stage: ${stage}`;
-    running = null;
-    runningStartedAt = 0;
-    setStage('expired');
-    return false;
-  }
   return Boolean(running);
 }
 
 export function refreshCacheBackground(options = {}) {
-  if (isRefreshRunning()) return running;
-  return refreshCache(options).catch(e => {
-    cache.lastError = e.message;
+  if (running) return running;
+
+  running = refreshCache(options).catch(error => {
+    cache.lastError = error.message;
     setStage('failed');
-    console.error('Background refresh failed:', e);
+    console.error('[refresh] failed', error);
     return cache.metas || [];
   });
+
+  return running;
 }
 
 export async function refreshCache({ forceFull = false } = {}) {
-  if (isRefreshRunning()) return running;
+  if (running) return running;
 
   runningStartedAt = Date.now();
 
@@ -145,64 +119,93 @@ export async function refreshCache({ forceFull = false } = {}) {
       setStage('load-disk-cache');
       const current = cache.at ? cache : await loadFromDisk();
 
-      setStage('scrape-filmovenovinky');
-      const scraped = await scrapeFilmovenovinky(MAX_ITEMS);
+      setStage('fetch-filmbaze-json');
+      const fetched = await fetchFilmbazeItems();
 
-      setStage(`scraped-${scraped.items.length}-items`);
+      setStage(`fetched-${fetched.items.length}-items`);
 
-      if (!scraped.items.length) {
-        cache.lastError = 'Scraper returned 0 items. Check MOVIES_SOURCE_URL or website HTML.';
-        await writeStore({ at: current.at || 0, sourceHash: current.sourceHash || '', items: current.items || [], metas: current.metas || [], lastError: cache.lastError });
-        return current.metas || [];
+      if (!fetched.items.length) {
+        throw new Error('Filmbáze JSON returned 0 items.');
       }
 
-      if (!forceFull && current.sourceHash === scraped.sourceHash && current.metas.length) {
+      if (!forceFull && current.sourceHash === fetched.sourceHash && current.metas.length) {
         setStage('source-unchanged');
-        cache = { ...current, at: Date.now(), byId: buildIndex(current.metas), lastError: null };
-        await writeStore({ at: cache.at, sourceHash: cache.sourceHash, items: cache.items, metas: cache.metas, lastError: null });
+        cache = {
+          ...current,
+          at: Date.now(),
+          byId: buildIndex(current.metas),
+          lastError: null
+        };
+        await writeStore({
+          at: cache.at,
+          sourceHash: cache.sourceHash,
+          items: cache.items,
+          metas: cache.metas,
+          lastError: null
+        });
         return cache.metas;
       }
 
-      setStage('build-metadata');
-      const oldByKey = new Map((current.metas || []).map(m => [m._addon?.key, m]).filter(([k]) => k));
+      const oldByFilmbazeId = new Map(
+        (current.metas || [])
+          .map(meta => [String(meta._addon?.filmbazeId || ''), meta])
+          .filter(([key]) => key)
+      );
+
       const metas = [];
       let enriched = 0;
 
-      for (const item of scraped.items) {
-        const key = item.key || itemKey(item);
-        const reusable = !forceFull && REFRESH_NEW_ONLY && oldByKey.get(key);
+      setStage('build-metadata');
 
-        if (reusable) {
-          metas.push(reusable);
+      for (const item of fetched.items) {
+        const existing = !forceFull ? oldByFilmbazeId.get(String(item.id)) : null;
+
+        if (existing) {
+          metas.push(existing);
           continue;
         }
 
-        // ENRICH_LIMIT=0 znamená: žiadne CSFD/TMDB HTTP volania, iba rýchle lokálne metadata.
-        if (ENRICH_LIMIT <= 0 || (!forceFull && enriched >= ENRICH_LIMIT)) {
-          metas.push(localMeta(item));
-          continue;
-        }
-
-        try {
+        if (ENRICH_LIMIT > 0 && enriched < ENRICH_LIMIT) {
           metas.push(await enrichItem(item));
           enriched += 1;
-        } catch (e) {
-          console.error('Enrich failed:', item.name, e.message);
-          metas.push(localMeta(item));
+        } else {
+          metas.push(toMeta(item));
         }
       }
 
+      cache = {
+        at: Date.now(),
+        sourceHash: fetched.sourceHash,
+        items: fetched.items,
+        metas,
+        byId: buildIndex(metas),
+        lastError: null
+      };
+
       setStage('write-cache');
-      cache = { at: Date.now(), sourceHash: scraped.sourceHash, items: scraped.items, metas, byId: buildIndex(metas), lastError: null };
-      await writeStore({ at: cache.at, sourceHash: cache.sourceHash, items: cache.items, metas: cache.metas, lastError: null });
+      await writeStore({
+        at: cache.at,
+        sourceHash: cache.sourceHash,
+        items: cache.items,
+        metas: cache.metas,
+        lastError: null
+      });
 
       setStage('done');
       return metas;
-    } catch (e) {
-      cache.lastError = e.message;
+    } catch (error) {
+      cache.lastError = error.message;
       setStage('failed');
-      await writeStore({ at: cache.at || 0, sourceHash: cache.sourceHash || '', items: cache.items || [], metas: cache.metas || [], lastError: e.message }).catch(() => {});
-      throw e;
+
+      await writeStore({
+        at: cache.at || 0,
+        sourceHash: cache.sourceHash || '',
+        items: cache.items || [],
+        metas: cache.metas || [],
+        lastError: error.message
+      }).catch(() => {});
+
+      throw error;
     }
   })();
 
@@ -217,7 +220,7 @@ export async function refreshCache({ forceFull = false } = {}) {
 export async function getCatalog() {
   if (!cache.at) await loadFromDisk();
 
-  if (isStale() && !isRefreshRunning()) {
+  if (isStale() && !running) {
     refreshCacheBackground().catch(() => {});
   }
 
@@ -229,6 +232,23 @@ export async function getMetaById(id) {
   return cache.byId.get(id) || null;
 }
 
+export function filterCatalog(metas, id, type) {
+  if (id !== 'filmbaze-filmy' || type !== 'movie') return [];
+
+  return [...metas]
+    .filter(meta => meta.type === 'movie')
+    .sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
+}
+
+export function searchCatalog(metas, query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return metas;
+
+  return metas.filter(meta =>
+    `${meta.name} ${meta.description || ''} ${(meta.genres || []).join(' ')}`.toLowerCase().includes(q)
+  );
+}
+
 export async function getCatalogStats() {
   if (!cache.at) await loadFromDisk();
   const metas = cache.metas || [];
@@ -237,67 +257,18 @@ export async function getCatalogStats() {
     at: cache.at,
     generatedAt: cache.at ? new Date(cache.at).toISOString() : null,
     stale: isStale(),
-    refreshRunning: isRefreshRunning(),
+    refreshRunning: Boolean(running),
     refreshStartedAt: runningStartedAt ? new Date(runningStartedAt).toISOString() : null,
     refreshAgeSeconds: runningStartedAt ? Math.round((Date.now() - runningStartedAt) / 1000) : 0,
     stage,
     lastError: cache.lastError,
     items: metas.length,
-    visibleItems: HIDE_UNMATCHED_ITEMS
-      ? metas.filter(m => Boolean(m._addon?.tmdbId) || Boolean(m._addon?.imdbId) || Boolean(m._addon?.csfdUrl) || (typeof m.id === 'string' && m.id.startsWith('tt'))).length
-      : metas.length,
-    hideUnmatchedItems: HIDE_UNMATCHED_ITEMS,
+    visibleItems: metas.length,
     cacheFile: storePath(),
     movies: metas.filter(m => m.type === 'movie').length,
     series: metas.filter(m => m.type === 'series').length,
-    cz: metas.filter(m => m._addon?.lang === 'CZ').length,
-    sk: metas.filter(m => m._addon?.lang === 'SK').length,
-    czsk: metas.filter(m => m._addon?.lang === 'CZ/SK').length,
-    withCsfd: metas.filter(m => m._addon?.csfdUrl).length,
+    withFilmbaze: metas.filter(m => m._addon?.filmbazeId).length,
     withImdb: metas.filter(m => m._addon?.imdbId).length,
     withTmdb: metas.filter(m => m._addon?.tmdbId).length
   };
-}
-
-export function searchCatalog(metas, query) {
-  const q = String(query || '').trim().toLowerCase();
-  if (!q) return metas;
-  return metas.filter(m => `${m.name} ${m.description || ''} ${(m.genres || []).join(' ')} ${m._addon?.titleRaw || ''}`.toLowerCase().includes(q));
-}
-
-
-function looksLikeRealMovieMeta(meta) {
-  if (!STRICT_MOVIE_FILTER) return true;
-
-  const name = String(meta.name || '').trim();
-  if (!name || name.length < 2 || name.length > 120) return false;
-
-  const raw = String(meta._addon?.titleRaw || meta.description || name);
-  const hasYear = Boolean(meta.year || meta.releaseInfo || /\b(19\d{2}|20\d{2})\b/.test(raw));
-  const hasExternal = Boolean(meta._addon?.tmdbId || meta._addon?.imdbId || meta._addon?.csfdUrl || (typeof meta.id === 'string' && meta.id.startsWith('tt')));
-
-  const bad = /cookie|reklama|menu|kontakt|newsletter|facebook|instagram|youtube|filmovenovinky\.sk|nové filmy s dabingom|tipy na dobrý film|seriály|streamovacie služby/i;
-  if (bad.test(name) || bad.test(raw)) return false;
-
-  // Ak nemá externé ID, musí mať aspoň rok. Tým sa odstránia textové položky zo stránky.
-  if (!hasExternal && !hasYear) return false;
-
-  return true;
-}
-
-export function filterCatalog(metas, id, type) {
-  let arr = [...metas].filter(m => m.type === 'movie').filter(looksLikeRealMovieMeta);
-
-  if (id !== 'filmbaze-filmy') return [];
-
-  if (HIDE_UNMATCHED_ITEMS) {
-    arr = arr.filter(m =>
-      Boolean(m._addon?.tmdbId) ||
-      Boolean(m._addon?.imdbId) ||
-      Boolean(m._addon?.csfdUrl) ||
-      (typeof m.id === 'string' && m.id.startsWith('tt'))
-    );
-  }
-
-  return arr.sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
 }

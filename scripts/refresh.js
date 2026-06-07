@@ -4,7 +4,7 @@ import { refreshCache, getCatalogStats } from '../src/catalog.js';
 const forceFull = process.env.FORCE_FULL_REFRESH === 'true';
 
 try {
-  console.log('Starting catalog refresh...');
+  console.log('Starting Filmbáze JSON refresh...');
   console.log('FORCE_FULL_REFRESH:', forceFull);
 
   const metas = await refreshCache({ forceFull });

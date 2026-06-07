@@ -12,22 +12,28 @@ export async function readStore() {
   try {
     const raw = await fs.readFile(CACHE_FILE, 'utf8');
     const parsed = JSON.parse(raw);
+
     return {
       at: parsed.at || 0,
       sourceHash: parsed.sourceHash || '',
       items: Array.isArray(parsed.items) ? parsed.items : [],
-      metas: Array.isArray(parsed.metas) ? parsed.metas : []
+      metas: Array.isArray(parsed.metas) ? parsed.metas : [],
+      lastError: parsed.lastError || null
     };
   } catch {
-    return { at: 0, sourceHash: '', items: [], metas: [] };
+    return {
+      at: 0,
+      sourceHash: '',
+      items: [],
+      metas: [],
+      lastError: null
+    };
   }
 }
 
-export async function writeStore(store) {
+export async function writeStore(payload) {
   await ensureDataDir();
-  const tmp = `${CACHE_FILE}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(store, null, 2), 'utf8');
-  await fs.rename(tmp, CACHE_FILE);
+  await fs.writeFile(CACHE_FILE, JSON.stringify(payload, null, 2));
 }
 
 export function storePath() {

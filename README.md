@@ -1,27 +1,18 @@
-# Filmbáze CZ/SK filmy – jeden katalóg + GitHub cache
+# Filmbáze JSON Stremio addon
 
-Rovnaký typ addonu ako FilmovéNovinky verzia, ale zdroj je:
+Tento addon nepoužíva HTML scraper. Načítava priamo JSON dáta Filmbáze kanála `Novinky s českým dabingem`.
 
-```text
-https://www.filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
-```
-
-## V Stremiu bude iba jeden katalóg
+## Katalóg
 
 ```text
 Filmbáze – CZ/SK filmy
+Filmbáze – seriály v češtině
 ```
 
-Katalóg endpoint:
+Endpoint:
 
 ```text
 /catalog/movie/filmbaze-filmy.json
-```
-
-Manifest:
-
-```text
-/manifest.json
 ```
 
 ## Render Environment
@@ -29,79 +20,98 @@ Manifest:
 ```env
 PORT=10000
 PUBLIC_URL=https://tvoja-filmbaze-sluzba.onrender.com
+
+FILMBAZE_MOVIES_URL=https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
+FILMBAZE_SERIES_URL=https://filmbaze.cz/oblibene-serialy-v-cestine
+MAX_PAGES=30
+MAX_ITEMS=1200
+MAX_SERIES_ITEMS=1200
+
 AUTO_REFRESH=false
 REFRESH_ON_START=false
+AUTO_REFRESH_MINUTES=1440
 CACHE_TTL_HOURS=24
 
-MAX_ITEMS=1000
-MAX_SERIES=0
-DISABLE_SERIES=true
+REQUEST_TIMEOUT_MS=20000
+HTTP_RETRIES=2
 
-ENRICH_LIMIT=0
 ENABLE_TMDB=false
-CSFD_SEARCH_FALLBACK=false
-
-REQUEST_TIMEOUT_MS=15000
-HTTP_RETRIES=1
-REFRESH_LOCK_TIMEOUT_MS=180000
-USE_READER_FALLBACK=true
+TMDB_API_KEY=
+TMDB_LANGUAGE=cs-CZ
+ENRICH_LIMIT=0
 
 STRICT_MOVIE_FILTER=true
-REQUIRE_YEAR_FOR_LOCAL_ITEMS=true
-HIDE_UNMATCHED_ITEMS=true
+```
 
-MOVIES_SOURCE_URL=https://www.filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
-SERIES_SOURCE_URL=
+## Prvý refresh
+
+```text
+https://tvoja-filmbaze-sluzba.onrender.com/refresh
+```
+
+Potom:
+
+```text
+https://tvoja-filmbaze-sluzba.onrender.com/stats
+```
+
+## Stremio
+
+```text
+https://tvoja-filmbaze-sluzba.onrender.com/manifest.json
 ```
 
 ## TMDB obohatenie
 
-Najprv nechaj:
+Nie je nutné pre poster/popisy, lebo Filmbáze ich už dáva v JSON dátach.
 
-```env
-ENABLE_TMDB=false
-ENRICH_LIMIT=0
-```
-
-Keď katalóg načíta položky, zapni postupne:
+Na doplnenie IMDb ID nastav:
 
 ```env
 ENABLE_TMDB=true
 TMDB_API_KEY=tvoj_tmdb_kluc
-ENRICH_LIMIT=25
+ENRICH_LIMIT=50
 ```
 
-potom:
+Potom spusti:
 
 ```text
 /refresh?full=1
 ```
 
-Neskôr zvýš `ENRICH_LIMIT=50` alebo `100`.
-
 ## GitHub cache
 
-Workflow je pripravený:
+Workflow:
 
 ```text
 .github/workflows/refresh-cache.yml
-.github/workflows/import-cache-from-url.yml
 ```
 
-Po hotovom obohatení spusti:
+sa spúšťa denne a commitne `data/catalog-cache.json`.
+
+Aktuálnu cache z Renderu uložíš cez:
 
 ```text
-Actions → Import cache from running addon URL
+Actions → Import cache from running Filmbáze addon URL
 ```
 
-a zadaj:
+a zadáš:
 
 ```text
 https://tvoja-filmbaze-sluzba.onrender.com/cache.json
 ```
 
-Tým uložíš cache do GitHubu.
 
-## Dôležité
+## Seriály
 
-Tento ZIP neobsahuje `data/`, aby neprepísal existujúcu databázu/cache.
+Pridaný katalóg:
+
+```text
+Filmbáze – seriály v češtině
+```
+
+Endpoint:
+
+```text
+/catalog/series/filmbaze-serialy.json
+```
