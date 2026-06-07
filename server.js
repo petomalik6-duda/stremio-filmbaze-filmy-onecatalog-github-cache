@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { getFilmbazeDebug } from './src/filmbaze.js';
 
 import {
   filterCatalog,
@@ -41,8 +42,8 @@ const catalogs = [
 ];
 
 const manifest = {
-  id: 'cz.filmbaze.json.filmy.serialy.v240',
-  version: '2.4.0',
+  id: 'cz.filmbaze.json.filmy.serialy.v260',
+  version: '2.6.0',
   name: 'Filmbáze CZ/SK filmy a seriály',
   description: 'Jeden katalóg filmov s CZ/SK dabingom z Filmbáze JSON dát.',
   resources: ['catalog', 'meta'],
@@ -184,6 +185,10 @@ app.get('/refresh-now', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+app.get('/debug-pages', (_req, res) => {
+  res.json(getFilmbazeDebug());
 });
 
 app.get('/cache.json', async (_req, res, next) => {

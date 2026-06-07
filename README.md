@@ -153,3 +153,31 @@ fallback podľa per_page
 ```
 
 Addon načíta ďalšie stránky, keď `content.next_page` existuje alebo keď stránka vráti plný počet položiek.
+
+
+## v2.5 debug stránkovania
+
+Pridaný endpoint:
+
+```text
+/debug-pages
+```
+
+Po `/refresh?full=1` ukáže, ktoré stránky sa načítali, aký mód sa použil a koľko položiek vrátila každá stránka.
+
+
+## v2.6 pagination.data fix
+
+Filmbáze na ďalších stránkach môže vracať:
+
+```json
+{
+  "pagination": {
+    "current_page": 5,
+    "next_page": 6,
+    "data": [...]
+  }
+}
+```
+
+Táto verzia podporuje `content.data` aj `pagination.data`.
