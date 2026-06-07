@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "type": "module",
-  "description": "Filmbaze addon with API pagination and catalog sorted by Filmbaze channel order.",
+  "description": "Filmbaze addon with strict TMDB matching by year and runtime.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

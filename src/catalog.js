@@ -86,7 +86,7 @@ async function enrichItem(item) {
   if (ENRICH_LIMIT <= 0) return toMeta(item);
 
   try {
-    const tmdb = await tmdbSearch(item.name, item.year, item.type);
+    const tmdb = await tmdbSearch(item.name, item.year, item.type, item.runtime);
     return toMeta(item, tmdb);
   } catch (error) {
     console.error('[tmdb] enrich failed:', item.name, error.message);
