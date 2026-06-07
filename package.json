@@ -1,0 +1,23 @@
+{
+  "name": "stremio-filmbaze-filmy",
+  "version": "1.0.0",
+  "description": "One-catalog Filmbaze.cz Stremio addon with GitHub cache, TMDB enrichment and strict movie filter.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scrape": "node scraper.js",
+    "dev": "node server.js",
+    "refresh-now": "node scraper.js",
+    "refresh": "node scripts/refresh.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
