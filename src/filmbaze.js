@@ -19,10 +19,23 @@ const MAX_SERIES_ITEMS = Number(process.env.MAX_SERIES_ITEMS || process.env.MAX_
 const STRICT_MOVIE_FILTER = String(process.env.STRICT_MOVIE_FILTER || 'true').toLowerCase() !== 'false';
 const USE_READER_FALLBACK = String(process.env.USE_READER_FALLBACK || 'true').toLowerCase() !== 'false';
 
-function pageUrl(baseUrl, page) {
-  const url = new URL(baseUrl);
-  if (page > 1) url.searchParams.set('page', String(page));
-  return url.toString();
+function pageUrls(baseUrl, page) {
+  const variants = [];
+
+  const a = new URL(baseUrl);
+  if (page > 1) a.searchParams.set('page', String(page));
+  variants.push(a.toString());
+
+  const b = new URL(baseUrl);
+  if (page > 1) b.searchParams.set('p', String(page));
+  variants.push(b.toString());
+
+  // Some Filmbáze/Laravel routes may prefer slash pagination.
+  if (page > 1) {
+    variants.push(`${baseUrl.replace(/\/$/, '')}?page=${page}`);
+  }
+
+  return [...new Set(variants)];
 }
 
 function readerUrl(url) {
@@ -30,57 +43,66 @@ function readerUrl(url) {
 }
 
 async function fetchFilmbazePage(baseUrl, page) {
-  const url = pageUrl(baseUrl, page);
+  let lastError = null;
 
-  // 1) Normal HTML/Inertia page.
-  try {
-    const response = await getWithRetry(url, {
-      headers: {
-        Accept: 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'
+  for (const url of pageUrls(baseUrl, page)) {
+    // 1) Normal HTML/Inertia page.
+    try {
+      const response = await getWithRetry(url, {
+        headers: {
+          Accept: 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'
+        }
+      });
+
+      if (typeof response.data === 'object') return response.data;
+
+      const htmlPayload = extractJsonFromHtml(String(response.data || ''));
+      if (htmlPayload) return htmlPayload;
+    } catch (error) {
+      lastError = error;
+      console.error('[filmbaze] html fetch failed:', url, error.message);
+    }
+
+    // 2) Inertia JSON.
+    try {
+      const response = await getWithRetry(url, {
+        headers: {
+          'X-Inertia': 'true',
+          'X-Requested-With': 'XMLHttpRequest',
+          Accept: 'application/json'
+        }
+      });
+
+      if (typeof response.data === 'object') return response.data;
+
+      const jsonPayload = extractJsonFromHtml(String(response.data || ''));
+      if (jsonPayload) return jsonPayload;
+    } catch (error) {
+      lastError = error;
+      console.error('[filmbaze] inertia fetch failed:', url, error.message);
+    }
+
+    // 3) Reader fallback.
+    if (USE_READER_FALLBACK) {
+      try {
+        const fallback = readerUrl(url);
+        const response = await getWithRetry(fallback, {
+          headers: {
+            Accept: 'text/plain,text/markdown,*/*'
+          }
+        });
+
+        return {
+          __readerText: String(response.data || '')
+        };
+      } catch (error) {
+        lastError = error;
+        console.error('[filmbaze] reader fetch failed:', url, error.message);
       }
-    });
-
-    if (typeof response.data === 'object') return response.data;
-
-    const htmlPayload = extractJsonFromHtml(String(response.data || ''));
-    if (htmlPayload) return htmlPayload;
-  } catch (error) {
-    console.error('[filmbaze] html fetch failed:', url, error.message);
+    }
   }
 
-  // 2) Inertia JSON.
-  try {
-    const response = await getWithRetry(url, {
-      headers: {
-        'X-Inertia': 'true',
-        'X-Requested-With': 'XMLHttpRequest',
-        Accept: 'application/json'
-      }
-    });
-
-    if (typeof response.data === 'object') return response.data;
-
-    const jsonPayload = extractJsonFromHtml(String(response.data || ''));
-    if (jsonPayload) return jsonPayload;
-  } catch (error) {
-    console.error('[filmbaze] inertia fetch failed:', url, error.message);
-  }
-
-  // 3) Reader fallback.
-  if (USE_READER_FALLBACK) {
-    const fallback = readerUrl(url);
-    const response = await getWithRetry(fallback, {
-      headers: {
-        Accept: 'text/plain,text/markdown,*/*'
-      }
-    });
-
-    return {
-      __readerText: String(response.data || '')
-    };
-  }
-
-  throw new Error(`Could not fetch Filmbáze page ${url}`);
+  throw lastError || new Error(`Could not fetch Filmbáze page ${baseUrl} page ${page}`);
 }
 
 function extractJsonFromHtml(html) {
@@ -176,9 +198,20 @@ async function fetchChannelItems({ url, type, maxItems }) {
       .map(item => normalizeFilmbazeTitle(item, type, url))
       .filter(Boolean);
 
+    console.log(`[filmbaze] ${type} page ${nextPage}: ${pageItems.length} items`);
     all.push(...pageItems);
 
-    nextPage = content.next_page || null;
+    const received = pageItems.length;
+    const perPage = Number(content.per_page || 50);
+    const explicitNext = content.next_page || null;
+
+    if (explicitNext) {
+      nextPage = explicitNext;
+    } else if (received >= perPage && pages < MAX_PAGES) {
+      nextPage = nextPage + 1;
+    } else {
+      nextPage = null;
+    }
   }
 
   return dedupe(all).slice(0, maxItems);

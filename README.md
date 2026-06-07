@@ -140,3 +140,16 @@ Katalóg:
 ```text
 /catalog/series/filmbaze-serialy.json
 ```
+
+
+## v2.4 stránkovanie
+
+Doplnené robustnejšie stránkovanie:
+
+```text
+?page=2
+?p=2
+fallback podľa per_page
+```
+
+Addon načíta ďalšie stránky, keď `content.next_page` existuje alebo keď stránka vráti plný počet položiek.

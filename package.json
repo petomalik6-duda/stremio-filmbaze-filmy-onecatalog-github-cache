@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "type": "module",
-  "description": "Filmbaze JSON addon fixed for series content.data is_series true.",
+  "description": "Filmbaze JSON addon with improved pagination for movies and series.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
