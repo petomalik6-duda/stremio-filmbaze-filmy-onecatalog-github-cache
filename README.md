@@ -181,3 +181,15 @@ Filmbáze na ďalších stránkach môže vracať:
 ```
 
 Táto verzia podporuje `content.data` aj `pagination.data`.
+
+
+## v2.7 Channel ID pagination
+
+Pridané channel ID z Filmbáze JSON:
+
+```env
+FILMBAZE_MOVIES_CHANNEL_ID=48884
+FILMBAZE_SERIES_CHANNEL_ID=50427
+```
+
+Addon skúša aj interné API/channel URL varianty, pretože ďalšie stránky v prehliadači vracajú `pagination.data`.
