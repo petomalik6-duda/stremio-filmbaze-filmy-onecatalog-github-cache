@@ -30,8 +30,8 @@ const catalogs = [
 ];
 
 const manifest = {
-  id: 'cz.filmbaze.filmy.only.v100',
-  version: '1.0.0',
+  id: 'cz.filmbaze.filmy.only.v101',
+  version: '1.0.1',
   name: 'Filmbáze CZ/SK filmy',
   description: 'Jeden katalóg CZ/SK dabovaných filmov z Filmbáze.sk. Cache sa ukladá do GitHub repozitára.',
   logo: `${PUBLIC_URL}/logo.png`,

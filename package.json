@@ -1,7 +1,7 @@
 {
   "name": "stremio-filmbaze-filmy",
-  "version": "1.0.0",
-  "description": "One-catalog Filmbaze.cz Stremio addon with GitHub cache, TMDB enrichment and strict movie filter.",
+  "version": "1.0.1",
+  "description": "Filmbaze one-catalog addon with reader fallback 422 fix.",
   "type": "module",
   "main": "server.js",
   "scripts": {

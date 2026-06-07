@@ -13,7 +13,11 @@ const REQUIRE_YEAR_FOR_LOCAL_ITEMS = String(process.env.REQUIRE_YEAR_FOR_LOCAL_I
 function absUrl(href, base) { if (!href) return null; try { return new URL(href, base).toString(); } catch { return null; } }
 function clean(text) { return String(text || '').replace(/\s+/g, ' ').trim(); }
 function today() { return new Date().toISOString().slice(0, 10); }
-function readerUrl(url) { return `https://r.jina.ai/http://r.jina.ai/http://${url}`; }
+function readerUrl(url) {
+  // Correct Jina Reader format. It expects original URL after https://r.jina.ai/http://r.jina.ai/http:// is NOT valid.
+  // For https://example.com/path => https://r.jina.ai/http://r.jina.ai/http://example.com/path would fail with 422.
+  return `https://r.jina.ai/http://r.jina.ai/http://${url}`;
+}
 
 function parseDate(text) {
   const t = clean(text);
@@ -91,21 +95,52 @@ function parseTitleParts(raw) {
   return { name: local || name, originalName: rest.join(' / '), year, lang: langFromText(raw), type: 'movie' };
 }
 
+function readerUrls(url) {
+  const noScheme = String(url).replace(/^https?:\/\//i, '');
+  return [
+    `https://r.jina.ai/http://r.jina.ai/http://${noScheme}`,
+    `https://r.jina.ai/http://r.jina.ai/http://https://${noScheme}`
+  ];
+}
+
 async function fetchPage(url) {
-  console.log('[scrape] fetching direct', url);
-  try {
-    const { data } = await getWithRetry(url, { headers: { 'User-Agent': UA } });
-    console.log('[scrape] direct fetched', url, 'bytes=', String(data || '').length);
-    return { data, mode: 'direct', url };
-  } catch (e) {
-    console.error('[scrape] direct failed:', e.message);
-    if (!USE_READER_FALLBACK) throw e;
+  const urls = [
+    url,
+    url.replace('https://www.filmbaze.cz/', 'https://filmbaze.cz/'),
+    url.replace('https://filmbaze.cz/', 'https://www.filmbaze.cz/')
+  ].filter((value, index, arr) => value && arr.indexOf(value) === index);
+
+  let lastError = null;
+
+  for (const directUrl of urls) {
+    console.log('[scrape] fetching direct', directUrl);
+    try {
+      const { data } = await getWithRetry(directUrl, { headers: { 'User-Agent': UA } });
+      console.log('[scrape] direct fetched', directUrl, 'bytes=', String(data || '').length);
+      return { data, mode: 'direct', url: directUrl };
+    } catch (e) {
+      lastError = e;
+      console.error('[scrape] direct failed:', directUrl, e.message);
+    }
   }
-  const fallback = readerUrl(url);
-  console.log('[scrape] fetching reader fallback', fallback);
-  const { data } = await getWithRetry(fallback, { headers: { 'User-Agent': UA } });
-  console.log('[scrape] reader fetched bytes=', String(data || '').length);
-  return { data, mode: 'reader', url: fallback };
+
+  if (!USE_READER_FALLBACK) throw lastError;
+
+  for (const sourceUrl of urls) {
+    for (const fallback of readerUrls(sourceUrl)) {
+      console.log('[scrape] fetching reader fallback', fallback);
+      try {
+        const { data } = await getWithRetry(fallback, { headers: { 'User-Agent': UA } });
+        console.log('[scrape] reader fetched bytes=', String(data || '').length);
+        return { data, mode: 'reader', url: fallback };
+      } catch (e) {
+        lastError = e;
+        console.error('[scrape] reader failed:', fallback, e.message);
+      }
+    }
+  }
+
+  throw lastError;
 }
 
 function extractLinks($, el, baseUrl) {
