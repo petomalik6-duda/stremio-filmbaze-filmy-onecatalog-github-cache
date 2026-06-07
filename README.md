@@ -125,3 +125,18 @@ Ak Filmbáze nevráti `content.data`, addon skúsi:
 3. textový reader fallback.
 
 Tým sa nemá stať, že refresh skončí s `0 items`, pokiaľ stránka obsahuje aspoň čitateľný zoznam titulov.
+
+
+## v2.3 oprava seriálov
+
+Seriálový kanál Filmbáze používa `content.data[]` s `is_series: true`. Táto verzia to ukladá ako:
+
+```text
+type: series
+```
+
+Katalóg:
+
+```text
+/catalog/series/filmbaze-serialy.json
+```

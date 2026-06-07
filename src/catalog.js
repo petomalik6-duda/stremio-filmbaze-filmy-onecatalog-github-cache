@@ -34,7 +34,7 @@ function isStale() {
 }
 
 function localId(item) {
-  return `filmbaze:${item.id}`;
+  return `filmbaze:${item.type}:${item.id}`;
 }
 
 function toMeta(item, tmdb = null) {
@@ -47,7 +47,7 @@ function toMeta(item, tmdb = null) {
 
   return {
     id,
-    type: 'movie',
+    type: item.type,
     name: tmdb?.name || item.name,
     poster,
     background,
@@ -84,7 +84,7 @@ async function enrichItem(item) {
   if (ENRICH_LIMIT <= 0) return toMeta(item);
 
   try {
-    const tmdb = await tmdbSearch(item.name, item.year);
+    const tmdb = await tmdbSearch(item.name, item.year, item.type);
     return toMeta(item, tmdb);
   } catch (error) {
     console.error('[tmdb] enrich failed:', item.name, error.message);
@@ -233,11 +233,19 @@ export async function getMetaById(id) {
 }
 
 export function filterCatalog(metas, id, type) {
-  if (id !== 'filmbaze-filmy' || type !== 'movie') return [];
+  if (id === 'filmbaze-filmy' && type === 'movie') {
+    return [...metas]
+      .filter(meta => meta.type === 'movie')
+      .sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
+  }
 
-  return [...metas]
-    .filter(meta => meta.type === 'movie')
-    .sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
+  if (id === 'filmbaze-serialy' && type === 'series') {
+    return [...metas]
+      .filter(meta => meta.type === 'series')
+      .sort((a, b) => String(b._addon?.dateAdded || '').localeCompare(String(a._addon?.dateAdded || '')));
+  }
+
+  return [];
 }
 
 export function searchCatalog(metas, query) {

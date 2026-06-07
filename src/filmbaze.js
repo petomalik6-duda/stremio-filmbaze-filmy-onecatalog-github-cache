@@ -32,11 +32,11 @@ function readerUrl(url) {
 async function fetchFilmbazePage(baseUrl, page) {
   const url = pageUrl(baseUrl, page);
 
-  // 1) Skús normálne HTML. Filmbáze často vloží JSON do Inertia data-page.
+  // 1) Normal HTML/Inertia page.
   try {
     const response = await getWithRetry(url, {
       headers: {
-        'Accept': 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'
+        Accept: 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'
       }
     });
 
@@ -48,13 +48,13 @@ async function fetchFilmbazePage(baseUrl, page) {
     console.error('[filmbaze] html fetch failed:', url, error.message);
   }
 
-  // 2) Skús Inertia JSON.
+  // 2) Inertia JSON.
   try {
     const response = await getWithRetry(url, {
       headers: {
         'X-Inertia': 'true',
         'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json'
+        Accept: 'application/json'
       }
     });
 
@@ -66,12 +66,12 @@ async function fetchFilmbazePage(baseUrl, page) {
     console.error('[filmbaze] inertia fetch failed:', url, error.message);
   }
 
-  // 3) Textový reader fallback.
+  // 3) Reader fallback.
   if (USE_READER_FALLBACK) {
     const fallback = readerUrl(url);
     const response = await getWithRetry(fallback, {
       headers: {
-        'Accept': 'text/plain,text/markdown,*/*'
+        Accept: 'text/plain,text/markdown,*/*'
       }
     });
 
@@ -95,7 +95,6 @@ function extractJsonFromHtml(html) {
     }
   }
 
-  // Filmbáze/Laravel môže mať JSON aj v inom atribúte.
   const dataPage = $('[data-page]').first().attr('data-page');
   if (dataPage) {
     try {
@@ -123,15 +122,24 @@ function decodeHtml(value) {
 }
 
 function getContent(payload) {
-  if (payload?.content?.data) return payload.content;
-  if (payload?.props?.content?.data) return payload.props.content;
-  if (payload?.page?.props?.content?.data) return payload.page.props.content;
+  // This is the important part for both uploaded examples:
+  // payload.content.data contains movies or series.
+  if (payload?.content?.data && Array.isArray(payload.content.data)) return payload.content;
 
+  // Inertia variants.
+  if (payload?.props?.content?.data && Array.isArray(payload.props.content.data)) return payload.props.content;
+  if (payload?.page?.props?.content?.data && Array.isArray(payload.page.props.content.data)) return payload.page.props.content;
+
+  // Deep fallback.
   const stack = [payload];
   while (stack.length) {
     const current = stack.shift();
     if (!current || typeof current !== 'object') continue;
-    if (Array.isArray(current.data) && current.data.length && current.data[0]?.name) return current;
+
+    if (Array.isArray(current.data) && current.data.length && current.data[0]?.name) {
+      return current;
+    }
+
     for (const value of Object.values(current)) {
       if (value && typeof value === 'object') stack.push(value);
     }
@@ -191,7 +199,6 @@ function parseReaderText(text, type, sourceUrl) {
     const poster = line.match(/Poster for\s+(.+)/i);
     if (poster) name = cleanTitle(poster[1]);
 
-    // Reader často vypíše samostatné riadky titulov.
     if (!name && isLikelyTitleLine(line)) {
       name = cleanTitle(line);
     }
@@ -275,8 +282,14 @@ export async function fetchFilmbazeItems() {
 function normalizeFilmbazeTitle(item, requestedType, sourceUrl) {
   if (!item) return null;
 
-  const isSeries = Boolean(item.is_series) || requestedType === 'series';
-  if (requestedType === 'movie' && isSeries) return null;
+  const realIsSeries = Boolean(item.is_series);
+  const type = requestedType === 'series' ? 'series' : 'movie';
+
+  // Movies channel must not include series.
+  if (requestedType === 'movie' && realIsSeries) return null;
+
+  // Series channel must include is_series:true. This fixes the uploaded series JSON.
+  if (requestedType === 'series' && !realIsSeries) return null;
 
   const name = clean(item.name);
   if (!name) return null;
@@ -290,7 +303,7 @@ function normalizeFilmbazeTitle(item, requestedType, sourceUrl) {
     source: 'Filmbáze',
     id: item.id,
     name,
-    type: requestedType === 'series' ? 'series' : 'movie',
+    type,
     year,
     releaseDate,
     poster: item.poster || null,
@@ -301,7 +314,7 @@ function normalizeFilmbazeTitle(item, requestedType, sourceUrl) {
     status: item.status || '',
     certification: item.certification || '',
     dateAdded: releaseDate ? String(releaseDate).slice(0, 10) : '',
-    lang: requestedType === 'series' ? 'CZ' : 'CZ/SK',
+    lang: type === 'series' ? 'CZ' : 'CZ/SK',
     primaryVideo: item.primary_video || null,
     sourceUrl
   };

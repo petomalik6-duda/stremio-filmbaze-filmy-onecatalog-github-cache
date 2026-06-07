@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "type": "module",
-  "description": "Filmbaze JSON addon with robust HTML/Inertia/reader fallback for movies and series.",
+  "description": "Filmbaze JSON addon fixed for series content.data is_series true.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
