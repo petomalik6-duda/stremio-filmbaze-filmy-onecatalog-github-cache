@@ -42,8 +42,8 @@ const catalogs = [
 ];
 
 const manifest = {
-  id: 'cz.filmbaze.json.filmy.serialy.v270',
-  version: '2.7.0',
+  id: 'cz.filmbaze.json.filmy.serialy.v280',
+  version: '2.8.0',
   name: 'Filmbáze CZ/SK filmy a seriály',
   description: 'Jeden katalóg filmov s CZ/SK dabingom z Filmbáze JSON dát.',
   resources: ['catalog', 'meta'],

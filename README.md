@@ -193,3 +193,14 @@ FILMBAZE_SERIES_CHANNEL_ID=50427
 ```
 
 Addon skúša aj interné API/channel URL varianty, pretože ďalšie stránky v prehliadači vracajú `pagination.data`.
+
+
+## v2.8 skutočné Filmbáze API
+
+Použitý endpoint:
+
+```text
+https://filmbaze.cz/api/v1/channel/48884?returnContentOnly=true&restriction=&order=channelables.created_at:desc&perPage=50&query=&page=2
+```
+
+Filmy používajú channel `48884`, seriály `50427`.

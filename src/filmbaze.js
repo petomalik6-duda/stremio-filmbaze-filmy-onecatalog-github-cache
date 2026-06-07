@@ -32,11 +32,25 @@ export function getFilmbazeDebug() {
   return lastDebug;
 }
 
+function channelApiUrl(type, page) {
+  const channelId = type === 'series' ? SERIES_CHANNEL_ID : MOVIES_CHANNEL_ID;
+  const u = new URL(`https://filmbaze.cz/api/v1/channel/${channelId}`);
+  u.searchParams.set('returnContentOnly', 'true');
+  u.searchParams.set('restriction', '');
+  u.searchParams.set('order', 'channelables.created_at:desc');
+  u.searchParams.set('perPage', '50');
+  u.searchParams.set('query', '');
+  u.searchParams.set('page', String(page));
+  return u.toString();
+}
+
 function pageUrls(baseUrl, page, type) {
   const variants = [];
-  const channelId = type === 'series' ? SERIES_CHANNEL_ID : MOVIES_CHANNEL_ID;
 
-  // Public route variants
+  // Correct Filmbáze API discovered from browser Network.
+  variants.push(channelApiUrl(type, page));
+
+  // Public route variants as fallback.
   const a = new URL(baseUrl);
   if (page > 1) a.searchParams.set('page', String(page));
   variants.push(a.toString());
@@ -49,31 +63,6 @@ function pageUrls(baseUrl, page, type) {
   if (page > 1) c.searchParams.set('p', String(page));
   variants.push(c.toString());
 
-  // Likely Filmbáze internal channel/API route variants.
-  // These are tried because browser payload for later pages returns { pagination: { data: [...] } }.
-  const apiBases = [
-    `https://filmbaze.cz/api/channels/${channelId}`,
-    `https://filmbaze.cz/api/channel/${channelId}`,
-    `https://filmbaze.cz/channels/${channelId}`,
-    `https://filmbaze.cz/channel/${channelId}`,
-    `https://filmbaze.cz/api/v1/channels/${channelId}`,
-    `https://filmbaze.cz/api/v1/channel/${channelId}`
-  ];
-
-  for (const apiBase of apiBases) {
-    const u = new URL(apiBase);
-    u.searchParams.set('page', String(page));
-    variants.push(u.toString());
-
-    const p = new URL(apiBase);
-    p.searchParams.set('pagination_page', String(page));
-    variants.push(p.toString());
-
-    const cp = new URL(apiBase);
-    cp.searchParams.set('content_page', String(page));
-    variants.push(cp.toString());
-  }
-
   return [...new Set(variants)];
 }
 
@@ -85,6 +74,25 @@ async function fetchFilmbazePage(baseUrl, page, type) {
   let lastError = null;
 
   for (const url of pageUrls(baseUrl, page, type)) {
+    // 0) Direct Filmbáze API JSON.
+    if (url.includes('/api/v1/channel/')) {
+      try {
+        const response = await getWithRetry(url, {
+          headers: {
+            'Accept': 'application/json',
+            'Referer': baseUrl
+          }
+        });
+
+        if (typeof response.data === 'object') {
+          return { payload: response.data, mode: 'channel-api', url };
+        }
+      } catch (error) {
+        lastError = error;
+        logPageError(type, page, 'channel-api', url, error.message);
+      }
+    }
+
     // 1) Inertia partial JSON first. This is important for pagination.
     try {
       const response = await getWithRetry(url, {
