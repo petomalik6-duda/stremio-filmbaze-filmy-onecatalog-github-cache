@@ -52,6 +52,9 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_LANGUAGE: cs-CZ
           ENRICH_LIMIT: 50
+          ENABLE_TMDB_EPISODES: "true"
+          MAX_EPISODE_SEASONS: 20
+          MAX_EPISODES_PER_SERIES: 500
           FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
 
       - name: Commit updated cache
