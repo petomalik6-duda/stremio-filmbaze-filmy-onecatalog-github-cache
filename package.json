@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
-  "description": "Stremio addon for Filmbaze CZ/SK dubbed movies and Czech series using Filmbaze JSON channel data.",
+  "description": "Filmbaze JSON addon with robust HTML/Inertia/reader fallback for movies and series.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

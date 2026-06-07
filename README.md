@@ -115,3 +115,13 @@ Endpoint:
 ```text
 /catalog/series/filmbaze-serialy.json
 ```
+
+
+## v2.2 fallback
+
+Ak Filmbáze nevráti `content.data`, addon skúsi:
+1. čisté HTML s Inertia `data-page`,
+2. Inertia JSON,
+3. textový reader fallback.
+
+Tým sa nemá stať, že refresh skončí s `0 items`, pokiaľ stránka obsahuje aspoň čitateľný zoznam titulov.
