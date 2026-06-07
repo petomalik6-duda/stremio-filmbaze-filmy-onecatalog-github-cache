@@ -1,4 +1,4 @@
-name: Import cache from running addon URL
+name: Import cache from running Filmbáze addon URL
 
 on:
   workflow_dispatch:
@@ -36,6 +36,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add data/catalog-cache.json
-          git diff --cached --quiet && echo "No changes" || git commit -m "Import current addon cache"
+          git diff --cached --quiet && echo "No changes" || git commit -m "Import current Filmbáze cache"
           git pull --rebase --autostash
           git push

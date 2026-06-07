@@ -8,8 +8,7 @@ on:
         required: false
         default: "false"
   schedule:
-    # každý deň o 03:20 UTC
-    - cron: "20 3 * * *"
+    - cron: "25 3 * * *"
 
 permissions:
   contents: write
@@ -37,27 +36,21 @@ jobs:
         env:
           PORT: 10000
           PUBLIC_URL: https://example.onrender.com
+          FILMBAZE_MOVIES_URL: https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
+          FILMBAZE_SERIES_URL: https://filmbaze.cz/oblibene-serialy-v-cestine
+          MAX_PAGES: 30
+          MAX_ITEMS: 1200
+          MAX_SERIES_ITEMS: 1200
           AUTO_REFRESH: "false"
           REFRESH_ON_START: "false"
           CACHE_TTL_HOURS: 24
-          MAX_ITEMS: 1000
-          MAX_SERIES: 0
-          DISABLE_SERIES: "true"
-          REQUEST_TIMEOUT_MS: 15000
-          HTTP_RETRIES: 1
-          REFRESH_LOCK_TIMEOUT_MS: 180000
-          USE_READER_FALLBACK: "true"
+          REQUEST_TIMEOUT_MS: 20000
+          HTTP_RETRIES: 2
           ENABLE_TMDB: ${{ secrets.TMDB_API_KEY != '' && 'true' || 'false' }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_LANGUAGE: cs-CZ
           ENRICH_LIMIT: 50
-          CSFD_SEARCH_FALLBACK: "false"
-          STRICT_MOVIE_FILTER: "true"
-          REQUIRE_YEAR_FOR_LOCAL_ITEMS: "true"
-          HIDE_UNMATCHED_ITEMS: "true"
-          HIDE_UNMATCHED_ITEMS: "true"
           FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
-          MOVIES_SOURCE_URL: https://www.filmbaze.sk/nove-filmy/nove-filmy-s-dabingom-cz-sk-zistite-co-pribudlo-dnes
-          SERIES_SOURCE_URL: ""
 
       - name: Commit updated cache
         run: |
