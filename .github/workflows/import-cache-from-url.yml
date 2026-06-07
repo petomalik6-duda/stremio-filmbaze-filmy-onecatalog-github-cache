@@ -1,0 +1,41 @@
+name: Import cache from running addon URL
+
+on:
+  workflow_dispatch:
+    inputs:
+      cache_url:
+        description: "URL to /cache.json, e.g. https://your-app.onrender.com/cache.json"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  import-cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download current cache
+        run: |
+          mkdir -p data
+          curl -L "${{ github.event.inputs.cache_url }}" -o /tmp/cache-response.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const raw = JSON.parse(fs.readFileSync('/tmp/cache-response.json', 'utf8'));
+          const out = raw.metas
+            ? { at: Date.now(), sourceHash: raw.sourceHash || '', items: raw.items || [], metas: raw.metas || [], lastError: null }
+            : raw;
+          fs.writeFileSync('data/catalog-cache.json', JSON.stringify(out, null, 2));
+          console.log('Imported metas:', (out.metas || []).length);
+          NODE
+
+      - name: Commit cache
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data/catalog-cache.json
+          git diff --cached --quiet && echo "No changes" || git commit -m "Import current addon cache"
+          git pull --rebase --autostash
+          git push
