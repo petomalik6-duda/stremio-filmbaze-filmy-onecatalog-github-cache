@@ -52,6 +52,8 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_LANGUAGE: cs-CZ
           ENRICH_LIMIT: 50
+          ENRICH_MOVIE_LIMIT: 50
+          ENRICH_SERIES_LIMIT: 150
           ENABLE_TMDB_EPISODES: "true"
           MAX_EPISODE_SEASONS: 20
           MAX_EPISODES_PER_SERIES: 500
