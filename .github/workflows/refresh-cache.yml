@@ -38,6 +38,8 @@ jobs:
           PUBLIC_URL: https://example.onrender.com
           FILMBAZE_MOVIES_URL: https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
           FILMBAZE_SERIES_URL: https://filmbaze.cz/oblibene-serialy-v-cestine
+          FILMBAZE_MOVIES_CHANNEL_ID: 48884
+          FILMBAZE_SERIES_CHANNEL_ID: 50427
           MAX_PAGES: 30
           MAX_ITEMS: 1200
           MAX_SERIES_ITEMS: 1200
