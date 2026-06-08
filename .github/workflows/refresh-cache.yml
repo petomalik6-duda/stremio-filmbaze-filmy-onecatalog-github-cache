@@ -1,69 +1,99 @@
 name: Refresh Filmbáze cache
 
 on:
-  workflow_dispatch:
-    inputs:
-      force_full:
-        description: "Run full refresh? true/false"
-        required: false
-        default: "false"
-  schedule:
-    - cron: "25 3 * * *"
+workflow_dispatch:
+inputs:
+force_full:
+description: "Run full refresh? true/false"
+required: false
+default: "false"
+
+schedule:
+# Každý deň o 03:25 UTC
+# Slovensko: cca 05:25 v lete / 04:25 v zime
+- cron: "25 3 * * *"
 
 permissions:
-  contents: write
+contents: write
 
 jobs:
-  refresh-cache:
-    runs-on: ubuntu-latest
+refresh-cache:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: true
+```
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+    with:
+      persist-credentials: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 20
 
-      - name: Install dependencies
-        run: npm install --omit=dev
+  - name: Install dependencies
+    run: npm install --omit=dev
 
-      - name: Refresh cache
-        run: npm run refresh
-        env:
-          PORT: 10000
-          PUBLIC_URL: https://example.onrender.com
-          FILMBAZE_MOVIES_URL: https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
-          FILMBAZE_SERIES_URL: https://filmbaze.cz/oblibene-serialy-v-cestine
-          FILMBAZE_MOVIES_CHANNEL_ID: 48884
-          FILMBAZE_SERIES_CHANNEL_ID: 50427
-          MAX_PAGES: 30
-          MAX_ITEMS: 1200
-          MAX_SERIES_ITEMS: 1200
-          AUTO_REFRESH: "false"
-          REFRESH_ON_START: "false"
-          CACHE_TTL_HOURS: 24
-          REQUEST_TIMEOUT_MS: 20000
-          HTTP_RETRIES: 2
-          ENABLE_TMDB: ${{ secrets.TMDB_API_KEY != '' && 'true' || 'false' }}
-          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          TMDB_LANGUAGE: cs-CZ
-          ENRICH_LIMIT: 50
-          ENRICH_MOVIE_LIMIT: 50
-          ENRICH_SERIES_LIMIT: 150
-          ENABLE_TMDB_EPISODES: "true"
-          MAX_EPISODE_SEASONS: 20
-          MAX_EPISODES_PER_SERIES: 500
-          FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
+  - name: Refresh cache
+    run: npm run refresh
+    env:
+      PORT: 10000
+      PUBLIC_URL: https://example.onrender.com
 
-      - name: Commit updated cache
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add data/catalog-cache.json
-          git diff --cached --quiet && echo "No cache changes" || git commit -m "Refresh Filmbáze cache"
-          git pull --rebase --autostash
-          git push
+      AUTO_REFRESH: "false"
+      REFRESH_ON_START: "false"
+      CACHE_TTL_HOURS: 24
+
+      FILMBAZE_MOVIES_URL: https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu
+      FILMBAZE_SERIES_URL: https://filmbaze.cz/oblibene-serialy-v-cestine
+      FILMBAZE_MOVIES_CHANNEL_ID: 48884
+      FILMBAZE_SERIES_CHANNEL_ID: 50427
+
+      MAX_PAGES: 50
+      MAX_ITEMS: 2000
+      MAX_SERIES_ITEMS: 2000
+
+      REQUEST_TIMEOUT_MS: 20000
+      HTTP_RETRIES: 2
+      REFRESH_LOCK_TIMEOUT_MS: 900000
+
+      ENABLE_TMDB: ${{ secrets.TMDB_API_KEY != '' && 'true' || 'false' }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_LANGUAGE: cs-CZ
+      TMDB_STRICT_MATCH: "true"
+      TMDB_YEAR_TOLERANCE: 1
+      TMDB_RUNTIME_TOLERANCE: 15
+
+      ENABLE_FILMBAZE_DETAIL: "true"
+      FILMBAZE_DETAIL_LIMIT: 2000
+
+      ENRICH_LIMIT: 50
+      ENRICH_MOVIE_LIMIT: 50
+      ENRICH_SERIES_LIMIT: 20
+
+      ENABLE_TMDB_EPISODES: "true"
+      MAX_EPISODE_SEASONS: 20
+      MAX_EPISODES_PER_SERIES: 500
+
+      STRICT_MOVIE_FILTER: "true"
+      USE_READER_FALLBACK: "true"
+
+      FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
+
+  - name: Commit updated cache
+    run: |
+      git config user.name "github-actions"
+      git config user.email "github-actions@github.com"
+
+      git add data/catalog-cache.json
+
+      if git diff --cached --quiet; then
+        echo "No cache changes"
+        exit 0
+      fi
+
+      git commit -m "Refresh Filmbáze cache"
+      git pull --rebase --autostash
+      git push
+```
