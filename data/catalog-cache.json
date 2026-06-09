@@ -1,6 +1,6 @@
 {
-  "at": 1780903343282,
-  "sourceHash": "f4c26a6b842c9b5f00ae458bc89703dd5d0e660e",
+  "at": 1781013449252,
+  "sourceHash": "306a1e80abb49e320f2da54ffa23984ac0c3d54e",
   "items": [
     {
       "source": "Filmbáze",
@@ -24326,6 +24326,30 @@
     },
     {
       "source": "Filmbáze",
+      "id": 728136,
+      "name": "1992",
+      "type": "series",
+      "year": 2024,
+      "releaseDate": "2024-12-12T23:00:00.000000Z",
+      "poster": "https://image.tmdb.org/t/p/original/brg7JhfiUDZWsKCMLi7nQK4rAi3.jpg",
+      "background": "https://image.tmdb.org/t/p/w1280/tH339xcZPiktjK7uzOdWZ81x7PF.jpg",
+      "rating": 6.5,
+      "description": "Truchlící vdova, co přišla o manžela při explozi, a ztrápený bývalý polda jdou po sériovém vrahovi, který má zlověstné vazby na Expo ’92 v Seville.",
+      "status": "ended",
+      "certification": "ma",
+      "dateAdded": "2024-12-12",
+      "lang": "CZ",
+      "primaryVideo": null,
+      "imdbId": "tt27787158",
+      "tmdbId": 225467,
+      "originalName": "1992",
+      "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
+      "channelOrder": 0,
+      "page": 1,
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
       "id": 942425,
       "name": "My vás naučíme",
       "type": "series",
@@ -24344,7 +24368,7 @@
       "tmdbId": 276161,
       "originalName": "참교육",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 0,
+      "channelOrder": 1,
       "page": 1,
       "detailChecked": true
     },
@@ -24368,7 +24392,7 @@
       "tmdbId": 280511,
       "originalName": "The Witness",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 1,
+      "channelOrder": 2,
       "page": 1,
       "detailChecked": true
     },
@@ -24392,7 +24416,7 @@
       "tmdbId": 225647,
       "originalName": "Boots",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 2,
+      "channelOrder": 3,
       "page": 1,
       "detailChecked": true
     },
@@ -24416,7 +24440,7 @@
       "tmdbId": 252372,
       "originalName": "Achtsam morden",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 3,
+      "channelOrder": 4,
       "page": 1,
       "detailChecked": true
     },
@@ -24440,7 +24464,7 @@
       "tmdbId": 131835,
       "originalName": "Nautilus",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 4,
+      "channelOrder": 5,
       "page": 1,
       "detailChecked": true
     },
@@ -24464,7 +24488,7 @@
       "tmdbId": 224941,
       "originalName": "The Boroughs",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 5,
+      "channelOrder": 6,
       "page": 1,
       "detailChecked": true
     },
@@ -24487,7 +24511,7 @@
       "tmdbId": 321775,
       "originalName": "Monyová",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 6,
+      "channelOrder": 7,
       "page": 1,
       "detailChecked": true
     },
@@ -24511,7 +24535,7 @@
       "tmdbId": 308014,
       "originalName": "Berlín y la dama del armiño",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 7,
+      "channelOrder": 8,
       "page": 1,
       "detailChecked": true
     },
@@ -24536,7 +24560,7 @@
       "tmdbId": 300529,
       "originalName": "地獄に堕ちるわよ",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 8,
+      "channelOrder": 9,
       "page": 1,
       "detailChecked": true
     },
@@ -24560,7 +24584,7 @@
       "tmdbId": 223386,
       "originalName": "Man on Fire",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 9,
+      "channelOrder": 10,
       "page": 1,
       "detailChecked": true
     },
@@ -24585,7 +24609,7 @@
       "tmdbId": 234141,
       "originalName": "Was wir fürchten",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 10,
+      "channelOrder": 11,
       "page": 1,
       "detailChecked": true
     },
@@ -24609,7 +24633,7 @@
       "tmdbId": 202555,
       "originalName": "Daredevil: Born Again",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 11,
+      "channelOrder": 12,
       "page": 1,
       "detailChecked": true
     },
@@ -24633,7 +24657,7 @@
       "tmdbId": 290856,
       "originalName": "Marshals",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 12,
+      "channelOrder": 13,
       "page": 1,
       "detailChecked": true
     },
@@ -24657,7 +24681,7 @@
       "tmdbId": 254953,
       "originalName": "Rooster",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 13,
+      "channelOrder": 14,
       "page": 1,
       "detailChecked": true
     },
@@ -24682,7 +24706,7 @@
       "tmdbId": 273866,
       "originalName": "The Other Bennet Sister",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 14,
+      "channelOrder": 15,
       "page": 1,
       "detailChecked": true
     },
@@ -24706,7 +24730,7 @@
       "tmdbId": 250220,
       "originalName": "The Miniature Wife",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 15,
+      "channelOrder": 16,
       "page": 1,
       "detailChecked": true
     },
@@ -24730,7 +24754,7 @@
       "tmdbId": 157239,
       "originalName": "Alien: Earth",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 16,
+      "channelOrder": 17,
       "page": 1,
       "detailChecked": true
     },
@@ -24755,7 +24779,7 @@
       "tmdbId": 88384,
       "originalName": "Astrid et Raphaëlle",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 17,
+      "channelOrder": 18,
       "page": 1,
       "detailChecked": true
     },
@@ -24778,7 +24802,7 @@
       "tmdbId": 259837,
       "originalName": "원더풀스",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 18,
+      "channelOrder": 19,
       "page": 1,
       "detailChecked": true
     },
@@ -24803,7 +24827,7 @@
       "tmdbId": 127865,
       "originalName": "Kastanjemanden",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 19,
+      "channelOrder": 20,
       "page": 1,
       "detailChecked": true
     },
@@ -24827,7 +24851,7 @@
       "tmdbId": 262280,
       "originalName": "Legends",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 20,
+      "channelOrder": 21,
       "page": 1,
       "detailChecked": true
     },
@@ -24851,7 +24875,7 @@
       "tmdbId": 255055,
       "originalName": "Doc",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 21,
+      "channelOrder": 22,
       "page": 1,
       "detailChecked": true
     },
@@ -24875,7 +24899,7 @@
       "tmdbId": 287978,
       "originalName": "Recalé",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 22,
+      "channelOrder": 23,
       "page": 1,
       "detailChecked": true
     },
@@ -24900,7 +24924,7 @@
       "tmdbId": 289576,
       "originalName": "Sternstunde der Mörder",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 23,
+      "channelOrder": 24,
       "page": 1,
       "detailChecked": true
     },
@@ -24924,7 +24948,7 @@
       "tmdbId": 257994,
       "originalName": "Half Man",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 24,
+      "channelOrder": 25,
       "page": 1,
       "detailChecked": true
     },
@@ -24948,7 +24972,7 @@
       "tmdbId": 285838,
       "originalName": "기리고",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 25,
+      "channelOrder": 26,
       "page": 1,
       "detailChecked": true
     },
@@ -24973,7 +24997,7 @@
       "tmdbId": 124364,
       "originalName": "FROM",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 26,
+      "channelOrder": 27,
       "page": 1,
       "detailChecked": true
     },
@@ -24997,7 +25021,7 @@
       "tmdbId": 228305,
       "originalName": "Task",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 27,
+      "channelOrder": 28,
       "page": 1,
       "detailChecked": true
     },
@@ -25021,7 +25045,7 @@
       "tmdbId": 274039,
       "originalName": "Pád domu Kollerů",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 28,
+      "channelOrder": 29,
       "page": 1,
       "detailChecked": true
     },
@@ -25046,7 +25070,7 @@
       "tmdbId": 262262,
       "originalName": "Under Salt Marsh",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 29,
+      "channelOrder": 30,
       "page": 1,
       "detailChecked": true
     },
@@ -25070,7 +25094,7 @@
       "tmdbId": 249597,
       "originalName": "Harry Hole",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 30,
+      "channelOrder": 31,
       "page": 1,
       "detailChecked": true
     },
@@ -25095,7 +25119,7 @@
       "tmdbId": 292474,
       "originalName": "Emergência Radioativa",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 31,
+      "channelOrder": 32,
       "page": 1,
       "detailChecked": true
     },
@@ -25119,7 +25143,7 @@
       "tmdbId": 60059,
       "originalName": "Better Call Saul",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 32,
+      "channelOrder": 33,
       "page": 1,
       "detailChecked": true
     },
@@ -25143,7 +25167,7 @@
       "tmdbId": 314910,
       "originalName": "Asia Express",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 33,
+      "channelOrder": 34,
       "page": 1,
       "detailChecked": true
     },
@@ -25167,7 +25191,7 @@
       "tmdbId": 246412,
       "originalName": "The Copenhagen Test",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 34,
+      "channelOrder": 35,
       "page": 1,
       "detailChecked": true
     },
@@ -25191,7 +25215,7 @@
       "tmdbId": 213306,
       "originalName": "Cross",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 35,
+      "channelOrder": 36,
       "page": 1,
       "detailChecked": true
     },
@@ -25216,7 +25240,7 @@
       "tmdbId": 247704,
       "originalName": "Red Eye",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 36,
+      "channelOrder": 37,
       "page": 1,
       "detailChecked": true
     },
@@ -25241,7 +25265,7 @@
       "tmdbId": 93454,
       "originalName": "The Serpent",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 37,
+      "channelOrder": 38,
       "page": 1,
       "detailChecked": true
     },
@@ -25265,7 +25289,7 @@
       "tmdbId": 118357,
       "originalName": "1883",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 38,
+      "channelOrder": 39,
       "page": 1,
       "detailChecked": true
     },
@@ -25289,7 +25313,7 @@
       "tmdbId": 233079,
       "originalName": "How to Get to Heaven from Belfast",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 39,
+      "channelOrder": 40,
       "page": 1,
       "detailChecked": true
     },
@@ -25313,7 +25337,7 @@
       "tmdbId": 157741,
       "originalName": "Landman",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 40,
+      "channelOrder": 41,
       "page": 1,
       "detailChecked": true
     },
@@ -25337,7 +25361,7 @@
       "tmdbId": 270444,
       "originalName": "Ołowiane dzieci",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 41,
+      "channelOrder": 42,
       "page": 1,
       "detailChecked": true
     },
@@ -25360,7 +25384,7 @@
       "tmdbId": 259856,
       "originalName": "Salvador",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 42,
+      "channelOrder": 43,
       "page": 1,
       "detailChecked": true
     },
@@ -25384,7 +25408,7 @@
       "tmdbId": 274776,
       "originalName": "Unfamiliar",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 43,
+      "channelOrder": 44,
       "page": 1,
       "detailChecked": true
     },
@@ -25408,7 +25432,7 @@
       "tmdbId": 244431,
       "originalName": "Anthracite",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 44,
+      "channelOrder": 45,
       "page": 1,
       "detailChecked": true
     },
@@ -25433,7 +25457,7 @@
       "tmdbId": 271855,
       "originalName": "Sandokan",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 45,
+      "channelOrder": 46,
       "page": 1,
       "detailChecked": true
     },
@@ -25457,7 +25481,7 @@
       "tmdbId": 307534,
       "originalName": "Free Bert",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 46,
+      "channelOrder": 47,
       "page": 1,
       "detailChecked": true
     },
@@ -25481,7 +25505,7 @@
       "tmdbId": 246386,
       "originalName": "All Her Fault",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 47,
+      "channelOrder": 48,
       "page": 1,
       "detailChecked": true
     },
@@ -25506,7 +25530,7 @@
       "tmdbId": 262878,
       "originalName": "Reservatet",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 48,
+      "channelOrder": 49,
       "page": 1,
       "detailChecked": true
     },
@@ -25531,8 +25555,8 @@
       "tmdbId": 92916,
       "originalName": "Marianne",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 49,
-      "page": 1,
+      "channelOrder": 50,
+      "page": 2,
       "detailChecked": true
     },
     {
@@ -25556,7 +25580,7 @@
       "tmdbId": 83851,
       "originalName": "The Undoing",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 50,
+      "channelOrder": 51,
       "page": 2,
       "detailChecked": true
     },
@@ -25580,7 +25604,7 @@
       "tmdbId": 250505,
       "originalName": "Agatha Christie's Seven Dials",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 51,
+      "channelOrder": 52,
       "page": 2,
       "detailChecked": true
     },
@@ -25604,7 +25628,7 @@
       "tmdbId": 259731,
       "originalName": "HIS & HERS",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 52,
+      "channelOrder": 53,
       "page": 2,
       "detailChecked": true
     },
@@ -25628,7 +25652,7 @@
       "tmdbId": 310418,
       "originalName": "Metoda Markovič: Straka",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 53,
+      "channelOrder": 54,
       "page": 2,
       "detailChecked": true
     },
@@ -25653,7 +25677,7 @@
       "tmdbId": 85233,
       "originalName": "Chyłka",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 54,
+      "channelOrder": 55,
       "page": 2,
       "detailChecked": true
     },
@@ -25677,7 +25701,7 @@
       "tmdbId": 250307,
       "originalName": "The Pitt",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 55,
+      "channelOrder": 56,
       "page": 2,
       "detailChecked": true
     },
@@ -25701,7 +25725,7 @@
       "tmdbId": 277752,
       "originalName": "Ciudad de sombras",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 56,
+      "channelOrder": 57,
       "page": 2,
       "detailChecked": true
     },
@@ -25726,7 +25750,7 @@
       "tmdbId": 279601,
       "originalName": "Man vs Baby",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 57,
+      "channelOrder": 58,
       "page": 2,
       "detailChecked": true
     },
@@ -25750,7 +25774,7 @@
       "tmdbId": 66732,
       "originalName": "Stranger Things",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 58,
+      "channelOrder": 59,
       "page": 2,
       "detailChecked": true
     },
@@ -25774,7 +25798,7 @@
       "tmdbId": 249039,
       "originalName": "Black Rabbit",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 59,
+      "channelOrder": 60,
       "page": 2,
       "detailChecked": true
     },
@@ -25799,7 +25823,7 @@
       "tmdbId": 1407,
       "originalName": "Homeland",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 60,
+      "channelOrder": 61,
       "page": 2,
       "detailChecked": true
     },
@@ -25823,7 +25847,7 @@
       "tmdbId": 274979,
       "originalName": "El cuco de cristal",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 61,
+      "channelOrder": 62,
       "page": 2,
       "detailChecked": true
     },
@@ -25847,7 +25871,7 @@
       "tmdbId": 217528,
       "originalName": "Heweliusz",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 62,
+      "channelOrder": 63,
       "page": 2,
       "detailChecked": true
     },
@@ -25872,7 +25896,7 @@
       "tmdbId": 72755,
       "originalName": "Absentia",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 63,
+      "channelOrder": 64,
       "page": 2,
       "detailChecked": true
     },
@@ -25896,7 +25920,7 @@
       "tmdbId": 250504,
       "originalName": "The Beast in Me",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 64,
+      "channelOrder": 65,
       "page": 2,
       "detailChecked": true
     },
@@ -25921,7 +25945,7 @@
       "tmdbId": 247718,
       "originalName": "MobLand",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 65,
+      "channelOrder": 66,
       "page": 2,
       "detailChecked": true
     },
@@ -25946,7 +25970,7 @@
       "tmdbId": 274005,
       "originalName": "Štěstíčku naproti",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 66,
+      "channelOrder": 67,
       "page": 2,
       "detailChecked": true
     },
@@ -25970,7 +25994,7 @@
       "tmdbId": 262920,
       "originalName": "Legenden",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 67,
+      "channelOrder": 68,
       "page": 2,
       "detailChecked": true
     },
@@ -25995,7 +26019,7 @@
       "tmdbId": 136308,
       "originalName": "Stay Close",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 68,
+      "channelOrder": 69,
       "page": 2,
       "detailChecked": true
     },
@@ -26008,7 +26032,7 @@
       "releaseDate": "2025-10-02T22:00:00.000000Z",
       "poster": "https://image.tmdb.org/t/p/original/iDHzRALtZCzHVmx7uyjTTKvMAPB.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/cm2oUAPiTE1ERoYYOzzgloQw4YZ.jpg",
-      "rating": 7.2,
+      "rating": 7.3,
       "description": "Šokující skutečný příběh Eda Geina, nechvalně známého vraha a vykradače hrobů, který se stal předlohou pro nejznámější hollywoodské filmové zabijáky.",
       "status": "ended",
       "certification": "ma",
@@ -26019,7 +26043,7 @@
       "tmdbId": 286801,
       "originalName": "Monster: The Ed Gein Story",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 69,
+      "channelOrder": 70,
       "page": 2,
       "detailChecked": true
     },
@@ -26044,7 +26068,7 @@
       "tmdbId": 110316,
       "originalName": "今際の国のアリス",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 70,
+      "channelOrder": 71,
       "page": 2,
       "detailChecked": true
     },
@@ -26069,7 +26093,7 @@
       "tmdbId": 271587,
       "originalName": "Zrádci",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 71,
+      "channelOrder": 72,
       "page": 2,
       "detailChecked": true
     },
@@ -26094,7 +26118,7 @@
       "tmdbId": 34307,
       "originalName": "Shameless",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 72,
+      "channelOrder": 73,
       "page": 2,
       "detailChecked": true
     },
@@ -26118,7 +26142,7 @@
       "tmdbId": 248852,
       "originalName": "UNTAMED",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 73,
+      "channelOrder": 74,
       "page": 2,
       "detailChecked": true
     },
@@ -26142,7 +26166,7 @@
       "tmdbId": 274003,
       "originalName": "Bora",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 74,
+      "channelOrder": 75,
       "page": 2,
       "detailChecked": true
     },
@@ -26166,7 +26190,7 @@
       "tmdbId": 93405,
       "originalName": "오징어 게임",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 75,
+      "channelOrder": 76,
       "page": 2,
       "detailChecked": true
     },
@@ -26191,7 +26215,7 @@
       "tmdbId": 279283,
       "originalName": "Genombrottet",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 76,
+      "channelOrder": 77,
       "page": 2,
       "detailChecked": true
     },
@@ -26215,7 +26239,7 @@
       "tmdbId": 225385,
       "originalName": "Black Doves",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 77,
+      "channelOrder": 78,
       "page": 2,
       "detailChecked": true
     },
@@ -26239,7 +26263,7 @@
       "tmdbId": 216082,
       "originalName": "Zero Day",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 78,
+      "channelOrder": 79,
       "page": 2,
       "detailChecked": true
     },
@@ -26264,7 +26288,7 @@
       "tmdbId": 245703,
       "originalName": "Dept. Q",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 79,
+      "channelOrder": 80,
       "page": 2,
       "detailChecked": true
     },
@@ -26288,7 +26312,7 @@
       "tmdbId": 276413,
       "originalName": "Moloch",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 80,
+      "channelOrder": 81,
       "page": 2,
       "detailChecked": true
     },
@@ -26312,7 +26336,7 @@
       "tmdbId": 249042,
       "originalName": "Adolescence",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 81,
+      "channelOrder": 82,
       "page": 2,
       "detailChecked": true
     },
@@ -26336,7 +26360,7 @@
       "tmdbId": 226362,
       "originalName": "El Eternauta",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 82,
+      "channelOrder": 83,
       "page": 2,
       "detailChecked": true
     },
@@ -26360,7 +26384,7 @@
       "tmdbId": 220056,
       "originalName": "The Madness",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 83,
+      "channelOrder": 84,
       "page": 2,
       "detailChecked": true
     },
@@ -26385,7 +26409,7 @@
       "tmdbId": 241259,
       "originalName": "Baby Reindeer",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 84,
+      "channelOrder": 85,
       "page": 2,
       "detailChecked": true
     },
@@ -26410,7 +26434,7 @@
       "tmdbId": 212588,
       "originalName": "Furies",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 85,
+      "channelOrder": 86,
       "page": 2,
       "detailChecked": true
     },
@@ -26434,7 +26458,7 @@
       "tmdbId": 137893,
       "originalName": "Griselda",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 86,
+      "channelOrder": 87,
       "page": 2,
       "detailChecked": true
     },
@@ -26459,7 +26483,7 @@
       "tmdbId": 210232,
       "originalName": "The Watcher",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 87,
+      "channelOrder": 88,
       "page": 2,
       "detailChecked": true
     },
@@ -26484,7 +26508,7 @@
       "tmdbId": 69382,
       "originalName": "Svět pod hlavou",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 88,
+      "channelOrder": 89,
       "page": 2,
       "detailChecked": true
     },
@@ -26508,7 +26532,7 @@
       "tmdbId": 215866,
       "originalName": "American Primeval",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 89,
+      "channelOrder": 90,
       "page": 2,
       "detailChecked": true
     },
@@ -26532,7 +26556,7 @@
       "tmdbId": 66980,
       "originalName": "Babylon Berlin",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 90,
+      "channelOrder": 91,
       "page": 2,
       "detailChecked": true
     },
@@ -26557,7 +26581,7 @@
       "tmdbId": 92391,
       "originalName": "Bez vědomí",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 91,
+      "channelOrder": 92,
       "page": 2,
       "detailChecked": true
     },
@@ -26582,7 +26606,7 @@
       "tmdbId": 273970,
       "originalName": "Studna",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 92,
+      "channelOrder": 93,
       "page": 2,
       "detailChecked": true
     },
@@ -26606,7 +26630,7 @@
       "tmdbId": 280872,
       "originalName": "Kibic",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 93,
+      "channelOrder": 94,
       "page": 2,
       "detailChecked": true
     },
@@ -26631,7 +26655,7 @@
       "tmdbId": 103425,
       "originalName": "W głębi lasu",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 94,
+      "channelOrder": 95,
       "page": 2,
       "detailChecked": true
     },
@@ -26656,7 +26680,7 @@
       "tmdbId": 78107,
       "originalName": "Kruk",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 95,
+      "channelOrder": 96,
       "page": 2,
       "detailChecked": true
     },
@@ -26680,7 +26704,7 @@
       "tmdbId": 217529,
       "originalName": "Idź przodem, bracie",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 96,
+      "channelOrder": 97,
       "page": 2,
       "detailChecked": true
     },
@@ -26704,7 +26728,7 @@
       "tmdbId": 71912,
       "originalName": "The Witcher",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 97,
+      "channelOrder": 98,
       "page": 2,
       "detailChecked": true
     },
@@ -26729,7 +26753,7 @@
       "tmdbId": 81686,
       "originalName": "Rojst",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 98,
+      "channelOrder": 99,
       "page": 2,
       "detailChecked": true
     },
@@ -26754,8 +26778,8 @@
       "tmdbId": 68094,
       "originalName": "Belfer",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 99,
-      "page": 2,
+      "channelOrder": 100,
+      "page": 3,
       "detailChecked": true
     },
     {
@@ -26778,7 +26802,7 @@
       "tmdbId": 94406,
       "originalName": "Żmijowisko",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 100,
+      "channelOrder": 101,
       "page": 3,
       "detailChecked": true
     },
@@ -26802,7 +26826,7 @@
       "tmdbId": 67744,
       "originalName": "MINDHUNTER",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 101,
+      "channelOrder": 102,
       "page": 3,
       "detailChecked": true
     },
@@ -26827,7 +26851,7 @@
       "tmdbId": 37738,
       "originalName": "Okresní přebor",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 102,
+      "channelOrder": 103,
       "page": 3,
       "detailChecked": true
     },
@@ -26851,7 +26875,7 @@
       "tmdbId": 60574,
       "originalName": "Peaky Blinders",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 103,
+      "channelOrder": 104,
       "page": 3,
       "detailChecked": true
     },
@@ -26876,7 +26900,7 @@
       "tmdbId": 46648,
       "originalName": "True Detective",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 104,
+      "channelOrder": 105,
       "page": 3,
       "detailChecked": true
     },
@@ -26901,7 +26925,7 @@
       "tmdbId": 4613,
       "originalName": "Band of Brothers",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 105,
+      "channelOrder": 106,
       "page": 3,
       "detailChecked": true
     },
@@ -26926,7 +26950,7 @@
       "tmdbId": 1418,
       "originalName": "The Big Bang Theory",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 106,
+      "channelOrder": 107,
       "page": 3,
       "detailChecked": true
     },
@@ -26950,7 +26974,7 @@
       "tmdbId": 73586,
       "originalName": "Yellowstone",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 107,
+      "channelOrder": 108,
       "page": 3,
       "detailChecked": true
     },
@@ -26975,7 +26999,7 @@
       "tmdbId": 79744,
       "originalName": "The Rookie",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 108,
+      "channelOrder": 109,
       "page": 3,
       "detailChecked": true
     },
@@ -27000,7 +27024,7 @@
       "tmdbId": 60600,
       "originalName": "Čtvrtá hvězda",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 109,
+      "channelOrder": 110,
       "page": 3,
       "detailChecked": true
     },
@@ -27025,7 +27049,7 @@
       "tmdbId": 242879,
       "originalName": "La última noche en Tremor",
       "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
-      "channelOrder": 110,
+      "channelOrder": 111,
       "page": 3,
       "detailChecked": true
     }
@@ -75680,6 +75704,124 @@
         "originalName": "Delirium",
         "detailChecked": true,
         "sourceTitle": "Delirium"
+      }
+    },
+    {
+      "id": "tt27787158",
+      "type": "series",
+      "name": "1992",
+      "poster": "https://image.tmdb.org/t/p/w500/brg7JhfiUDZWsKCMLi7nQK4rAi3.jpg",
+      "background": "https://image.tmdb.org/t/p/w1280/tH339xcZPiktjK7uzOdWZ81x7PF.jpg",
+      "description": "Truchlící vdova, co přišla o manžela při explozi, a ztrápený bývalý polda jdou po sériovém vrahovi, který má zlověstné vazby na Expo ’92 v Seville.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 728136",
+      "releaseInfo": "2024",
+      "year": 2024,
+      "genres": [
+        "Drama",
+        "Mysteriózní"
+      ],
+      "imdbRating": "6.5",
+      "cast": [
+        "Fernando Valdivielso",
+        "Marian Álvarez",
+        "Víctor Rivas",
+        "Carlos Santos",
+        "Álex Gadea",
+        "Jaime Ordóñez",
+        "Marieta Sánchez",
+        "Paz Vega"
+      ],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "tt27787158:1:1"
+      },
+      "videos": [
+        {
+          "id": "tt27787158:1:1",
+          "title": "Vzpomínáš si na Curra?",
+          "season": 1,
+          "episode": 1,
+          "released": "2024-12-13",
+          "overview": "Ampařin manžel zemře při výbuchu. Podivná figurka z místa ale naznačuje, že nešlo o nehodu. Amparo proto požádá o pomoc bývalého policistu, který bojuje se závislostí.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/HQEyUQd8S9bhbL8rR3e1ttov5d.jpg"
+        },
+        {
+          "id": "tt27787158:1:2",
+          "title": "Španělsko, které nám po sobě nechali",
+          "season": 1,
+          "episode": 2,
+          "released": "2024-12-13",
+          "overview": "Amparo je znechucená nečinností policie, a tak odjede do Sevilly sama. Tam ji kdosi varuje, aby nestrkala nos, kam nemá. Vrah se chystá znovu udeřit.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/jC1RobZuDlo2atL3ZwCIoAjIAaI.jpg"
+        },
+        {
+          "id": "tt27787158:1:3",
+          "title": "Sevilla je jako sen o nebi",
+          "season": 1,
+          "episode": 3,
+          "released": "2024-12-13",
+          "overview": "Amparo rozplétá 30 let starý skandální případ vydírání a odhaluje temnou stránku Expa. Spolu s Richim a Robledem hledá stopy ve starých archivech.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/dZhXNHqTpVuyOvfQdN9UJvSlUK7.jpg"
+        },
+        {
+          "id": "tt27787158:1:4",
+          "title": "Pohled do propasti",
+          "season": 1,
+          "episode": 4,
+          "released": "2024-12-13",
+          "overview": "Výbuch zraní někoho, proti komu nebyl namířený. Richi s Amparo vypátrají klíčovou postavu z Expa a Robledo se spojí s forenzní vyšetřovatelkou.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/1WuIThzUPyTlvK21vWa1NaeIwqg.jpg"
+        },
+        {
+          "id": "tt27787158:1:5",
+          "title": "To byly jiný časy",
+          "season": 1,
+          "episode": 5,
+          "released": "2024-12-13",
+          "overview": "Amparo a Carmen, které se vzpamatovávají z další tragédie, spolu pátrají v Rosině minulosti. Rozrušený Richi narazí na důležitou informaci.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/gWjLyGPN0WCTo9B9C7jKhqQd6Fr.jpg"
+        },
+        {
+          "id": "tt27787158:1:6",
+          "title": "Udělal jsem, co mi řekli",
+          "season": 1,
+          "episode": 6,
+          "released": "2024-12-13",
+          "overview": "Palacios se pokusí vykoupit z nebezpečí. Vrahova krvavá pomsta ale vrcholí a hon na něj nabírá rychlý spád.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/nXZiGpgvgFwseSEB3PAOUWfbVPo.jpg"
+        }
+      ],
+      "seriesInfo": {
+        "episodeCount": 6
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/728136"
+        },
+        {
+          "name": "TMDB",
+          "category": "Info",
+          "url": "https://www.themoviedb.org/tv/225467"
+        },
+        {
+          "name": "IMDb",
+          "category": "Info",
+          "url": "https://www.imdb.com/title/tt27787158/"
+        }
+      ],
+      "_addon": {
+        "key": "728136",
+        "filmbazeId": 728136,
+        "tmdbId": 225467,
+        "imdbId": "tt27787158",
+        "dateAdded": "2024-12-12",
+        "channelOrder": 0,
+        "page": 1,
+        "episodeCount": 6,
+        "originalName": "1992",
+        "detailChecked": true,
+        "sourceTitle": "1992"
       }
     },
     {
