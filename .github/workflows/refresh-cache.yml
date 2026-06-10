@@ -1,4 +1,4 @@
-name: Refresh Filmbáze cache
+name: Refresh Filmbaze cache
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -24,18 +24,28 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Show npm scripts
-        run: npm run
+      - name: Debug files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Root files:"
+          ls -la
+          echo "Scripts folder:"
+          ls -la scripts || true
+          echo "Package scripts:"
+          node -e "const p=require('./package.json'); console.log(p.scripts || {})"
 
-      - name: Refresh cache with repair
+      - name: Refresh cache with repair directly
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-        run: npm run refresh-cache-with-repair
+          REPAIR_LIMIT: "300"
+        run: node scripts/refresh-cache-with-repair.js
 
       - name: Commit updated cache
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add data cache *.json || true
-          git commit -m "Refresh Filmbáze cache with repair" || echo "No changes"
-          git push
+          git add data cache *.json 2>/dev/null || true
+          git status --short
+          git commit -m "Refresh Filmbaze cache with repair" || echo "No changes to commit"
+          git push || echo "Nothing to push"
