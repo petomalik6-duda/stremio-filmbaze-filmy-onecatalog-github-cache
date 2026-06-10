@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -24,20 +24,51 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Refresh cache and repair missing IMDb IDs
+      - name: Show project files
+        run: |
+          echo "Root files:"
+          ls -la
+          echo "Scripts folder:"
+          ls -la scripts || true
+          echo "Package scripts:"
+          npm run || true
+
+      - name: Run existing refresh cache
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          REPAIR_LIMIT: "500"
-       
-
-      - name: Show Barvy zla cache line
         run: |
-          grep -R "Barvy zla" -n data *.json || true
+          if [ -f scripts/refresh-cache.js ]; then
+            node scripts/refresh-cache.js
+          elif [ -f scripts/refresh-cache.cjs ]; then
+            node scripts/refresh-cache.cjs
+          elif [ -f scripts/update-cache.js ]; then
+            node scripts/update-cache.js
+          elif [ -f scripts/update-cache.cjs ]; then
+            node scripts/update-cache.cjs
+          elif [ -f scripts/build-cache.js ]; then
+            node scripts/build-cache.js
+          elif [ -f scripts/build-cache.cjs ]; then
+            node scripts/build-cache.cjs
+          elif npm run | grep -q "refresh-cache"; then
+            npm run refresh-cache
+          else
+            echo "No refresh cache script found. Skipping refresh step."
+          fi
+
+      - name: Repair missing IMDb IDs from TMDB
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: |
+          if [ -f scripts/filmbaze-imdbid-repair.cjs ]; then
+            node scripts/filmbaze-imdbid-repair.cjs
+          else
+            echo "scripts/filmbaze-imdbid-repair.cjs not found, skipping IMDb repair."
+          fi
 
       - name: Commit updated cache
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add data cache *.json 2>/dev/null || true
-          git commit -m "Refresh Filmbaze cache and repair IMDb IDs" || echo "No changes"
-          git push
+          git diff --cached --quiet && echo "No cache changes to commit" || git commit -m "Refresh Filmbaze cache"
+          git push || true
