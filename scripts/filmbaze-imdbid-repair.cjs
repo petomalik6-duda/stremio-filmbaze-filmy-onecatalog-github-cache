@@ -1,116 +1,143 @@
 #!/usr/bin/env node
 /*
-  Filmbaze IMDb repair
-  - non-destructive cache repair
-  - fills imdbId from TMDB external_ids when tmdbId exists
-  - does NOT treat primaryVideo:null as an error
-  - useful for items like Barvy zla: Černá where tmdbId exists but imdbId is null
+  Filmbaze IMDb ID repair
+  - Finds JSON cache files in common locations.
+  - Repairs items with tmdbId but missing imdbId using TMDB external_ids.
+  - Does NOT run original refresh-cache, so it works even if the repo has no refresh-cache script.
 */
+
 const fs = require('fs');
 const path = require('path');
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY || process.env.TMDB_TOKEN || '';
+const TMDB_API_KEY = process.env.TMDB_API_KEY || process.env.TMDB_TOKEN;
 const DRY_RUN = process.env.DRY_RUN === '1';
-const LIMIT = Number(process.env.REPAIR_LIMIT || process.env.LIMIT || 300);
+const LIMIT = Number(process.env.REPAIR_LIMIT || 300);
 
-const candidates = [
-  'data/cache.json',
-  'data/catalog.json',
-  'data/filmbaze-cache.json',
-  'cache.json',
-  'catalog.json',
-  'filmbaze-cache.json'
-];
+if (!TMDB_API_KEY) {
+  console.error('Missing TMDB_API_KEY secret/env. Add TMDB_API_KEY to GitHub Secrets.');
+  process.exit(1);
+}
 
-function findCacheFile() {
-  for (const p of candidates) {
-    const abs = path.resolve(process.cwd(), p);
-    if (fs.existsSync(abs)) return abs;
-  }
-  const dataDir = path.resolve(process.cwd(), 'data');
-  if (fs.existsSync(dataDir)) {
-    const jsons = fs.readdirSync(dataDir).filter(f => f.endsWith('.json'));
-    for (const f of jsons) {
-      const abs = path.join(dataDir, f);
-      try {
-        const raw = JSON.parse(fs.readFileSync(abs, 'utf8'));
-        const items = Array.isArray(raw) ? raw : raw.items;
-        if (Array.isArray(items) && items.some(x => x && (x.source === 'Filmbáze' || x.tmdbId || x.primaryVideo !== undefined))) {
-          return abs;
-        }
-      } catch (_) {}
+const ROOT = process.cwd();
+
+function walk(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, ent.name);
+    if (ent.isDirectory()) {
+      if (!['node_modules', '.git', 'dist', 'build'].includes(ent.name)) walk(p, out);
+    } else if (ent.isFile() && ent.name.endsWith('.json')) {
+      out.push(p);
     }
   }
-  throw new Error('Cache JSON not found. Set one of: data/cache.json, data/catalog.json, cache.json, catalog.json');
+  return out;
 }
 
-function getItems(root) {
-  if (Array.isArray(root)) return root;
-  if (Array.isArray(root.items)) return root.items;
-  if (root.catalog && Array.isArray(root.catalog.items)) return root.catalog.items;
-  throw new Error('Unsupported cache format: expected array or object.items');
+function likelyCacheFile(file) {
+  const rel = path.relative(ROOT, file).replace(/\\/g, '/').toLowerCase();
+  if (rel.includes('package-lock') || rel.endsWith('package.json')) return false;
+  return rel.startsWith('data/') || rel.startsWith('cache/') || rel.includes('cache') || rel.includes('catalog') || rel.includes('filmbaze');
 }
 
-async function tmdbGet(pathname) {
-  if (!TMDB_API_KEY) throw new Error('Missing TMDB_API_KEY secret/env');
-  const sep = pathname.includes('?') ? '&' : '?';
-  const url = `https://api.themoviedb.org/3${pathname}${sep}api_key=${encodeURIComponent(TMDB_API_KEY)}`;
-  const res = await fetch(url, { headers: { accept: 'application/json' } });
-  if (!res.ok) throw new Error(`TMDB ${res.status} for ${pathname}`);
-  return res.json();
-}
-
-async function getImdbIdForMovie(tmdbId) {
-  const data = await tmdbGet(`/movie/${tmdbId}/external_ids`);
-  if (data && data.imdb_id && /^tt\d+$/i.test(data.imdb_id)) return data.imdb_id;
+function getItemsContainer(json) {
+  if (Array.isArray(json)) return { items: json, set: null, desc: 'root array' };
+  if (json && Array.isArray(json.items)) return { items: json.items, set: 'items', desc: 'items' };
+  if (json && Array.isArray(json.metas)) return { items: json.metas, set: 'metas', desc: 'metas' };
+  if (json && json.data && Array.isArray(json.data.items)) return { items: json.data.items, set: 'data.items', desc: 'data.items' };
   return null;
 }
 
-async function main() {
-  const file = findCacheFile();
-  const root = JSON.parse(fs.readFileSync(file, 'utf8'));
-  const items = getItems(root);
+async function tmdbExternalIds(tmdbId) {
+  const url = `https://api.themoviedb.org/3/movie/${encodeURIComponent(tmdbId)}/external_ids?api_key=${encodeURIComponent(TMDB_API_KEY)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB ${res.status} for ${tmdbId}: ${text.slice(0, 160)}`);
+  }
+  return res.json();
+}
 
-  const targets = items.filter(item =>
-    item &&
-    item.type === 'movie' &&
+function isRepairTarget(item) {
+  return item &&
+    (item.type === 'movie' || item.type === undefined) &&
     item.tmdbId &&
-    !item.imdbId
-  ).slice(0, LIMIT);
+    !item.imdbId;
+}
 
-  console.log(`[filmbaze-imdbid-repair] cache: ${path.relative(process.cwd(), file)}`);
-  console.log(`[filmbaze-imdbid-repair] candidates: ${targets.length}`);
+async function main() {
+  const allFiles = walk(ROOT).filter(likelyCacheFile);
+  console.log(`[imdb-repair] scanning ${allFiles.length} json files`);
 
-  let fixed = 0;
-  let failed = 0;
+  let changedFiles = 0;
+  let repaired = 0;
+  let checked = 0;
+  const cache = new Map();
 
-  for (const item of targets) {
+  for (const file of allFiles) {
+    let json;
     try {
-      const imdbId = await getImdbIdForMovie(item.tmdbId);
-      if (imdbId) {
-        console.log(`[filmbaze-imdbid-repair] ${item.name || item.title} tmdb:${item.tmdbId} -> ${imdbId}`);
-        if (!DRY_RUN) {
-          item.imdbId = imdbId;
-          item.imdbRepairAt = new Date().toISOString();
-        }
-        fixed++;
-      } else {
-        console.log(`[filmbaze-imdbid-repair] ${item.name || item.title} tmdb:${item.tmdbId} has no imdb_id on TMDB`);
-      }
-    } catch (e) {
-      failed++;
-      console.log(`[filmbaze-imdbid-repair] failed ${item.name || item.title}: ${e.message}`);
+      json = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (_) {
+      continue;
     }
+
+    const container = getItemsContainer(json);
+    if (!container) continue;
+
+    let fileChanged = false;
+    const targets = container.items.filter(isRepairTarget);
+    if (!targets.length) continue;
+
+    console.log(`[imdb-repair] ${path.relative(ROOT, file)}: ${targets.length} candidates`);
+
+    for (const item of targets) {
+      if (repaired >= LIMIT) break;
+      const tmdbId = String(item.tmdbId);
+      checked++;
+
+      try {
+        let ext = cache.get(tmdbId);
+        if (!ext) {
+          ext = await tmdbExternalIds(tmdbId);
+          cache.set(tmdbId, ext);
+          await new Promise(r => setTimeout(r, 120));
+        }
+        if (ext && ext.imdb_id) {
+          item.imdbId = ext.imdb_id;
+          item.externalIds = item.externalIds || {};
+          item.externalIds.imdb_id = ext.imdb_id;
+          item.imdbRepairAt = new Date().toISOString();
+          fileChanged = true;
+          repaired++;
+          console.log(`[imdb-repair] OK ${item.name || item.title || tmdbId} -> ${ext.imdb_id}`);
+        } else {
+          item.imdbRepairStatus = 'tmdb_external_ids_without_imdb';
+          item.imdbRepairAt = new Date().toISOString();
+          fileChanged = true;
+          console.log(`[imdb-repair] no imdb_id for ${item.name || item.title || tmdbId}`);
+        }
+      } catch (err) {
+        item.imdbRepairStatus = 'error';
+        item.imdbRepairError = String(err.message || err).slice(0, 240);
+        item.imdbRepairAt = new Date().toISOString();
+        fileChanged = true;
+        console.log(`[imdb-repair] ERROR ${item.name || item.title || tmdbId}: ${err.message}`);
+      }
+    }
+
+    if (fileChanged) {
+      changedFiles++;
+      if (!DRY_RUN) fs.writeFileSync(file, JSON.stringify(json, null, 2) + '\n');
+      console.log(`[imdb-repair] ${DRY_RUN ? 'would write' : 'wrote'} ${path.relative(ROOT, file)}`);
+    }
+
+    if (repaired >= LIMIT) break;
   }
 
-  if (!DRY_RUN && fixed > 0) {
-    fs.writeFileSync(file, JSON.stringify(root, null, 2) + '\n');
-  }
-
-  console.log(JSON.stringify({ ok: true, fixed, failed, dryRun: DRY_RUN, file: path.relative(process.cwd(), file) }, null, 2));
+  console.log(JSON.stringify({ ok: true, checked, repaired, changedFiles, dryRun: DRY_RUN }, null, 2));
 }
 
 main().catch(err => {
-  console.error('[filmbaze-imdbid-repair] fatal:', err);
+  console.error('[imdb-repair] failed:', err);
   process.exit(1);
 });

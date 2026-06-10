@@ -1,47 +1,38 @@
-# Filmbaze IMDb ID repair from TMDB
+# Filmbaze IMDb ID only repair
 
-This package fixes the case where an item has TMDB metadata but missing IMDb ID.
+Tento balík nerobí pôvodný refresh-cache. Opravuje iba existujúcu cache:
 
-Example problem:
+- nájde položky s `tmdbId`, ale bez `imdbId`
+- cez TMDB external_ids doplní `imdbId`
+- neberie `primaryVideo: null` ako chybu
 
-```json
-{
-  "name": "Barvy zla: Černá",
-  "primaryVideo": null,
-  "imdbId": null,
-  "tmdbId": 1560681,
-  "originalName": "Kolory zła: Czerń"
-}
-```
+## Prečo tento balík
 
-Mortal Kombat II works even with `primaryVideo:null` because it has `imdbId`.
-So this repair does not treat `primaryVideo:null` as a bug. It fills missing `imdbId` via TMDB external_ids.
+Predošlý wrapper zlyhal, lebo v repozitári sa nenašiel pôvodný refresh súbor:
 
-## Install
+`Original refresh cache script not found`
 
-Upload these files to the Filmbaze repository:
+Preto je tento balík oddelený a bezpečný. Môže bežať po tvojom existujúcom refresh workflow alebo samostatne denne.
+
+## Nahraj do repo
+
+Nahraj:
 
 ```txt
-.github/workflows/refresh-cache.yml
-scripts/refresh-cache-with-safe-repair.cjs
 scripts/filmbaze-imdbid-repair.cjs
+.github/workflows/repair-imdbid.yml
 ```
 
-Make sure GitHub secret exists:
+## Secret
+
+V GitHub repo musí byť:
 
 ```txt
 TMDB_API_KEY
 ```
 
-Run GitHub Action manually once.
+## Spustenie
 
-## Expected result
+GitHub Actions → `Repair Filmbaze IMDb IDs` → Run workflow.
 
-After the run, Barvy zla should become something like:
-
-```json
-"tmdbId": 1560681,
-"imdbId": "tt..."
-```
-
-Then the existing stream fallback may work the same way it works for Mortal Kombat II.
+Denný beh je nastavený na 03:45 UTC, teda približne po refresh-cache.
