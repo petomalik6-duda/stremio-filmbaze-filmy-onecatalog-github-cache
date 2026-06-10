@@ -1,0 +1,26 @@
+Do package.json pridaj alebo uprav scripts takto:
+
+{
+  "scripts": {
+    "refresh-cache": "node scripts/refresh-cache-with-repair.js",
+    "refresh-cache-original": "node scripts/refresh-cache.js"
+  }
+}
+
+Ak nechceš prepísať pôvodný refresh-cache script, použi radšej:
+
+{
+  "scripts": {
+    "refresh-cache-with-repair": "node scripts/refresh-cache-with-repair.js"
+  }
+}
+
+A vo workflow potom daj:
+
+npm run refresh-cache-with-repair
+
+Voliteľné premenné:
+
+REPAIR_LIMIT=300
+REPAIR_PAGES=3
+REPAIR_STREAMS=0   # vypne repair, spustí iba refresh
