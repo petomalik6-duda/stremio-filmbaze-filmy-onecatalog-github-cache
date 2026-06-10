@@ -1,83 +1,125 @@
-'use strict';
+#!/usr/bin/env node
+/*
+  Filmbáze refresh-cache wrapper with repair.
+  Safe version: tries to run the existing cache refresh first, then stream repair.
+  It supports projects where the original refresh script has a different filename.
+*/
 
-/**
- * Filmbáze refresh-cache wrapper
- *
- * Purpose:
- * 1. run your normal cache refresh
- * 2. repair movies that have TMDB metadata but no stream source / primaryVideo
- * 3. save the repaired cache so GitHub Actions can commit it
- *
- * This wrapper is intentionally safe: if your existing refresh-cache.js only works
- * as a CLI script and does not export refreshCache(), this file will run it as a
- * child process first, then continue with repair if the adapter can load cache.
- */
-
+const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-function tryRequire(modPath) {
-  try {
-    return require(modPath);
-  } catch (err) {
-    return null;
-  }
-}
-
-async function runExistingRefresh() {
-  const refreshPath = path.join(__dirname, 'refresh-cache.js');
-  const refreshMod = tryRequire(refreshPath);
-
-  if (refreshMod && typeof refreshMod.refreshCache === 'function') {
-    console.log('[refresh-cache-with-repair] Running exported refreshCache()...');
-    return await refreshMod.refreshCache();
-  }
-
-  if (refreshMod && typeof refreshMod.main === 'function') {
-    console.log('[refresh-cache-with-repair] Running exported main()...');
-    return await refreshMod.main();
-  }
-
-  console.log('[refresh-cache-with-repair] Running scripts/refresh-cache.js as CLI...');
-  const result = spawnSync(process.execPath, [refreshPath], {
-    cwd: path.join(__dirname, '..'),
+function runNode(file, args = []) {
+  console.log(`\n▶ node ${file} ${args.join(' ')}`.trim());
+  const result = spawnSync(process.execPath, [file, ...args], {
     stdio: 'inherit',
-    env: process.env
+    env: process.env,
+    cwd: process.cwd(),
   });
-
   if (result.status !== 0) {
-    throw new Error(`Existing refresh-cache.js failed with exit code ${result.status}`);
+    throw new Error(`${file} failed with exit code ${result.status}`);
   }
 }
 
-async function runRepair() {
-  const adapter = require('./repair-filmbaze-after-refresh');
-  if (typeof adapter.repairAfterRefresh !== 'function') {
-    throw new Error('repair-filmbaze-after-refresh.js must export repairAfterRefresh()');
+function runNpm(script) {
+  console.log(`\n▶ npm run ${script}`);
+  const result = spawnSync('npm', ['run', script], {
+    stdio: 'inherit',
+    env: { ...process.env, FILMBAZE_WRAPPER_RUNNING: '1' },
+    cwd: process.cwd(),
+  });
+  if (result.status !== 0) {
+    throw new Error(`npm run ${script} failed with exit code ${result.status}`);
+  }
+}
+
+function exists(file) {
+  return fs.existsSync(path.join(process.cwd(), file));
+}
+
+function readPackageScripts() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+    return pkg.scripts || {};
+  } catch {
+    return {};
+  }
+}
+
+function findRefreshCommand() {
+  const scripts = readPackageScripts();
+
+  // Avoid infinite loop if someone names this wrapper as refresh-cache.
+  const candidateNpmScripts = [
+    'refresh',
+    'update-cache',
+    'build-cache',
+    'cache:refresh',
+    'cache:update',
+    'scrape',
+    'sync-cache',
+  ];
+
+  for (const name of candidateNpmScripts) {
+    if (scripts[name]) return { type: 'npm', name };
   }
 
-  const limit = Number(process.env.REPAIR_LIMIT || process.argv.find(a => a.startsWith('--limit='))?.split('=')[1] || 300);
-  console.log(`[refresh-cache-with-repair] Repairing Filmbáze stream sources, limit=${limit}...`);
-  return await adapter.repairAfterRefresh({ limit });
+  const candidateFiles = [
+    'scripts/refresh-cache.js',
+    'scripts/update-cache.js',
+    'scripts/build-cache.js',
+    'scripts/sync-cache.js',
+    'refresh-cache.js',
+    'update-cache.js',
+    'build-cache.js',
+    'server-refresh-cache.js',
+  ];
+
+  for (const file of candidateFiles) {
+    if (exists(file)) return { type: 'node', file };
+  }
+
+  return null;
 }
 
 async function main() {
-  await runExistingRefresh();
+  console.log('=== Filmbáze refresh-cache with repair ===');
 
-  if (process.env.REPAIR_STREAMS === '0') {
-    console.log('[refresh-cache-with-repair] REPAIR_STREAMS=0, skipping repair.');
-    return;
+  if (process.env.FILMBAZE_WRAPPER_RUNNING === '1') {
+    throw new Error('Refusing to call wrapper recursively. Check package.json scripts.');
   }
 
-  const result = await runRepair();
-  console.log('[refresh-cache-with-repair] Repair result:', JSON.stringify(result, null, 2));
-}
-
-if (require.main === module) {
-  main().catch(err => {
-    console.error('[refresh-cache-with-repair] failed:', err);
+  const refresh = findRefreshCommand();
+  if (!refresh) {
+    console.error('\nCould not find original refresh script.');
+    console.error('Add one of these to package.json, for example:');
+    console.error('  "refresh-cache": "node scripts/refresh-cache.js"');
+    console.error('\nOr rename your existing refresh command to one of: refresh, update-cache, build-cache, cache:refresh.');
     process.exit(1);
-  });
+  }
+
+  if (refresh.type === 'npm') runNpm(refresh.name);
+  else runNode(refresh.file);
+
+  const repairFile = 'scripts/filmbaze-stream-repair.js';
+  if (exists(repairFile)) {
+    runNode(repairFile);
+  } else {
+    console.log(`\n⚠ ${repairFile} not found, skipping stream repair.`);
+    console.log('Upload scripts/filmbaze-stream-repair.js from the Filmbáze repair package.');
+  }
+
+  const tmdbRepairFile = 'scripts/tmdb-repair.js';
+  if (exists(tmdbRepairFile)) {
+    runNode(tmdbRepairFile);
+  } else {
+    console.log(`\nℹ ${tmdbRepairFile} not found, skipping TMDB repair.`);
+  }
+
+  console.log('\n✅ Refresh-cache with repair finished.');
 }
 
-module.exports = { main };
+main().catch(err => {
+  console.error('\n❌ refresh-cache-with-repair failed:', err.message);
+  process.exit(1);
+});

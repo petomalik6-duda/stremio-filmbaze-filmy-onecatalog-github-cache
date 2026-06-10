@@ -1,61 +1,51 @@
-# Filmbáze refresh-cache repair balík
+# Filmbáze Missing refresh-cache script fix
 
-Tento balík pridá opravu priamo do `refresh-cache` procesu.
+Táto oprava rieši chybu:
 
-Rieši hlavne stav:
-
-```json
-{
-  "name": "Barvy zla: Černá",
-  "tmdbId": 1560681,
-  "imdbId": null,
-  "primaryVideo": null,
-  "detailChecked": true
-}
+```txt
+npm error Missing script: "refresh-cache"
 ```
 
-Film má TMDB detail, ale nemá stream, lebo chýba `primaryVideo` alebo zdroj videa.
+## Prečo chyba vznikla
 
-## Ako nahrať
+Workflow alebo wrapper očakáva npm script:
 
-1. Skopíruj do projektu priečinok `scripts`.
-2. V `package.json` pridaj script podľa `PATCH-package.json.txt`.
-3. Workflow môžeš nahradiť súborom `.github/workflows/refresh-cache.yml`, alebo si z neho skopíruj iba krok:
-
-```yaml
-- name: Refresh cache with stream repair
-  env:
-    TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-    REPAIR_LIMIT: "300"
-    REPAIR_PAGES: "3"
-  run: npm run refresh-cache
+```bash
+npm run refresh-cache
 ```
+
+ale v `package.json` vo Filmbáze projekte taký script nie je.
+
+## Čo nahrať
+
+Nahraj do projektu:
+
+```txt
+scripts/refresh-cache-with-repair.js
+.github/workflows/refresh-cache.yml
+```
+
+A podľa `PATCH-package.json.txt` uprav `package.json`.
 
 ## Dôležité
 
-Najpravdepodobnejšie bude treba upraviť iba tento súbor:
+Musíš mať v `package.json` aj základný refresh script. Napríklad:
 
-```txt
-scripts/repair-filmbaze-after-refresh.js
+```json
+"refresh-cache": "node scripts/refresh-cache.js"
 ```
 
-Tam napojíš existujúce funkcie z tvojho addonu:
+Ak sa tvoj pôvodný refresh súbor volá inak, napríklad `scripts/update-cache.js`, použi:
 
-- načítanie cache
-- uloženie cache
-- scraper Filmbáze filmov
-- parser detailu Filmbáze
+```json
+"refresh-cache": "node scripts/update-cache.js"
+```
 
-V súbore sú pripravené miesta a komentáre.
+## Potom workflow robí
 
-## Výsledok
-
-Pri každom automatickom refresh-cache sa po načítaní nových filmov hneď spustí repair a pokúsi sa doplniť:
-
-- `primaryVideo`
-- `detailUrl`
-- `imdbId`
-- `csfdUrl`
-- `sourceUrl`
-
-Potom GitHub Actions commitne opravenú cache späť do repozitára.
+```txt
+refresh-cache
+→ filmbaze-stream-repair
+→ prípadne tmdb-repair
+→ commit cache
+```
