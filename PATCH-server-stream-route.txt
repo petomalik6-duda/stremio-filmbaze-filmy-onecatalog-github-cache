@@ -1,74 +1,74 @@
-FILMBÁZE - PATCH PRE STREAM ROUTE
-=================================
+PATCH PRE FILMBÁZE STREAM ROUTE
+==============================
 
-Toto treba dať do server.js / routes súboru, kde máš endpoint:
+Cieľ:
+Keď film nemá primaryVideo alebo bežný fallback nič nenájde, skúsiť viac názvových variantov.
+Toto je dôležité pre názvy ako:
+- Barvy zla: Černá
+- Kolory zła: Czerń
 
-  /stream/movie/:id.json
+1) Nahraj súbor:
 
-alebo podobný Stremio stream endpoint.
+scripts/filmbaze-title-normalizer.cjs
 
-1) Hore do súboru pridaj:
+2) V server.js alebo v súbore, kde máš /stream route, pridaj import.
 
-const {
-  fallbackSearchStreams,
-  titleVariants,
-} = require('./scripts/filmbaze-title-fallback.cjs');
+Ak je server.js CommonJS:
 
-Ak máš server.js ako ES module a používaš import, použi namiesto toho:
+const { buildFilmbazeSearchVariants } = require('./scripts/filmbaze-title-normalizer.cjs');
 
-import fallbackTools from './scripts/filmbaze-title-fallback.cjs';
-const { fallbackSearchStreams, titleVariants } = fallbackTools;
+Ak má projekt "type": "module" a používa import:
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { buildFilmbazeSearchVariants } = require('./scripts/filmbaze-title-normalizer.cjs');
 
-2) V stream route nájdi miesto, kde sa robí niečo ako:
+3) V /stream route nájdi miesto, kde sa hľadá stream a keď nič nenájde, vráti sa:
 
-if (!movie.primaryVideo) {
-  return res.json({ streams: [] });
-}
+return res.json({ streams: [] });
 
-TOTO JE PROBLÉM.
+Pred tento return vlož fallback podobný tomuto:
 
-Nahraď to logikou:
+const variants = buildFilmbazeSearchVariants(movie);
+console.log('[filmbaze fallback] variants for', movie.name, variants);
 
-let streams = [];
+for (const q of variants) {
+  try {
+    console.log('[filmbaze fallback] trying:', q);
 
-if (movie.primaryVideo) {
-  streams = await getStreamsFromPrimaryVideo(movie.primaryVideo, movie);
-}
+    // TU POUŽI TVOJU EXISTUJÚCU FUNKCIU, ktorú už stream route používa pri Mortal Kombat 2.
+    // Príklady názvov môžu byť iné v tvojom projekte:
+    // const found = await searchStreamsByTitle(q, movie.year);
+    // const found = await findStreams(q, movie.year);
+    // const found = await searchFilmbazeStreams(q, movie.year);
 
-if (!streams.length) {
-  console.log('[stream fallback] primaryVideo missing/empty for:', movie.name, movie.year);
-  console.log('[stream fallback] variants:', titleVariants(movie));
+    const found = await searchStreamsByTitle(q, movie.year);
 
-  streams = await fallbackSearchStreams(movie, {
-    // Sem napoj existujúcu funkciu z tvojho addonu, ktorá vie hľadať streamy podľa textu.
-    // Názov funkcie sa môže v tvojom projekte volať inak.
-    searchStreamsByQuery: async (query, movie) => {
-      // príklady možných názvov vo vašom projekte:
-      // return await searchStreams(query, movie.year);
-      // return await findStreams(query, movie);
-      // return await getStreamsByTitle(query, movie.year);
-      return [];
+    if (found && found.length) {
+      console.log('[filmbaze fallback] found streams using:', q, found.length);
+      return res.json({ streams: found });
     }
-  });
+  } catch (err) {
+    console.warn('[filmbaze fallback] failed for', q, err.message);
+  }
 }
 
-return res.json({ streams });
+4) Ak tvoja existujúca funkcia nemá názov searchStreamsByTitle, nahraď tento riadok:
 
+const found = await searchStreamsByTitle(q, movie.year);
 
-3) Pre film Barvy zla: Černá musí fallback skúšať tieto názvy:
+názvom funkcie, ktorá už dnes funguje pre filmy ako Mortal Kombat 2.
 
-Barvy zla: Černá
-Barvy zla Cerna
-Kolory zła: Czerń
-Kolory zla Czern
-Barvy zla Cerna 2026
-Kolory zla Czern 2026
+5) Test variantov lokálne:
 
-Ak Fusion addon film nájde, tvoj addon ho tiež nájde až vtedy, keď stream route nebude končiť pri primaryVideo: null.
+node scripts/test-title-variants.cjs "Barvy zla: Černá" "Kolory zła: Czerń" 2026
 
-
-Dôležité:
----------
-Refresh-cache repair vie len doplniť cache, ak zdroj vie nájsť primaryVideo.
-Ak primaryVideo v cache ostane null, prehrávanie musí mať live fallback podľa názvu/originálneho názvu/roku.
+Očakávané varianty budú napríklad:
+- Barvy zla: Černá
+- Barvy zla Černá
+- Barvy zla Cerna
+- Barvy zla Cierna
+- Kolory zła: Czerń
+- Kolory zla Czern
+- Kolory zla Cern
+- plus varianty s rokom 2026
