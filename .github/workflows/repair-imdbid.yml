@@ -1,0 +1,44 @@
+name: Repair Filmbaze IMDb IDs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "45 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  repair-imdbid:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Repair missing imdbId from TMDB
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          REPAIR_LIMIT: "500"
+        run: node scripts/filmbaze-imdbid-repair.cjs
+
+      - name: Debug Barvy zla after repair
+        run: |
+          grep -R "Barvy zla" -n data cache *.json 2>/dev/null || true
+          grep -R "1560681" -n data cache *.json 2>/dev/null || true
+
+      - name: Commit repaired cache
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data cache *.json 2>/dev/null || true
+          git add .
+          git commit -m "Repair missing Filmbaze IMDb IDs" || echo "No changes"
+          git push
