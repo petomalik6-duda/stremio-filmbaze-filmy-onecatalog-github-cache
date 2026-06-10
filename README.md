@@ -1,34 +1,47 @@
-# Filmbáze title fallback normalizer fix
+# Filmbaze fix ako FilmovéNovinky addon
 
-Tento balík nerieši `primaryVideo: null` ako chybu, pretože si zistil, že napríklad Mortal Kombat 2 má tiež `primaryVideo: null`, ale stream funguje.
+Tento balik je jednoduchsi a bez test workflow.
+Pouziva `.cjs`, takze funguje aj ked `package.json` obsahuje `"type": "module"`.
 
-Problém pri `Barvy zla: Černá / Kolory zła: Czerń` je pravdepodobne v názvovom fallbacku:
+## Co nahrat
 
-- dvojbodka `:`
-- česká diakritika `Černá`
-- poľské znaky `zła`, `Czerń`
-- rozdiely `Czern`, `Cern`, `Cierna`, `Cerna`
+Nahraj do Filmbaze repozitara:
 
-## Súbory
+- `.github/workflows/refresh-cache.yml`
+- `scripts/refresh-cache-with-safe-repair.cjs`
+- `scripts/filmbaze-safe-cache-repair.cjs`
+- `scripts/filmbaze-title-normalizer.cjs`
+- `PATCH-server-stream-route.txt` iba ako navod
 
-- `scripts/filmbaze-title-normalizer.cjs` — helper na generovanie názvových variantov
-- `scripts/test-title-variants.cjs` — test výpisu variantov
-- `PATCH-server-stream-route.txt` — návod kam vložiť fallback do stream route
+## Co to robi
 
-## Test
+Workflow denne spusti:
 
 ```bash
-node scripts/test-title-variants.cjs "Barvy zla: Černá" "Kolory zła: Czerń" 2026
+node scripts/refresh-cache-with-safe-repair.cjs
 ```
 
-## Dôležité
+Script najprv najde povodny refresh subor, napr.:
 
-Toto treba zapojiť do `/stream` route, nie do GitHub Actions refreshu. Refresh môže zostať tak ako je.
+- `scripts/refresh-cache.js`
+- `scripts/update-cache.js`
+- `scripts/build-cache.js`
+- `refresh-cache.js`
 
-V patchi je miesto:
+Potom spravi safe repair:
 
-```js
-const found = await searchStreamsByTitle(q, movie.year);
-```
+- neprepise funkcne udaje
+- ak je `detailChecked:true` a `primaryVideo:null`, povoli opakovanu kontrolu
+- nepovazuje `primaryVideo:null` automaticky za chybu
 
-Tento názov musíš nahradiť reálnou funkciou z tvojho addonu, ktorá už dnes hľadá stream pre filmy ako Mortal Kombat 2.
+## Pre Barvy zla
+
+Pre tento film je dolezity aj `PATCH-server-stream-route.txt`.
+Ten pridava title fallback varianty:
+
+- Barvy zla Cerna
+- Barvy zla Cierna
+- Kolory zla Czern
+- Kolory zla Cern
+
+Toto treba zapojit do `/stream` route servera.

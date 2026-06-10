@@ -1,74 +1,35 @@
-PATCH PRE FILMBÁZE STREAM ROUTE
-==============================
+VOLITELNE, ale odporucane pre stream fallback v server.js
+=======================================================
 
-Cieľ:
-Keď film nemá primaryVideo alebo bežný fallback nič nenájde, skúsiť viac názvových variantov.
-Toto je dôležité pre názvy ako:
-- Barvy zla: Černá
-- Kolory zła: Czerń
+1) Na zaciatok server.js pridaj:
 
-1) Nahraj súbor:
-
-scripts/filmbaze-title-normalizer.cjs
-
-2) V server.js alebo v súbore, kde máš /stream route, pridaj import.
-
-Ak je server.js CommonJS:
-
-const { buildFilmbazeSearchVariants } = require('./scripts/filmbaze-title-normalizer.cjs');
-
-Ak má projekt "type": "module" a používa import:
-
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const { buildFilmbazeSearchVariants } = require('./scripts/filmbaze-title-normalizer.cjs');
+const { buildFilmbazeTitleVariants } = require("./scripts/filmbaze-title-normalizer.cjs");
 
-3) V /stream route nájdi miesto, kde sa hľadá stream a keď nič nenájde, vráti sa:
+Ak server.js uz pouziva require(), pouzi len:
 
-return res.json({ streams: [] });
+const { buildFilmbazeTitleVariants } = require("./scripts/filmbaze-title-normalizer.cjs");
 
-Pred tento return vlož fallback podobný tomuto:
+2) V stream route, ked povodna logika nenajde stream, pridaj fallback:
 
-const variants = buildFilmbazeSearchVariants(movie);
-console.log('[filmbaze fallback] variants for', movie.name, variants);
+if (!streams || streams.length === 0) {
+  const variants = buildFilmbazeTitleVariants(movie);
 
-for (const q of variants) {
-  try {
-    console.log('[filmbaze fallback] trying:', q);
+  for (const q of variants) {
+    console.log("[filmbaze title fallback] trying:", q);
 
-    // TU POUŽI TVOJU EXISTUJÚCU FUNKCIU, ktorú už stream route používa pri Mortal Kombat 2.
-    // Príklady názvov môžu byť iné v tvojom projekte:
-    // const found = await searchStreamsByTitle(q, movie.year);
-    // const found = await findStreams(q, movie.year);
-    // const found = await searchFilmbazeStreams(q, movie.year);
-
+    // Pouzi existujucu funkciu addonu, ktora uz vie hladat streamy podla nazvu.
+    // Nazov tejto funkcie sa v tvojom addone moze volat inak.
     const found = await searchStreamsByTitle(q, movie.year);
 
     if (found && found.length) {
-      console.log('[filmbaze fallback] found streams using:', q, found.length);
-      return res.json({ streams: found });
+      streams = found;
+      break;
     }
-  } catch (err) {
-    console.warn('[filmbaze fallback] failed for', q, err.message);
   }
 }
 
-4) Ak tvoja existujúca funkcia nemá názov searchStreamsByTitle, nahraď tento riadok:
-
-const found = await searchStreamsByTitle(q, movie.year);
-
-názvom funkcie, ktorá už dnes funguje pre filmy ako Mortal Kombat 2.
-
-5) Test variantov lokálne:
-
-node scripts/test-title-variants.cjs "Barvy zla: Černá" "Kolory zła: Czerń" 2026
-
-Očakávané varianty budú napríklad:
-- Barvy zla: Černá
-- Barvy zla Černá
-- Barvy zla Cerna
-- Barvy zla Cierna
-- Kolory zła: Czerń
-- Kolory zla Czern
-- Kolory zla Cern
-- plus varianty s rokom 2026
+Dolezite:
+- Nepovazuj primaryVideo:null za chybu. Niektore filmy funguju aj tak.
+- Fallback sa ma spustit az vtedy, ked stream route nenasla ziaden stream.

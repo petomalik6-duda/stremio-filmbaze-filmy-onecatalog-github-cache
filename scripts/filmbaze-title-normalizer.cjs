@@ -1,82 +1,88 @@
 'use strict';
 
-/**
- * Filmbaze title fallback helper.
- * Purpose: improve stream lookup for titles with diacritics, punctuation and Polish/Czech characters.
- * Safe: this file does not modify cache by itself. It only generates search variants.
- */
-
-function normalizeTitleForSearch(input = '') {
-  return String(input)
-    .replace(/ł/g, 'l')
-    .replace(/Ł/g, 'L')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
+function stripDiacritics(input) {
+  return String(input || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/&/g, ' and ')
-    .replace(/[:;,.!?()[\]{}'"“”„’`´]/g, ' ')
-    .replace(/[^a-zA-Z0-9\s-]/g, ' ')
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .replace(/ń/g, 'n')
+    .replace(/Ń/g, 'N')
+    .replace(/ż/g, 'z')
+    .replace(/Ż/g, 'Z')
+    .replace(/ź/g, 'z')
+    .replace(/Ź/g, 'Z')
+    .replace(/ć/g, 'c')
+    .replace(/Ć/g, 'C')
+    .replace(/ą/g, 'a')
+    .replace(/Ą/g, 'A')
+    .replace(/ę/g, 'e')
+    .replace(/Ę/g, 'E')
+    .replace(/ś/g, 's')
+    .replace(/Ś/g, 'S');
+}
+
+function cleanSpaces(input) {
+  return String(input || '')
+    .replace(/[：:;,.!?()\[\]{}"'`´–—_\-\/\\]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function compactTitle(input = '') {
-  return normalizeTitleForSearch(input).replace(/\s+/g, ' ').trim();
+function normalizeForSearch(input) {
+  return cleanSpaces(stripDiacritics(input));
 }
 
-function uniquePush(set, value) {
+function addIf(set, value) {
   const v = String(value || '').trim();
   if (v) set.add(v);
 }
 
-function buildFilmbazeSearchVariants(movie = {}) {
+function buildFilmbazeTitleVariants(movie = {}) {
   const variants = new Set();
+  const year = movie.year ? String(movie.year) : '';
 
   const names = [
     movie.name,
     movie.title,
     movie.originalName,
-    movie.originalTitle,
-    movie.czTitle,
-    movie.skTitle,
-    movie.tmdbTitle
+    movie.originalTitle
   ].filter(Boolean);
 
-  for (const raw of names) {
-    const noColon = String(raw).replace(/:/g, ' ');
-    const normalized = normalizeTitleForSearch(raw);
-    const normalizedNoColon = normalizeTitleForSearch(noColon);
+  for (const name of names) {
+    addIf(variants, name);
+    addIf(variants, cleanSpaces(name));
+    addIf(variants, normalizeForSearch(name));
 
-    uniquePush(variants, raw);
-    uniquePush(variants, noColon);
-    uniquePush(variants, normalized);
-    uniquePush(variants, normalizedNoColon);
+    const noColon = String(name).replace(/:/g, ' ');
+    addIf(variants, cleanSpaces(noColon));
+    addIf(variants, normalizeForSearch(noColon));
 
-    if (movie.year) {
-      uniquePush(variants, `${raw} ${movie.year}`);
-      uniquePush(variants, `${noColon} ${movie.year}`);
-      uniquePush(variants, `${normalized} ${movie.year}`);
-      uniquePush(variants, `${normalizedNoColon} ${movie.year}`);
+    if (year) {
+      addIf(variants, `${name} ${year}`);
+      addIf(variants, `${cleanSpaces(name)} ${year}`);
+      addIf(variants, `${normalizeForSearch(name)} ${year}`);
     }
   }
 
-  // Special loose variants for Czech/Slovak/Polish titles.
-  // Example: Barvy zla: Černá / Kolory zła: Czerń
-  for (const v of Array.from(variants)) {
-    uniquePush(variants, v.replace(/\bczern\b/gi, 'cern'));
-    uniquePush(variants, v.replace(/\bcerna\b/gi, 'cierna'));
-    uniquePush(variants, v.replace(/\bcierna\b/gi, 'cerna'));
+  // CZ/SK helpful alternative for this frequent title pattern.
+  const joined = [...variants].join(' ').toLowerCase();
+  if (joined.includes('barvy zla') || joined.includes('kolory zla') || joined.includes('kolory zła')) {
+    ['Barvy zla Cerna', 'Barvy zla Cierna', 'Kolory zla Czern', 'Kolory zla Cern'].forEach(v => {
+      addIf(variants, v);
+      if (year) addIf(variants, `${v} ${year}`);
+    });
   }
 
-  return Array.from(variants)
+  return [...variants]
     .map(v => v.replace(/\s+/g, ' ').trim())
     .filter(Boolean)
-    .filter((v, idx, arr) => arr.indexOf(v) === idx);
+    .filter((v, i, arr) => arr.indexOf(v) === i);
 }
 
 module.exports = {
-  normalizeTitleForSearch,
-  compactTitle,
-  buildFilmbazeSearchVariants
+  stripDiacritics,
+  cleanSpaces,
+  normalizeForSearch,
+  buildFilmbazeTitleVariants
 };
