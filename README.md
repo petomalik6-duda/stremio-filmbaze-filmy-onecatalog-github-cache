@@ -1,47 +1,47 @@
-# Filmbaze fix ako FilmovéNovinky addon
+# Filmbaze IMDb ID repair from TMDB
 
-Tento balik je jednoduchsi a bez test workflow.
-Pouziva `.cjs`, takze funguje aj ked `package.json` obsahuje `"type": "module"`.
+This package fixes the case where an item has TMDB metadata but missing IMDb ID.
 
-## Co nahrat
+Example problem:
 
-Nahraj do Filmbaze repozitara:
-
-- `.github/workflows/refresh-cache.yml`
-- `scripts/refresh-cache-with-safe-repair.cjs`
-- `scripts/filmbaze-safe-cache-repair.cjs`
-- `scripts/filmbaze-title-normalizer.cjs`
-- `PATCH-server-stream-route.txt` iba ako navod
-
-## Co to robi
-
-Workflow denne spusti:
-
-```bash
-node scripts/refresh-cache-with-safe-repair.cjs
+```json
+{
+  "name": "Barvy zla: Černá",
+  "primaryVideo": null,
+  "imdbId": null,
+  "tmdbId": 1560681,
+  "originalName": "Kolory zła: Czerń"
+}
 ```
 
-Script najprv najde povodny refresh subor, napr.:
+Mortal Kombat II works even with `primaryVideo:null` because it has `imdbId`.
+So this repair does not treat `primaryVideo:null` as a bug. It fills missing `imdbId` via TMDB external_ids.
 
-- `scripts/refresh-cache.js`
-- `scripts/update-cache.js`
-- `scripts/build-cache.js`
-- `refresh-cache.js`
+## Install
 
-Potom spravi safe repair:
+Upload these files to the Filmbaze repository:
 
-- neprepise funkcne udaje
-- ak je `detailChecked:true` a `primaryVideo:null`, povoli opakovanu kontrolu
-- nepovazuje `primaryVideo:null` automaticky za chybu
+```txt
+.github/workflows/refresh-cache.yml
+scripts/refresh-cache-with-safe-repair.cjs
+scripts/filmbaze-imdbid-repair.cjs
+```
 
-## Pre Barvy zla
+Make sure GitHub secret exists:
 
-Pre tento film je dolezity aj `PATCH-server-stream-route.txt`.
-Ten pridava title fallback varianty:
+```txt
+TMDB_API_KEY
+```
 
-- Barvy zla Cerna
-- Barvy zla Cierna
-- Kolory zla Czern
-- Kolory zla Cern
+Run GitHub Action manually once.
 
-Toto treba zapojit do `/stream` route servera.
+## Expected result
+
+After the run, Barvy zla should become something like:
+
+```json
+"tmdbId": 1560681,
+"imdbId": "tt..."
+```
+
+Then the existing stream fallback may work the same way it works for Mortal Kombat II.

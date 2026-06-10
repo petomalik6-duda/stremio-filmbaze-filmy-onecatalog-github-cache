@@ -1,35 +1,25 @@
-VOLITELNE, ale odporucane pre stream fallback v server.js
-=======================================================
+Optional server.js improvement:
 
-1) Na zaciatok server.js pridaj:
+The cache repair fills imdbId from tmdbId. If your stream route currently searches only by primaryVideo or name,
+add imdbId as the first fallback key.
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const { buildFilmbazeTitleVariants } = require("./scripts/filmbaze-title-normalizer.cjs");
+Pseudo-code:
 
-Ak server.js uz pouziva require(), pouzi len:
+let streams = [];
 
-const { buildFilmbazeTitleVariants } = require("./scripts/filmbaze-title-normalizer.cjs");
-
-2) V stream route, ked povodna logika nenajde stream, pridaj fallback:
-
-if (!streams || streams.length === 0) {
-  const variants = buildFilmbazeTitleVariants(movie);
-
-  for (const q of variants) {
-    console.log("[filmbaze title fallback] trying:", q);
-
-    // Pouzi existujucu funkciu addonu, ktora uz vie hladat streamy podla nazvu.
-    // Nazov tejto funkcie sa v tvojom addone moze volat inak.
-    const found = await searchStreamsByTitle(q, movie.year);
-
-    if (found && found.length) {
-      streams = found;
-      break;
-    }
-  }
+if (movie.primaryVideo) {
+  streams = await getStreamsFromPrimaryVideo(movie.primaryVideo);
 }
 
-Dolezite:
-- Nepovazuj primaryVideo:null za chybu. Niektore filmy funguju aj tak.
-- Fallback sa ma spustit az vtedy, ked stream route nenasla ziaden stream.
+if ((!streams || streams.length === 0) && movie.imdbId) {
+  console.log('[filmbaze stream] fallback by imdbId:', movie.imdbId);
+  streams = await searchStreamsByImdbId(movie.imdbId);
+}
+
+if (!streams || streams.length === 0) {
+  // keep your existing title fallback here
+}
+
+return { streams };
+
+Do not treat primaryVideo:null as a fatal error. Mortal Kombat II proves that primaryVideo:null can still work when imdbId exists.
