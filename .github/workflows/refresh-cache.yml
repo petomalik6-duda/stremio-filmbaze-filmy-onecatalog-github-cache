@@ -1,4 +1,4 @@
-name: Refresh Filmbaze cache with hardfix
+name: Refresh Filmbaze cache
 
 on:
   workflow_dispatch:
@@ -24,32 +24,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Debug repo files before refresh
-        run: |
-          echo "PACKAGE.JSON:"
-          cat package.json
-          echo "SCRIPTS DIR:"
-          ls -la scripts || true
-          echo "DATA DIR:"
-          ls -la data || true
-          echo "CACHE DIR:"
-          ls -la cache || true
-
-      - name: Refresh cache with repair
+      - name: Refresh cache with safe repair
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-        run: node scripts/refresh-cache-with-repair.cjs
-
-      - name: Force retry primaryVideo null items
-        run: node scripts/force-repair-primaryvideo-null.cjs
-
-      - name: Debug Barvy zla cache item
-        run: node scripts/find-cache-item.cjs "Barvy zla"
+        run: node scripts/refresh-cache-with-safe-repair.cjs
 
       - name: Commit updated cache
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add data cache *.json scripts .github/workflows || true
-          git commit -m "Refresh cache and retry missing primaryVideo items" || echo "No changes to commit"
+          git add data cache.json public || true
+          git commit -m "Refresh Filmbaze cache with safe repair" || echo "No changes"
           git push || echo "Nothing to push"
