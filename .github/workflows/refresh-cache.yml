@@ -28,7 +28,7 @@ jobs:
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           REPAIR_LIMIT: "500"
-        run: node scripts/refresh-cache-with-safe-repair.cjs
+       
 
       - name: Show Barvy zla cache line
         run: |
