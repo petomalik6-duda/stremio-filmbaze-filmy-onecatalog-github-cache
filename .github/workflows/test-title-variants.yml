@@ -1,0 +1,19 @@
+name: Test Filmbaze title variants
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test title variants
+        run: node scripts/test-title-variants.cjs "Barvy zla: Černá" "Kolory zła: Czerń" 2026
