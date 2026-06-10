@@ -24,15 +24,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Refresh cache with safe repair
+      - name: Refresh cache and repair missing IMDb IDs
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          REPAIR_LIMIT: "500"
         run: node scripts/refresh-cache-with-safe-repair.cjs
+
+      - name: Show Barvy zla cache line
+        run: |
+          grep -R "Barvy zla" -n data *.json || true
 
       - name: Commit updated cache
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add data cache.json public || true
-          git commit -m "Refresh Filmbaze cache with safe repair" || echo "No changes"
-          git push || echo "Nothing to push"
+          git add data cache *.json 2>/dev/null || true
+          git commit -m "Refresh Filmbaze cache and repair IMDb IDs" || echo "No changes"
+          git push
