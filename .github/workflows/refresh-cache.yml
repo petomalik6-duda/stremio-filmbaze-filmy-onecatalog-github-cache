@@ -1,4 +1,4 @@
-name: Refresh Filmbaze cache
+name: Refresh Filmbáze cache
 
 on:
   workflow_dispatch:
@@ -24,17 +24,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Refresh cache with stream repair
+      - name: Show npm scripts
+        run: npm run
+
+      - name: Refresh cache with repair
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          REPAIR_LIMIT: "300"
-          REPAIR_PAGES: "3"
-        run: npm run refresh-cache
+        run: npm run refresh-cache-with-repair
 
       - name: Commit updated cache
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add data cache *.json || true
-          git commit -m "Refresh Filmbaze cache and repair streams" || echo "No changes"
+          git commit -m "Refresh Filmbáze cache with repair" || echo "No changes"
           git push
