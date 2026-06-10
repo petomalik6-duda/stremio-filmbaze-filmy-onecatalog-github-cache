@@ -1,0 +1,74 @@
+FILMBÁZE - PATCH PRE STREAM ROUTE
+=================================
+
+Toto treba dať do server.js / routes súboru, kde máš endpoint:
+
+  /stream/movie/:id.json
+
+alebo podobný Stremio stream endpoint.
+
+1) Hore do súboru pridaj:
+
+const {
+  fallbackSearchStreams,
+  titleVariants,
+} = require('./scripts/filmbaze-title-fallback.cjs');
+
+Ak máš server.js ako ES module a používaš import, použi namiesto toho:
+
+import fallbackTools from './scripts/filmbaze-title-fallback.cjs';
+const { fallbackSearchStreams, titleVariants } = fallbackTools;
+
+
+2) V stream route nájdi miesto, kde sa robí niečo ako:
+
+if (!movie.primaryVideo) {
+  return res.json({ streams: [] });
+}
+
+TOTO JE PROBLÉM.
+
+Nahraď to logikou:
+
+let streams = [];
+
+if (movie.primaryVideo) {
+  streams = await getStreamsFromPrimaryVideo(movie.primaryVideo, movie);
+}
+
+if (!streams.length) {
+  console.log('[stream fallback] primaryVideo missing/empty for:', movie.name, movie.year);
+  console.log('[stream fallback] variants:', titleVariants(movie));
+
+  streams = await fallbackSearchStreams(movie, {
+    // Sem napoj existujúcu funkciu z tvojho addonu, ktorá vie hľadať streamy podľa textu.
+    // Názov funkcie sa môže v tvojom projekte volať inak.
+    searchStreamsByQuery: async (query, movie) => {
+      // príklady možných názvov vo vašom projekte:
+      // return await searchStreams(query, movie.year);
+      // return await findStreams(query, movie);
+      // return await getStreamsByTitle(query, movie.year);
+      return [];
+    }
+  });
+}
+
+return res.json({ streams });
+
+
+3) Pre film Barvy zla: Černá musí fallback skúšať tieto názvy:
+
+Barvy zla: Černá
+Barvy zla Cerna
+Kolory zła: Czerń
+Kolory zla Czern
+Barvy zla Cerna 2026
+Kolory zla Czern 2026
+
+Ak Fusion addon film nájde, tvoj addon ho tiež nájde až vtedy, keď stream route nebude končiť pri primaryVideo: null.
+
+
+Dôležité:
+---------
+Refresh-cache repair vie len doplniť cache, ak zdroj vie nájsť primaryVideo.
+Ak primaryVideo v cache ostane null, prehrávanie musí mať live fallback podľa názvu/originálneho názvu/roku.
