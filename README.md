@@ -1,51 +1,38 @@
-# Filmbáze Missing refresh-cache script fix
+# Fix: Missing script refresh-cache-with-repair
 
-Táto oprava rieši chybu:
-
-```txt
-npm error Missing script: "refresh-cache"
-```
-
-## Prečo chyba vznikla
-
-Workflow alebo wrapper očakáva npm script:
+Táto chyba znamená, že GitHub Actions workflow volá:
 
 ```bash
-npm run refresh-cache
+npm run refresh-cache-with-repair
 ```
 
-ale v `package.json` vo Filmbáze projekte taký script nie je.
+ale v `package.json` nie je script s názvom `refresh-cache-with-repair`.
 
-## Čo nahrať
+## Oprava
 
-Nahraj do projektu:
+V `package.json` nájdi sekciu `scripts` a doplň do nej tieto riadky:
 
-```txt
-scripts/refresh-cache-with-repair.js
-.github/workflows/refresh-cache.yml
+```json
+"repair-filmbaze-streams": "node scripts/filmbaze-stream-repair.js",
+"refresh-cache-with-repair": "node scripts/refresh-cache-with-repair.js"
 ```
 
-A podľa `PATCH-package.json.txt` uprav `package.json`.
-
-## Dôležité
-
-Musíš mať v `package.json` aj základný refresh script. Napríklad:
+Ak tam chýba aj pôvodný refresh-cache script, doplň aj tento riadok:
 
 ```json
 "refresh-cache": "node scripts/refresh-cache.js"
 ```
 
-Ak sa tvoj pôvodný refresh súbor volá inak, napríklad `scripts/update-cache.js`, použi:
+ALE iba vtedy, ak súbor `scripts/refresh-cache.js` v projekte naozaj existuje.
+
+Ak sa pôvodný refresh súbor volá inak, napríklad `update-cache.js`, použi:
 
 ```json
 "refresh-cache": "node scripts/update-cache.js"
 ```
 
-## Potom workflow robí
+Workflow môže zostať:
 
-```txt
-refresh-cache
-→ filmbaze-stream-repair
-→ prípadne tmdb-repair
-→ commit cache
+```yaml
+run: npm run refresh-cache-with-repair
 ```

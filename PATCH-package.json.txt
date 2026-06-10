@@ -1,8 +1,4 @@
-Do package.json do sekcie "scripts" doplň tieto riadky.
-
-Ak už máš vlastný refresh súbor, uprav cestu pri "refresh-cache" podľa reálneho názvu súboru.
-
-Príklad:
+Do package.json vlož do "scripts" toto:
 
 {
   "scripts": {
@@ -13,7 +9,11 @@ Príklad:
   }
 }
 
-Ak scripts/refresh-cache.js v tvojom projekte neexistuje, použi názov súboru, ktorý tam reálne máš, napríklad:
+POZOR:
+Ak už máš v package.json scripts, nevkladaj celý blok duplicitne.
+Len doplň chýbajúce riadky.
+
+Ak súbor scripts/refresh-cache.js neexistuje, nájdi pôvodný cache script a uprav riadok napríklad takto:
 
 "refresh-cache": "node scripts/update-cache.js"
 
