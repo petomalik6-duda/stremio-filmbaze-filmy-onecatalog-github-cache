@@ -20,7 +20,9 @@ const CACHE_CANDIDATES = [
   path.join(__dirname, "cache.json"),
   path.join(__dirname, "filmbaze-cache.json"),
   path.join(__dirname, "data.json"),
-  path.join(__dirname, "data", "items.json")
+  path.join(__dirname, "data", "items.json"),
+  path.join(__dirname, "data", "catalog.json"),
+  path.join(__dirname, "catalog.json")
 ];
 
 function readJsonSafe(file) {
@@ -36,17 +38,11 @@ function readJsonSafe(file) {
 function loadCache() {
   for (const file of CACHE_CANDIDATES) {
     const json = readJsonSafe(file);
-
     if (!json) continue;
 
     if (Array.isArray(json)) {
       console.log("[cache] loaded array from", file, "items:", json.length);
-      return {
-        file,
-        at: null,
-        sourceHash: null,
-        items: json
-      };
+      return { file, at: null, sourceHash: null, items: json };
     }
 
     if (Array.isArray(json.items)) {
@@ -71,12 +67,7 @@ function loadCache() {
   }
 
   console.warn("[cache] no cache file found");
-  return {
-    file: null,
-    at: null,
-    sourceHash: null,
-    items: []
-  };
+  return { file: null, at: null, sourceHash: null, items: [] };
 }
 
 function normalizeText(value = "") {
@@ -96,34 +87,21 @@ function isValidImdbId(value) {
 }
 
 function getStremioId(item) {
-  if (isValidImdbId(item.imdbId)) {
-    return item.imdbId;
-  }
-
-  if (isValidImdbId(item.id)) {
-    return item.id;
-  }
-
-  if (item.tmdbId) {
-    return `tmdb:${item.tmdbId}`;
-  }
-
-  if (item.id !== undefined && item.id !== null) {
-    return `filmbaze:${item.id}`;
-  }
+  if (isValidImdbId(item.imdbId)) return item.imdbId;
+  if (isValidImdbId(item.id)) return item.id;
+  if (item.tmdbId) return `tmdb:${item.tmdbId}`;
+  if (item.id !== undefined && item.id !== null) return `filmbaze:${item.id}`;
 
   const key = normalizeText(`${item.type || "movie"} ${item.name || item.title || ""} ${item.year || ""}`);
-  return `filmbaze:${key}`;
+  return `filmbaze:${key || "unknown"}`;
 }
 
 function getYear(item) {
   if (item.year) return String(item.year);
-
   if (item.releaseDate) {
     const year = String(item.releaseDate).slice(0, 4);
     if (/^\d{4}$/.test(year)) return year;
   }
-
   return "";
 }
 
@@ -137,12 +115,11 @@ function getName(item) {
 
 function toMetaPreview(item) {
   const id = getStremioId(item);
-  const type = getType(item);
   const year = getYear(item);
 
   return {
     id,
-    type,
+    type: getType(item),
     name: getName(item),
     poster: item.poster || item.posterUrl || undefined,
     background: item.background || item.backdrop || item.backdropUrl || undefined,
@@ -202,4 +179,188 @@ function toMetaDetail(item) {
   return meta;
 }
 
-function
+function matchSearch(item, search) {
+  if (!search) return true;
+  const q = normalizeText(search);
+  const haystack = normalizeText([
+    item.name,
+    item.title,
+    item.originalName,
+    item.originalTitle,
+    item.year,
+    item.imdbId,
+    item.tmdbId
+  ].filter(Boolean).join(" "));
+  return haystack.includes(q);
+}
+
+function findItemById(type, id, items) {
+  const wantedType = type === "series" ? "series" : "movie";
+
+  return items.find((item) => {
+    if (getType(item) !== wantedType) return false;
+
+    const stremioId = getStremioId(item);
+    if (stremioId === id) return true;
+    if (item.imdbId === id) return true;
+    if (String(item.tmdbId || "") === id) return true;
+    if (item.tmdbId && `tmdb:${item.tmdbId}` === id) return true;
+    if (item.id !== undefined && `filmbaze:${item.id}` === id) return true;
+
+    return false;
+  });
+}
+
+const manifest = {
+  id: ADDON_ID,
+  version: ADDON_VERSION,
+  name: "Filmbáze CZ/SK filmy a seriály",
+  description: "Jeden katalóg filmov s CZ/SK dabingom z Filmbáze JSON dát.",
+  resources: ["catalog", "meta"],
+  types: ["movie", "series"],
+  catalogs: [
+    {
+      type: "movie",
+      id: "filmbaze-filmy",
+      name: "Filmbáze – CZ/SK filmy",
+      extra: [
+        { name: "skip", isRequired: false },
+        { name: "search", isRequired: false }
+      ]
+    },
+    {
+      type: "series",
+      id: "filmbaze-serialy",
+      name: "Filmbáze – seriály v češtině",
+      extra: [
+        { name: "skip", isRequired: false },
+        { name: "search", isRequired: false }
+      ]
+    }
+  ],
+  idPrefixes: ["tt", "filmbaze:", "tmdb:"],
+  behaviorHints: {
+    configurable: false,
+    configurationRequired: false
+  }
+};
+
+app.get("/", (req, res) => {
+  res.type("html").send(`
+    <html>
+      <head><title>Filmbáze Stremio addon</title></head>
+      <body>
+        <h1>Filmbáze Stremio addon</h1>
+        <p><a href="/manifest.json">Manifest</a></p>
+        <p><a href="/health">Health</a></p>
+      </body>
+    </html>
+  `);
+});
+
+app.get("/health", (req, res) => {
+  const cache = loadCache();
+  const movieCount = cache.items.filter((item) => getType(item) === "movie").length;
+  const seriesCount = cache.items.filter((item) => getType(item) === "series").length;
+  const withImdb = cache.items.filter((item) => isValidImdbId(item.imdbId)).length;
+
+  res.json({
+    ok: true,
+    addon: ADDON_ID,
+    version: ADDON_VERSION,
+    cacheFile: cache.file,
+    items: cache.items.length,
+    movies: movieCount,
+    series: seriesCount,
+    withImdb
+  });
+});
+
+app.get("/manifest.json", (req, res) => {
+  res.json(manifest);
+});
+
+app.get("/catalog/:type/:id.json", (req, res) => {
+  try {
+    const { type, id } = req.params;
+
+    if (!["movie", "series"].includes(type)) return res.json({ metas: [] });
+    if (type === "movie" && id !== "filmbaze-filmy") return res.json({ metas: [] });
+    if (type === "series" && id !== "filmbaze-serialy") return res.json({ metas: [] });
+
+    const skip = Math.max(0, Number(req.query.skip || 0));
+    const search = req.query.search ? String(req.query.search) : "";
+    const cache = loadCache();
+
+    const filtered = cache.items
+      .filter((item) => getType(item) === type)
+      .filter((item) => matchSearch(item, search))
+      .sort((a, b) => {
+        const ao = Number(a.channelOrder ?? a.order ?? 999999);
+        const bo = Number(b.channelOrder ?? b.order ?? 999999);
+        if (ao !== bo) return ao - bo;
+
+        const ad = new Date(a.dateAdded || a.releaseDate || 0).getTime();
+        const bd = new Date(b.dateAdded || b.releaseDate || 0).getTime();
+        return bd - ad;
+      });
+
+    const metas = filtered.slice(skip, skip + PAGE_SIZE).map(toMetaPreview);
+    res.json({ metas });
+  } catch (err) {
+    console.error("[catalog] error", err);
+    res.status(500).json({ metas: [], error: err.message });
+  }
+});
+
+app.get("/meta/:type/:id.json", (req, res) => {
+  try {
+    const { type, id } = req.params;
+    const cache = loadCache();
+    const item = findItemById(type, id, cache.items);
+
+    if (!item) {
+      console.warn("[meta] item not found", type, id);
+      return res.json({ meta: null });
+    }
+
+    res.json({ meta: toMetaDetail(item) });
+  } catch (err) {
+    console.error("[meta] error", err);
+    res.status(500).json({ meta: null, error: err.message });
+  }
+});
+
+app.get("/debug/item/:type/:id", (req, res) => {
+  const { type, id } = req.params;
+  const cache = loadCache();
+  const item = findItemById(type, id, cache.items);
+
+  if (!item) {
+    return res.status(404).json({
+      ok: false,
+      error: "item not found",
+      type,
+      id,
+      cacheFile: cache.file,
+      items: cache.items.length
+    });
+  }
+
+  res.json({
+    ok: true,
+    type,
+    id,
+    stremioId: getStremioId(item),
+    imdbId: item.imdbId || null,
+    tmdbId: item.tmdbId || null,
+    filmbazeId: item.id || null,
+    name: getName(item),
+    originalName: item.originalName || null,
+    item
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Filmbáze addon running on port ${PORT}`);
+});
