@@ -30,6 +30,8 @@ jobs:
           ls -la
           echo "Scripts folder:"
           ls -la scripts || true
+          echo "Data folder:"
+          ls -la data || true
           echo "Package scripts:"
           npm run || true
 
@@ -52,7 +54,7 @@ jobs:
           elif npm run | grep -q "refresh-cache"; then
             npm run refresh-cache
           else
-            echo "No refresh cache script found. Skipping refresh step."
+            echo "No refresh cache script found. Continuing with IMDb repair only."
           fi
 
       - name: Repair missing IMDb IDs from TMDB
@@ -69,6 +71,10 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add data cache *.json 2>/dev/null || true
-          git diff --cached --quiet && echo "No cache changes to commit" || git commit -m "Refresh Filmbaze cache"
-          git push || true
+          git add .
+          if git diff --cached --quiet; then
+            echo "No cache changes to commit"
+          else
+            git commit -m "Refresh Filmbaze cache"
+            git push
+          fi
