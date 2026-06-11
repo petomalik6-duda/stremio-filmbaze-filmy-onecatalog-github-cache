@@ -11,8 +11,8 @@ const app = express();
 const PORT = process.env.PORT || 7000;
 const PAGE_SIZE = Number(process.env.PAGE_SIZE || 100);
 
-const ADDON_ID = "cz.filmbaze.json.filmy.serialy.v331";
-const ADDON_VERSION = "3.3.1";
+const ADDON_ID = "cz.filmbaze.json.filmy.serialy.v332";
+const ADDON_VERSION = "3.3.2";
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -70,8 +70,14 @@ function extractItemsFromJson(json) {
 
   if (Array.isArray(json.items)) return json.items;
   if (Array.isArray(json.metas)) return json.metas;
-  if (Array.isArray(json.movies)) return json.movies;
-  if (Array.isArray(json.series)) return json.series;
+
+  // Ak má cache oddelené movies/series, spoj ich dokopy.
+  if (Array.isArray(json.movies) || Array.isArray(json.series)) {
+    return [
+      ...(Array.isArray(json.movies) ? json.movies.map((item) => ({ ...item, type: item.type || "movie" })) : []),
+      ...(Array.isArray(json.series) ? json.series.map((item) => ({ ...item, type: item.type || "series" })) : [])
+    ];
+  }
 
   if (json.data && Array.isArray(json.data.items)) return json.data.items;
   if (json.cache && Array.isArray(json.cache.items)) return json.cache.items;
@@ -105,6 +111,8 @@ function loadCache() {
     path.join(__dirname, "data", "filmbaze.json"),
     path.join(__dirname, "data", "catalog.json"),
     path.join(__dirname, "data", "items.json"),
+    path.join(__dirname, "cache", "cache.json"),
+    path.join(__dirname, "cache", "filmbaze-cache.json"),
     path.join(__dirname, "cache.json"),
     path.join(__dirname, "filmbaze-cache.json"),
     path.join(__dirname, "filmbaze.json"),
@@ -174,8 +182,16 @@ function isValidImdbId(value) {
   return typeof value === "string" && /^tt\d{5,}$/.test(value);
 }
 
+function asNumber(value, fallback = undefined) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function getType(item) {
-  return item?.type === "series" ? "series" : "movie";
+  const raw = String(item?.type || "").toLowerCase();
+
+  if (raw === "series" || raw === "tv" || raw === "show") return "series";
+  return "movie";
 }
 
 function getYear(item) {
@@ -183,6 +199,11 @@ function getYear(item) {
 
   if (item?.releaseDate) {
     const year = String(item.releaseDate).slice(0, 4);
+    if (/^\d{4}$/.test(year)) return year;
+  }
+
+  if (item?.firstAirDate) {
+    const year = String(item.firstAirDate).slice(0, 4);
     if (/^\d{4}$/.test(year)) return year;
   }
 
@@ -214,6 +235,18 @@ function getStremioId(item) {
   return `filmbaze:${key || "unknown"}`;
 }
 
+function getPoster(item) {
+  return item?.poster || item?.posterUrl || item?.image || undefined;
+}
+
+function getBackground(item) {
+  return item?.background || item?.backdrop || item?.backdropUrl || getPoster(item) || undefined;
+}
+
+function getDescription(item) {
+  return item?.description || item?.overview || item?.plot || undefined;
+}
+
 function toMetaPreview(item) {
   const id = getStremioId(item);
   const type = getType(item);
@@ -223,14 +256,14 @@ function toMetaPreview(item) {
     id,
     type,
     name: getName(item),
-    poster: item.poster || item.posterUrl || undefined,
-    background: item.background || item.backdrop || item.backdropUrl || undefined,
-    description: item.description || item.overview || undefined,
+    poster: getPoster(item),
+    background: getBackground(item),
+    description: getDescription(item),
     releaseInfo: year || undefined,
     imdbId: isValidImdbId(item.imdbId) ? item.imdbId : undefined,
     genres: Array.isArray(item.genres) ? item.genres : undefined,
     behaviorHints: {
-      defaultVideoId: id
+      defaultVideoId: type === "series" ? `${id}:1:1` : id
     }
   };
 
@@ -239,6 +272,89 @@ function toMetaPreview(item) {
   }
 
   return meta;
+}
+
+function episodeId(baseId, season, episode, existingId) {
+  if (existingId && typeof existingId === "string") return existingId;
+  return `${baseId}:${season}:${episode}`;
+}
+
+function episodeTitle(seriesName, season, episode, title) {
+  if (title) return title;
+  return `${seriesName} S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")}`;
+}
+
+function normalizeEpisode(baseId, seriesName, item, raw, index) {
+  const season = asNumber(
+    raw?.season ?? raw?.seasonNumber ?? raw?.s,
+    1
+  );
+
+  const episode = asNumber(
+    raw?.episode ?? raw?.episodeNumber ?? raw?.number ?? raw?.e,
+    index + 1
+  );
+
+  return {
+    id: episodeId(baseId, season, episode, raw?.id),
+    title: episodeTitle(seriesName, season, episode, raw?.title || raw?.name),
+    season,
+    episode,
+    released: raw?.released || raw?.airDate || raw?.firstAired || item.releaseDate || item.firstAirDate || undefined,
+    overview: raw?.overview || raw?.description || getDescription(item),
+    thumbnail: raw?.thumbnail || raw?.poster || raw?.image || getPoster(item) || getBackground(item)
+  };
+}
+
+function buildSeriesVideos(item, baseId) {
+  const seriesName = getName(item);
+  const videos = [];
+
+  if (Array.isArray(item.videos) && item.videos.length) {
+    item.videos.forEach((video, index) => {
+      videos.push(normalizeEpisode(baseId, seriesName, item, video, index));
+    });
+  } else if (Array.isArray(item.episodes) && item.episodes.length) {
+    item.episodes.forEach((episode, index) => {
+      videos.push(normalizeEpisode(baseId, seriesName, item, episode, index));
+    });
+  } else if (Array.isArray(item.seasons) && item.seasons.length) {
+    for (const seasonBlock of item.seasons) {
+      const seasonNumber = asNumber(seasonBlock?.season ?? seasonBlock?.seasonNumber ?? seasonBlock?.number, 1);
+      const eps = Array.isArray(seasonBlock?.episodes) ? seasonBlock.episodes : [];
+
+      eps.forEach((episode, index) => {
+        videos.push(normalizeEpisode(
+          baseId,
+          seriesName,
+          item,
+          {
+            ...episode,
+            season: episode?.season ?? seasonNumber
+          },
+          index
+        ));
+      });
+    }
+  }
+
+  // Fallback: Stremio potrebuje aspoň jednu epizódu, aby sa detail správal ako seriál.
+  if (!videos.length) {
+    videos.push({
+      id: `${baseId}:1:1`,
+      title: `${seriesName} S01E01`,
+      season: 1,
+      episode: 1,
+      released: item.releaseDate || item.firstAirDate || undefined,
+      overview: getDescription(item),
+      thumbnail: getPoster(item) || getBackground(item)
+    });
+  }
+
+  return videos.sort((a, b) => {
+    if (a.season !== b.season) return a.season - b.season;
+    return a.episode - b.episode;
+  });
 }
 
 function toMetaDetail(item) {
@@ -250,20 +366,18 @@ function toMetaDetail(item) {
     id,
     type,
     name: getName(item),
-    poster: item.poster || item.posterUrl || undefined,
-    background: item.background || item.backdrop || item.backdropUrl || undefined,
-    description: item.description || item.overview || undefined,
+    poster: getPoster(item),
+    background: getBackground(item),
+    description: getDescription(item),
     releaseInfo: year || undefined,
     imdbId: isValidImdbId(item.imdbId) ? item.imdbId : undefined,
     genres: Array.isArray(item.genres) ? item.genres : undefined,
-    released: item.releaseDate || undefined,
+    released: item.releaseDate || item.firstAirDate || undefined,
     country: item.country || undefined,
     director: item.director || undefined,
     cast: Array.isArray(item.cast) ? item.cast : undefined,
     videos: [],
-    behaviorHints: {
-      defaultVideoId: id
-    }
+    behaviorHints: {}
   };
 
   if (item.runtime) {
@@ -276,14 +390,23 @@ function toMetaDetail(item) {
         id,
         title: getName(item),
         released: item.releaseDate || undefined,
-        overview: item.description || undefined,
-        thumbnail: item.poster || item.background || undefined
+        overview: getDescription(item),
+        thumbnail: getPoster(item) || getBackground(item)
       }
     ];
+
+    meta.behaviorHints = {
+      defaultVideoId: id
+    };
   }
 
-  if (type === "series" && Array.isArray(item.videos)) {
-    meta.videos = item.videos;
+  if (type === "series") {
+    const videos = buildSeriesVideos(item, id);
+
+    meta.videos = videos;
+    meta.behaviorHints = {
+      defaultVideoId: videos[0]?.id || `${id}:1:1`
+    };
   }
 
   return meta;
@@ -427,8 +550,8 @@ function handleCatalog(req, res) {
 
         if (ao !== bo) return ao - bo;
 
-        const ad = new Date(a.dateAdded || a.releaseDate || 0).getTime();
-        const bd = new Date(b.dateAdded || b.releaseDate || 0).getTime();
+        const ad = new Date(a.dateAdded || a.releaseDate || a.firstAirDate || 0).getTime();
+        const bd = new Date(b.dateAdded || b.releaseDate || b.firstAirDate || 0).getTime();
 
         return bd - ad;
       });
@@ -524,14 +647,16 @@ app.get("/debug/cache", (req, res) => {
     cacheFile: cache.file,
     explicitCacheFile: cache.explicit,
     items: cache.items.length,
-    sample: cache.items.slice(0, 5).map((item) => ({
+    sample: cache.items.slice(0, 10).map((item) => ({
       id: item.id,
       stremioId: getStremioId(item),
       name: getName(item),
       type: getType(item),
       year: getYear(item),
       imdbId: item.imdbId || null,
-      tmdbId: item.tmdbId || null
+      tmdbId: item.tmdbId || null,
+      videos: Array.isArray(item.videos) ? item.videos.length : 0,
+      episodes: Array.isArray(item.episodes) ? item.episodes.length : 0
     }))
   });
 });
@@ -552,6 +677,8 @@ app.get("/debug/item/:type/:id", (req, res) => {
     });
   }
 
+  const meta = toMetaDetail(item);
+
   return res.json({
     ok: true,
     type,
@@ -562,6 +689,11 @@ app.get("/debug/item/:type/:id", (req, res) => {
     filmbazeId: item.id || null,
     name: getName(item),
     originalName: item.originalName || null,
+    detectedType: getType(item),
+    metaType: meta.type,
+    videosCount: Array.isArray(meta.videos) ? meta.videos.length : 0,
+    defaultVideoId: meta.behaviorHints?.defaultVideoId || null,
+    firstVideo: Array.isArray(meta.videos) ? meta.videos[0] || null : null,
     item
   });
 });
