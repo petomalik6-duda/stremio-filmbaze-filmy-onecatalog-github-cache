@@ -1,3 +1,11 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const {
+  getStremioId,
+  patchMetaId,
+  findItemByAnyId,
+} = require("./scripts/filmbaze-stremio-id.cjs");
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
