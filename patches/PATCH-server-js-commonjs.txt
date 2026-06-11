@@ -1,0 +1,45 @@
+PATCH PRE server.js, keď projekt používa CommonJS require()
+==========================================================
+
+1) Na začiatok server.js pridaj:
+
+const {
+  getStremioId,
+  patchMetaId,
+  findItemByAnyId,
+} = require("./scripts/filmbaze-stremio-id.cjs");
+
+2) Manifest nechaj catalog/meta only:
+
+resources: ["catalog", "meta"],
+idPrefixes: ["tt", "filmbaze:", "tmdb:"],
+
+3) Pri tvorbe catalog metas nastav:
+
+const stremioId = getStremioId(item);
+
+return {
+  id: stremioId,
+  type: item.type,
+  name: item.name,
+  poster: item.poster,
+  background: item.background,
+  description: item.description,
+  releaseInfo: item.year ? String(item.year) : undefined,
+  imdbId: item.imdbId || undefined,
+  behaviorHints: {
+    defaultVideoId: stremioId,
+  },
+};
+
+4) Pri meta lookup nahraď hľadanie podľa filmbaze:id:
+
+const item = findItemByAnyId(items, id);
+
+5) Pri vrátení meta použi:
+
+return res.json({ meta: patchMetaId(meta, item) });
+
+alebo v SDK:
+
+return { meta: patchMetaId(meta, item) };

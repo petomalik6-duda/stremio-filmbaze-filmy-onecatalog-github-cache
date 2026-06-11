@@ -1,38 +1,60 @@
-# Filmbaze IMDb ID only repair
+# Filmbáze IMDb Stremio ID fix
 
-Tento balík nerobí pôvodný refresh-cache. Opravuje iba existujúcu cache:
+Tento balík nerobí z Filmbáze stream addon. Filmbáze ostáva správne iba catalog/meta addon.
 
-- nájde položky s `tmdbId`, ale bez `imdbId`
-- cez TMDB external_ids doplní `imdbId`
-- neberie `primaryVideo: null` ako chybu
+Oprava zabezpečí, že keď položka má `imdbId`, Stremio ID v katalógu a meta bude IMDb ID (`tt...`).
+Potom Fusion alebo iné stream addony dostanú správne ID a môžu nájsť stream.
 
-## Prečo tento balík
+## Prečo je to potrebné
 
-Predošlý wrapper zlyhal, lebo v repozitári sa nenašiel pôvodný refresh súbor:
+Barvy zla: Černá už má v cache:
 
-`Original refresh cache script not found`
-
-Preto je tento balík oddelený a bezpečný. Môže bežať po tvojom existujúcom refresh workflow alebo samostatne denne.
-
-## Nahraj do repo
-
-Nahraj:
-
-```txt
-scripts/filmbaze-imdbid-repair.cjs
-.github/workflows/repair-imdbid.yml
+```json
+"imdbId": "tt38681832",
+"tmdbId": 1560681
 ```
 
-## Secret
+Ak však catalog/meta stále vracia:
 
-V GitHub repo musí byť:
-
-```txt
-TMDB_API_KEY
+```json
+"id": "filmbaze:809608"
 ```
 
-## Spustenie
+iné stream addony to nemusia nájsť. Správne má vracať:
 
-GitHub Actions → `Repair Filmbaze IMDb IDs` → Run workflow.
+```json
+"id": "tt38681832"
+```
 
-Denný beh je nastavený na 03:45 UTC, teda približne po refresh-cache.
+## Súbory
+
+Nahraj do repozitára:
+
+```txt
+scripts/filmbaze-stremio-id.cjs
+scripts/check-stremio-ids.cjs
+.github/workflows/check-stremio-ids.yml
+patches/PATCH-server-js-esm.txt
+patches/PATCH-server-js-commonjs.txt
+```
+
+## Postup
+
+1. Nahraj súbory zo ZIPu.
+2. Otvor `patches/PATCH-server-js-esm.txt`, ak máš v package.json `"type":"module"`.
+3. Uprav `server.js` podľa patchu.
+4. Commit + push.
+5. Render: Manual Deploy → Deploy latest commit.
+6. Skontroluj manifest. Má zostať `resources:["catalog","meta"]`.
+7. Skontroluj catalog JSON a nájdi Barvy zla. Musí mať `id:"tt38681832"`.
+8. V Stremio odinštaluj a znovu nainštaluj addon, aby nepoužívalo staré `filmbaze:` ID.
+
+## Test v GitHub Actions
+
+Spusti workflow:
+
+```txt
+Check Filmbaze Stremio IDs
+```
+
+V logu uvidíš, či Barvy zla mapuje na `tt38681832`.

@@ -1,0 +1,121 @@
+PATCH PRE server.js, keď má package.json "type": "module"
+==========================================================
+
+Cieľ:
+- Filmbáze ostane iba catalog/meta addon.
+- Nepridávame stream endpoint.
+- Ak položka má imdbId, catalog aj meta musia vracať id = imdbId, napr. tt38681832.
+- Vďaka tomu Fusion / iné stream addony dostanú IMDb ID a vedia hľadať stream.
+
+1) Na začiatok server.js pridaj:
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const {
+  getStremioId,
+  patchMetaId,
+  findItemByAnyId,
+} = require("./scripts/filmbaze-stremio-id.cjs");
+
+Ak už createRequire v server.js máš, nepridávaj ho druhýkrát. Len doplň require helperu.
+
+----------------------------------------------------------
+
+2) V manifeste nechaj resources iba catalog/meta:
+
+resources: ["catalog", "meta"],
+
+ALE idPrefixes odporúčam upraviť na:
+
+idPrefixes: ["tt", "filmbaze:", "tmdb:"],
+
+Stream resource nepridávaj, ak chceš aby streamy hľadali Fusion / iné addony.
+
+----------------------------------------------------------
+
+3) V časti, kde tvoríš katalog metas, nájdi niečo podobné:
+
+return {
+  id: `filmbaze:${item.id}`,
+  type: item.type,
+  name: item.name,
+  poster: item.poster,
+  ...
+};
+
+Nahraď id za getStremioId(item):
+
+const stremioId = getStremioId(item);
+
+return {
+  id: stremioId,
+  type: item.type,
+  name: item.name,
+  poster: item.poster,
+  background: item.background,
+  description: item.description,
+  releaseInfo: item.year ? String(item.year) : undefined,
+  imdbId: item.imdbId || undefined,
+  behaviorHints: {
+    defaultVideoId: stremioId,
+  },
+};
+
+Najdôležitejšie je, aby Barvy zla vracalo:
+
+id: "tt38681832"
+
+nie:
+
+id: "filmbaze:809608"
+
+----------------------------------------------------------
+
+4) V meta route/handleri musíš vedieť nájsť položku aj podľa starého aj nového ID.
+
+Ak máš niečo ako:
+
+const item = items.find(x => `filmbaze:${x.id}` === id);
+
+nahraď to za:
+
+const item = findItemByAnyId(items, id);
+
+Potom meta vytvor a pred odoslaním oprav ID:
+
+const meta = {
+  id: `filmbaze:${item.id}`,
+  type: item.type,
+  name: item.name,
+  poster: item.poster,
+  background: item.background,
+  description: item.description,
+  releaseInfo: item.year ? String(item.year) : undefined,
+  imdbId: item.imdbId || undefined,
+};
+
+return res.json({ meta: patchMetaId(meta, item) });
+
+Ak používaš Stremio SDK defineMetaHandler, rovnaká logika:
+
+return { meta: patchMetaId(meta, item) };
+
+----------------------------------------------------------
+
+5) Po deployi skontroluj catalog JSON.
+
+Nájdi Barvy zla v:
+
+/catalog/movie/filmbaze-filmy.json
+
+alebo podľa tvojho route tvaru.
+
+Musí mať:
+
+"id": "tt38681832"
+
+Keď stále má:
+
+"id": "filmbaze:809608"
+
+patch nie je zapojený v catalog route.
