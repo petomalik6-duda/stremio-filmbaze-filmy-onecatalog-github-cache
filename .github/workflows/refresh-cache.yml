@@ -2,11 +2,20 @@ name: Refresh Filmbaze cache
 
 on:
   workflow_dispatch:
+    inputs:
+      force_full:
+        description: "Force full rebuild of cache/metas"
+        required: false
+        default: "false"
   schedule:
     - cron: "20 3 * * *"
 
 permissions:
   contents: write
+
+concurrency:
+  group: refresh-filmbaze-cache
+  cancel-in-progress: false
 
 jobs:
   refresh:
@@ -15,6 +24,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,7 +33,12 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Show project files
         run: |
@@ -35,44 +51,30 @@ jobs:
           echo "Package scripts:"
           npm run || true
 
-      - name: Run existing refresh cache
+      - name: Run Filmbaze refresh cache
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
         run: |
-          if [ -f scripts/refresh-cache.js ]; then
-            echo "Running scripts/refresh-cache.js"
-            node scripts/refresh-cache.js
-          elif [ -f scripts/refresh-cache.cjs ]; then
-            echo "Running scripts/refresh-cache.cjs"
-            node scripts/refresh-cache.cjs
-          elif [ -f scripts/update-cache.js ]; then
-            echo "Running scripts/update-cache.js"
-            node scripts/update-cache.js
-          elif [ -f scripts/update-cache.cjs ]; then
-            echo "Running scripts/update-cache.cjs"
-            node scripts/update-cache.cjs
-          elif [ -f scripts/build-cache.js ]; then
-            echo "Running scripts/build-cache.js"
-            node scripts/build-cache.js
-          elif [ -f scripts/build-cache.cjs ]; then
-            echo "Running scripts/build-cache.cjs"
-            node scripts/build-cache.cjs
-          elif npm run | grep -q "refresh-cache"; then
-            echo "Running npm run refresh-cache"
-            npm run refresh-cache
+          if npm run | grep -q " refresh"; then
+            echo "Running npm run refresh"
+            npm run refresh
+          elif [ -f scripts/refresh.js ]; then
+            echo "Running node scripts/refresh.js"
+            node scripts/refresh.js
+          elif [ -f scraper.js ]; then
+            echo "Running node scraper.js"
+            node scraper.js
           else
-            echo "ERROR: No refresh cache script found."
-            echo "Refresh was NOT executed."
-            echo "Available root files:"
-            ls -la
-            echo "Available scripts:"
-            ls -la scripts || true
+            echo "ERROR: No real Filmbaze refresh script found."
+            echo "Expected package script 'refresh' or scripts/refresh.js."
             exit 1
           fi
 
       - name: Repair missing IMDb IDs from TMDB
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          REPAIR_LIMIT: "800"
         run: |
           if [ -f scripts/filmbaze-imdbid-repair.cjs ]; then
             echo "Running IMDb repair"
@@ -83,25 +85,31 @@ jobs:
 
       - name: Show cache stats after refresh
         run: |
-          echo "JSON files:"
-          find . -maxdepth 4 -name "*.json" -not -path "./node_modules/*" -print
-
           echo "Data folder:"
           ls -lah data || true
-
-          echo "Search for cache fields:"
-          grep -R '"items"' data *.json 2>/dev/null | head -20 || true
-          grep -R '"sourceHash"' data *.json 2>/dev/null | head -20 || true
-          grep -R '"imdbRepairAt"' data *.json 2>/dev/null | head -20 || true
+          echo "Cache summary:"
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const files = ['data/catalog-cache.json','data/cache.json','data/filmbaze-cache.json'].filter(fs.existsSync);
+          for (const file of files) {
+            const j = JSON.parse(fs.readFileSync(file, 'utf8'));
+            const items = Array.isArray(j.items) ? j.items : [];
+            const metas = Array.isArray(j.metas) ? j.metas : [];
+            console.log(file, { items: items.length, metas: metas.length, sourceHash: j.sourceHash, at: j.at, lastError: j.lastError });
+            console.log('first items:', items.slice(0, 3).map(x => ({ id:x.id, name:x.name, type:x.type, imdbId:x.imdbId, tmdbId:x.tmdbId, dateAdded:x.dateAdded })));
+          }
+          NODE
 
       - name: Commit updated cache
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add .
+          git add data scripts package.json package-lock.json .github/workflows/refresh-cache.yml 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No cache changes to commit"
           else
             git commit -m "Refresh Filmbaze cache"
+            git pull --rebase --autostash
             git push
           fi
