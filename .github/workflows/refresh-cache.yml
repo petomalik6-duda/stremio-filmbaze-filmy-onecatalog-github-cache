@@ -40,21 +40,34 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: |
           if [ -f scripts/refresh-cache.js ]; then
+            echo "Running scripts/refresh-cache.js"
             node scripts/refresh-cache.js
           elif [ -f scripts/refresh-cache.cjs ]; then
+            echo "Running scripts/refresh-cache.cjs"
             node scripts/refresh-cache.cjs
           elif [ -f scripts/update-cache.js ]; then
+            echo "Running scripts/update-cache.js"
             node scripts/update-cache.js
           elif [ -f scripts/update-cache.cjs ]; then
+            echo "Running scripts/update-cache.cjs"
             node scripts/update-cache.cjs
           elif [ -f scripts/build-cache.js ]; then
+            echo "Running scripts/build-cache.js"
             node scripts/build-cache.js
           elif [ -f scripts/build-cache.cjs ]; then
+            echo "Running scripts/build-cache.cjs"
             node scripts/build-cache.cjs
           elif npm run | grep -q "refresh-cache"; then
+            echo "Running npm run refresh-cache"
             npm run refresh-cache
           else
-            echo "No refresh cache script found. Continuing with IMDb repair only."
+            echo "ERROR: No refresh cache script found."
+            echo "Refresh was NOT executed."
+            echo "Available root files:"
+            ls -la
+            echo "Available scripts:"
+            ls -la scripts || true
+            exit 1
           fi
 
       - name: Repair missing IMDb IDs from TMDB
@@ -62,10 +75,24 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: |
           if [ -f scripts/filmbaze-imdbid-repair.cjs ]; then
+            echo "Running IMDb repair"
             node scripts/filmbaze-imdbid-repair.cjs
           else
             echo "scripts/filmbaze-imdbid-repair.cjs not found, skipping IMDb repair."
           fi
+
+      - name: Show cache stats after refresh
+        run: |
+          echo "JSON files:"
+          find . -maxdepth 4 -name "*.json" -not -path "./node_modules/*" -print
+
+          echo "Data folder:"
+          ls -lah data || true
+
+          echo "Search for cache fields:"
+          grep -R '"items"' data *.json 2>/dev/null | head -20 || true
+          grep -R '"sourceHash"' data *.json 2>/dev/null | head -20 || true
+          grep -R '"imdbRepairAt"' data *.json 2>/dev/null | head -20 || true
 
       - name: Commit updated cache
         run: |
