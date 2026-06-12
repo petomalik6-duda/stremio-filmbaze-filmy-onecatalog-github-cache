@@ -39,14 +39,18 @@ jobs:
 
       - name: Refresh cache
         run: |
-          if npm run | grep -q "refresh-cache"; then
-            npm run refresh-cache
+          if npm run | grep -q " refresh"; then
+            npm run refresh
+          elif [ -f scripts/refresh.js ]; then
+            node scripts/refresh.js
+          elif [ -f refresh-cache-with-repair.cjs ]; then
+            node refresh-cache-with-repair.cjs
           elif [ -f scripts/refresh-cache.js ]; then
             node scripts/refresh-cache.js
           elif [ -f refresh-cache.js ]; then
             node refresh-cache.js
           else
-            echo "ERROR: No refresh cache script found."
+            echo "ERROR: No refresh script found."
             echo "Available files:"
             ls -la
             echo "Available scripts:"
@@ -61,9 +65,17 @@ jobs:
 
           # uložíme nový cache súbor bokom
           mkdir -p /tmp/filmbaze-cache
-          cp data/catalog-cache.json /tmp/filmbaze-cache/catalog-cache.json
 
-          # stiahneme najnovší main z GitHubu bez rebase konfliktu
+          if [ -f data/catalog-cache.json ]; then
+            cp data/catalog-cache.json /tmp/filmbaze-cache/catalog-cache.json
+          else
+            echo "ERROR: data/catalog-cache.json was not created."
+            echo "Data folder:"
+            ls -la data || true
+            exit 1
+          fi
+
+          # stiahneme najnovší main bez rebase konfliktu
           git fetch origin main
           git reset --hard origin/main
 
