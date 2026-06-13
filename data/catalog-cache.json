@@ -1,5 +1,5 @@
 {
-  "at": 1781293374001,
+  "at": 1781351014531,
   "sourceHash": "f1100767493d15ef5a3de2ed1f36f997bdd0fe9a",
   "items": [
     {
@@ -118,17 +118,13 @@
       "dateAdded": "2026-06-08",
       "lang": "CZ/SK",
       "primaryVideo": null,
-      "imdbId": "tt38681832",
+      "imdbId": null,
       "tmdbId": 1560681,
       "originalName": "Kolory zła: Czerń",
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 4,
       "page": 1,
-      "detailChecked": true,
-      "externalIds": {
-        "imdb_id": "tt38681832"
-      },
-      "imdbRepairAt": "2026-06-13T11:26:50.906Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -1359,17 +1355,13 @@
       "dateAdded": "2025-10-22",
       "lang": "CZ/SK",
       "primaryVideo": null,
-      "imdbId": "tt38573622",
+      "imdbId": null,
       "tmdbId": 1566170,
       "originalName": "Stvůry",
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 54,
       "page": 2,
-      "detailChecked": true,
-      "externalIds": {
-        "imdb_id": "tt38573622"
-      },
-      "imdbRepairAt": "2026-06-13T11:26:51.085Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -4069,17 +4061,13 @@
       "dateAdded": "2025-10-15",
       "lang": "CZ/SK",
       "primaryVideo": null,
-      "imdbId": "tt38098747",
+      "imdbId": null,
       "tmdbId": 1355213,
       "originalName": "Cukrkandl",
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 163,
       "page": 4,
-      "detailChecked": true,
-      "externalIds": {
-        "imdb_id": "tt38098747"
-      },
-      "imdbRepairAt": "2026-06-13T11:26:51.267Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -4601,9 +4589,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 184,
       "page": 4,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:51.451Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -5822,9 +5808,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 233,
       "page": 5,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:51.632Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -6074,9 +6058,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 243,
       "page": 5,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:51.866Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -11592,9 +11574,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 464,
       "page": 10,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:52.052Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -12919,9 +12899,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 517,
       "page": 11,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:52.230Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -14970,9 +14948,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 599,
       "page": 12,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:52.411Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
@@ -23394,9 +23370,7 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 936,
       "page": 19,
-      "detailChecked": true,
-      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
-      "imdbRepairAt": "2026-06-13T11:26:52.592Z"
+      "detailChecked": true
     },
     {
       "source": "Filmbáze",
