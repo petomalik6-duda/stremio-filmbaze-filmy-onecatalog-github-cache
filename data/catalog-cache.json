@@ -317,13 +317,17 @@
       "dateAdded": "2026-06-08",
       "lang": "CZ/SK",
       "primaryVideo": null,
-      "imdbId": null,
+      "imdbId": "tt38681832",
       "tmdbId": 1560681,
       "originalName": "Kolory zła: Czerń",
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 12,
       "page": 1,
-      "detailChecked": true
+      "detailChecked": true,
+      "externalIds": {
+        "imdb_id": "tt38681832"
+      },
+      "imdbRepairAt": "2026-06-17T14:41:19.890Z"
     },
     {
       "source": "Filmbáze",
@@ -1554,13 +1558,17 @@
       "dateAdded": "2025-10-22",
       "lang": "CZ/SK",
       "primaryVideo": null,
-      "imdbId": null,
+      "imdbId": "tt38573622",
       "tmdbId": 1566170,
       "originalName": "Stvůry",
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 62,
       "page": 2,
-      "detailChecked": true
+      "detailChecked": true,
+      "externalIds": {
+        "imdb_id": "tt38573622"
+      },
+      "imdbRepairAt": "2026-06-17T14:41:20.099Z"
     },
     {
       "source": "Filmbáze",
@@ -4260,13 +4268,17 @@
       "dateAdded": "2025-10-15",
       "lang": "CZ/SK",
       "primaryVideo": null,
-      "imdbId": null,
+      "imdbId": "tt38098747",
       "tmdbId": 1355213,
       "originalName": "Cukrkandl",
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 171,
       "page": 4,
-      "detailChecked": true
+      "detailChecked": true,
+      "externalIds": {
+        "imdb_id": "tt38098747"
+      },
+      "imdbRepairAt": "2026-06-17T14:41:20.309Z"
     },
     {
       "source": "Filmbáze",
@@ -4788,7 +4800,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 192,
       "page": 4,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:20.518Z"
     },
     {
       "source": "Filmbáze",
@@ -6007,7 +6021,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 241,
       "page": 5,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:20.730Z"
     },
     {
       "source": "Filmbáze",
@@ -6257,7 +6273,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 251,
       "page": 6,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:20.944Z"
     },
     {
       "source": "Filmbáze",
@@ -11773,7 +11791,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 472,
       "page": 10,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:21.154Z"
     },
     {
       "source": "Filmbáze",
@@ -13098,7 +13118,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 525,
       "page": 11,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:21.368Z"
     },
     {
       "source": "Filmbáze",
@@ -15147,7 +15169,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 607,
       "page": 13,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:21.580Z"
     },
     {
       "source": "Filmbáze",
@@ -23569,7 +23593,9 @@
       "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
       "channelOrder": 944,
       "page": 19,
-      "detailChecked": true
+      "detailChecked": true,
+      "imdbRepairStatus": "tmdb_external_ids_without_imdb",
+      "imdbRepairAt": "2026-06-17T14:41:21.789Z"
     },
     {
       "source": "Filmbáze",
