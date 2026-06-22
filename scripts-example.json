@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "start": "node server.js",
-    "refresh-cache": "node scripts/refresh-cache.js",
-    "repair-filmbaze-streams": "node scripts/filmbaze-stream-repair.js",
-    "refresh-cache-with-repair": "node scripts/refresh-cache-with-repair.js"
-  }
-}
