@@ -35,6 +35,10 @@ function isStale() {
   return !cache.at || Date.now() - cache.at > CACHE_TTL_MS;
 }
 
+function seriesNeedsEpisodeRepair(meta) {
+  return meta?.type === 'series' && (!Array.isArray(meta.videos) || meta.videos.length === 0);
+}
+
 function localId(item) {
   return `filmbaze:${item.type}:${item.id}`;
 }
@@ -75,13 +79,15 @@ function toMeta(item, tmdb = null) {
     ].filter(Boolean).join('\n\n'),
     releaseInfo: year ? String(year) : undefined,
     year,
+    imdbId: imdbId || undefined,
+    tmdbId: tmdb?.tmdbId || item.tmdbId || undefined,
     runtime: tmdb?.runtime ? `${tmdb.runtime} min` : item.runtime ? `${item.runtime} min` : undefined,
     genres: tmdb?.genres || ['CZ/SK'],
     imdbRating: tmdb?.rating || (item.rating ? String(item.rating) : undefined),
     cast: tmdb?.cast || [],
     director: tmdb?.director || [],
     behaviorHints: item.type === 'series'
-      ? { defaultVideoId: seriesVideos[0]?.id || id }
+      ? { defaultVideoId: seriesVideos[0]?.id || `${id}:1:1` }
       : { defaultVideoId: id },
     videos: item.type === 'series' ? seriesVideos : undefined,
     seriesInfo: item.type === 'series' ? { episodeCount: seriesVideos.length } : undefined,
@@ -186,7 +192,15 @@ export async function refreshCache({ forceFull = false } = {}) {
         throw new Error('Filmbáze JSON returned 0 items.');
       }
 
-      if (!forceFull && current.sourceHash === fetched.sourceHash && current.metas.length) {
+      const missingSeriesEpisodes = (current.metas || []).filter(seriesNeedsEpisodeRepair).length;
+      const canRepairSeriesEpisodes = ENRICH_SERIES_LIMIT > 0;
+
+      if (
+        !forceFull &&
+        current.sourceHash === fetched.sourceHash &&
+        current.metas.length &&
+        !(canRepairSeriesEpisodes && missingSeriesEpisodes > 0)
+      ) {
         setStage('source-unchanged');
         cache = {
           ...current,
@@ -204,6 +218,10 @@ export async function refreshCache({ forceFull = false } = {}) {
         return cache.metas;
       }
 
+      if (missingSeriesEpisodes > 0) {
+        console.log('[refresh] series missing episodes:', missingSeriesEpisodes);
+      }
+
       const oldByFilmbazeId = new Map(
         (current.metas || [])
           .map(meta => [String(meta._addon?.filmbazeId || ''), meta])
@@ -219,19 +237,23 @@ export async function refreshCache({ forceFull = false } = {}) {
       for (const item of fetched.items) {
         const existing = !forceFull ? oldByFilmbazeId.get(String(item.id)) : null;
 
-        if (existing) {
-          metas.push(existing);
-          continue;
-        }
-
         const isSeries = item.type === 'series';
         const limit = isSeries ? ENRICH_SERIES_LIMIT : ENRICH_MOVIE_LIMIT;
         const used = isSeries ? enrichedSeries : enrichedMovies;
+        const shouldRepairExistingSeries = Boolean(existing && isSeries && seriesNeedsEpisodeRepair(existing));
+
+        if (existing && !shouldRepairExistingSeries) {
+          metas.push(existing);
+          continue;
+        }
 
         if (limit > 0 && used < limit) {
           metas.push(await enrichItem(item));
           if (isSeries) enrichedSeries += 1;
           else enrichedMovies += 1;
+        } else if (existing) {
+          // Ak sa limit vyčerpal, nestratíme staré meta údaje.
+          metas.push(existing);
         } else {
           metas.push(toMeta(item));
         }
