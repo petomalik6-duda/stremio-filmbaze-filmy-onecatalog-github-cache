@@ -1,0 +1,23 @@
+{
+  "name": "stremio-filmbaze-json-addon",
+  "version": "3.4.0",
+  "type": "module",
+  "description": "Filmbaze catalog/meta addon with smart incremental metadata repair, Nuvio series episodes and safe cache validation.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "refresh": "node scripts/refresh.js",
+    "refresh:full": "FORCE_FULL_REFRESH=true node scripts/refresh.js",
+    "validate-cache": "node scripts/validate-cache.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
