@@ -39,11 +39,20 @@ async function fetchSeriesEpisodes(tmdbTvId, seriesName) {
   if (!tmdbTvId || !ENABLE_TMDB_EPISODES) return [];
 
   const details = await fetchDetails('tv', tmdbTvId);
-  const seasons = Array.isArray(details.seasons)
+  let seasons = Array.isArray(details.seasons)
     ? details.seasons
         .filter(season => Number(season.season_number) > 0)
         .slice(0, MAX_EPISODE_SEASONS)
     : [];
+
+  // Some newly released series briefly expose number_of_seasons before the
+  // embedded seasons array is complete. Probe those season endpoints too.
+  if (!seasons.length && Number(details.number_of_seasons) > 0) {
+    seasons = Array.from(
+      { length: Math.min(Number(details.number_of_seasons), MAX_EPISODE_SEASONS) },
+      (_, index) => ({ season_number: index + 1 })
+    );
+  }
 
   const videos = [];
 

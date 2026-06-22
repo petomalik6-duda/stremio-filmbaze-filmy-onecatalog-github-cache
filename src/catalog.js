@@ -7,6 +7,7 @@ const ENRICH_LIMIT = Number(process.env.ENRICH_LIMIT || 0);
 const ENRICH_MOVIE_LIMIT = Number(process.env.ENRICH_MOVIE_LIMIT || ENRICH_LIMIT || 0);
 const ENRICH_SERIES_LIMIT = Number(process.env.ENRICH_SERIES_LIMIT || ENRICH_LIMIT || 0);
 const REPAIR_RETRY_HOURS = Number(process.env.REPAIR_RETRY_HOURS || 72);
+const EPISODE_REPAIR_RETRY_HOURS = Number(process.env.EPISODE_REPAIR_RETRY_HOURS || 0);
 const MIN_DESCRIPTION_LENGTH = Number(process.env.MIN_DESCRIPTION_LENGTH || 20);
 
 let cache = {
@@ -130,11 +131,18 @@ function repairReasons(meta, item) {
   return reasons;
 }
 
-function repairAllowed(meta) {
+function repairAllowed(meta, reasons = []) {
   if (!meta?._addon?.lastRepairAt) return true;
   const last = Date.parse(meta._addon.lastRepairAt);
   if (!Number.isFinite(last)) return true;
-  return Date.now() - last >= REPAIR_RETRY_HOURS * 60 * 60 * 1000;
+
+  // Missing series episodes are retried independently from generic metadata repairs.
+  // New shows are often added to TMDB before their season/episode data is complete.
+  const retryHours = reasons.includes('missing-episodes')
+    ? EPISODE_REPAIR_RETRY_HOURS
+    : REPAIR_RETRY_HOURS;
+
+  return Date.now() - last >= retryHours * 60 * 60 * 1000;
 }
 
 function toMeta(item, resolved = null, previous = null, repair = {}) {
@@ -322,7 +330,8 @@ export async function refreshCache({ forceFull = false } = {}) {
 
       const repairable = fetched.items.filter(item => {
         const existing = oldByFilmbazeId.get(String(item.id));
-        return Boolean(existing && repairReasons(existing, item).length && repairAllowed(existing));
+        const reasons = repairReasons(existing, item);
+        return Boolean(existing && reasons.length && repairAllowed(existing, reasons));
       }).length;
 
       if (!forceFull && !sourceChanged && current.metas.length && repairable === 0) {
@@ -356,14 +365,16 @@ export async function refreshCache({ forceFull = false } = {}) {
       setStage('build-metadata');
 
       for (const item of fetched.items) {
-        const existing = forceFull ? null : oldByFilmbazeId.get(String(item.id));
+        const existing = oldByFilmbazeId.get(String(item.id));
         const reasons = repairReasons(existing, item);
         const isSeries = item.type === 'series';
-        const limit = isSeries ? ENRICH_SERIES_LIMIT : ENRICH_MOVIE_LIMIT;
+        const limit = forceFull
+          ? Number.POSITIVE_INFINITY
+          : (isSeries ? ENRICH_SERIES_LIMIT : ENRICH_MOVIE_LIMIT);
         const used = isSeries ? seriesBudgetUsed : movieBudgetUsed;
-        const eligibleRepair = Boolean(existing && reasons.length && repairAllowed(existing));
+        const eligibleRepair = Boolean(existing && reasons.length && repairAllowed(existing, reasons));
         const isNew = !existing;
-        const shouldEnrich = (isNew || eligibleRepair || forceFull) && limit > 0 && used < limit;
+        const shouldEnrich = (isNew || eligibleRepair || forceFull) && used < limit;
 
         if (shouldEnrich) {
           const meta = await enrichItem(item, existing, reasons);

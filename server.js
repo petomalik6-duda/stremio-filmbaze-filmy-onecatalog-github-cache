@@ -10,7 +10,7 @@ const app = express();
 const PORT = Number(process.env.PORT || 7000);
 const PAGE_SIZE = Number(process.env.PAGE_SIZE || 100);
 const ADDON_ID = 'cz.filmbaze.json.filmy.serialy.v333';
-const ADDON_VERSION = '3.4.0';
+const ADDON_VERSION = '3.4.2';
 const DEFAULT_CACHE_FILE = path.join(__dirname, 'data', 'catalog-cache.json');
 
 let selectedCacheFile = null;
@@ -430,7 +430,7 @@ function handleCatalog(req, res) {
 }
 
 app.get('/', (req, res) => {
-  res.type('html').send('<h1>Filmbáze Stremio addon v3.4</h1><p><a href="/manifest.json">manifest.json</a></p><p><a href="/health">health</a></p>');
+  res.type('html').send('<h1>Filmbáze Stremio addon v3.4.2</h1><p><a href="/manifest.json">manifest.json</a></p><p><a href="/health">health</a></p>');
 });
 
 app.get('/manifest.json', (req, res) => {
