@@ -11,8 +11,8 @@ const app = express();
 const PORT = process.env.PORT || 7000;
 const PAGE_SIZE = Number(process.env.PAGE_SIZE || 100);
 
-const ADDON_ID = "cz.filmbaze.json.filmy.serialy.v332";
-const ADDON_VERSION = "3.3.2";
+const ADDON_ID = "cz.filmbaze.json.filmy.serialy.v333";
+const ADDON_VERSION = "3.3.3";
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -68,8 +68,47 @@ function extractItemsFromJson(json) {
 
   if (Array.isArray(json)) return json;
 
-  if (Array.isArray(json.items)) return json.items;
-  if (Array.isArray(json.metas)) return json.metas;
+  const sourceItems = Array.isArray(json.items) ? json.items : [];
+  const metas = Array.isArray(json.metas) ? json.metas : [];
+
+  // catalog-cache.json obsahuje dve vrstvy:
+  // - items: surové položky z Filmbáze, bez epizód
+  // - metas: obohatené Stremio meta položky s reálnymi videos/epizódami
+  // Pre server musíme preferovať metas. Inak Nuvio dostane len fallback S01E01.
+  if (metas.length) {
+    const rawByFilmbazeId = new Map(
+      sourceItems
+        .map((item) => [String(item?.id ?? ""), item])
+        .filter(([id]) => id)
+    );
+
+    return metas.map((meta) => {
+      const filmbazeId = meta?._addon?.filmbazeId;
+      const raw = filmbazeId !== undefined && filmbazeId !== null
+        ? rawByFilmbazeId.get(String(filmbazeId))
+        : null;
+
+      return {
+        ...(raw || {}),
+        ...meta,
+        // Zachováme technické údaje zo surovej položky aj obohatené ID z meta.
+        id: meta.id ?? raw?.id,
+        imdbId: meta.imdbId || meta?._addon?.imdbId || raw?.imdbId || null,
+        tmdbId: meta.tmdbId || meta?._addon?.tmdbId || raw?.tmdbId || null,
+        originalName: meta.originalName || meta?._addon?.originalName || raw?.originalName || null,
+        dateAdded: meta.dateAdded || meta?._addon?.dateAdded || raw?.dateAdded || null,
+        channelOrder: Number.isFinite(meta.channelOrder)
+          ? meta.channelOrder
+          : Number.isFinite(meta?._addon?.channelOrder)
+            ? meta._addon.channelOrder
+            : raw?.channelOrder,
+        page: meta.page || meta?._addon?.page || raw?.page || null,
+        videos: Array.isArray(meta.videos) ? meta.videos : (Array.isArray(raw?.videos) ? raw.videos : [])
+      };
+    });
+  }
+
+  if (sourceItems.length) return sourceItems;
 
   // Ak má cache oddelené movies/series, spoj ich dokopy.
   if (Array.isArray(json.movies) || Array.isArray(json.series)) {
@@ -251,6 +290,7 @@ function toMetaPreview(item) {
   const id = getStremioId(item);
   const type = getType(item);
   const year = getYear(item);
+  const seriesVideos = type === "series" ? buildSeriesVideos(item, id) : [];
 
   const meta = {
     id,
@@ -263,9 +303,13 @@ function toMetaPreview(item) {
     imdbId: isValidImdbId(item.imdbId) ? item.imdbId : undefined,
     genres: Array.isArray(item.genres) ? item.genres : undefined,
     behaviorHints: {
-      defaultVideoId: type === "series" ? `${id}:1:1` : id
+      defaultVideoId: type === "series" ? (seriesVideos[0]?.id || `${id}:1:1`) : id
     }
   };
+
+  if (type === "series") {
+    meta.seriesInfo = { episodeCount: seriesVideos.length };
+  }
 
   if (item.runtime) {
     meta.runtime = `${item.runtime} min`;
@@ -404,6 +448,7 @@ function toMetaDetail(item) {
     const videos = buildSeriesVideos(item, id);
 
     meta.videos = videos;
+    meta.seriesInfo = { episodeCount: videos.length };
     meta.behaviorHints = {
       defaultVideoId: videos[0]?.id || `${id}:1:1`
     };
