@@ -38,6 +38,14 @@ jobs:
           fi
 
       - name: Refresh cache
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          ENABLE_TMDB: "true"
+          ENABLE_TMDB_EPISODES: "true"
+          ENRICH_SERIES_LIMIT: "200"
+          ENRICH_MOVIE_LIMIT: "0"
+          MAX_EPISODE_SEASONS: "30"
+          MAX_EPISODES_PER_SERIES: "1000"
         run: |
           if npm run | grep -q " refresh"; then
             npm run refresh
