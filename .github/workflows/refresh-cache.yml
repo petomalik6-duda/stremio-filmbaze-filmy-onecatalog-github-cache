@@ -2,8 +2,12 @@ name: Refresh Filmbaze cache
 
 on:
   workflow_dispatch:
+    inputs:
+      force_full:
+        description: "Force full TMDB rebuild"
+        required: false
+        default: "false"
   schedule:
-    # každý deň o 03:20 UTC
     - cron: "20 3 * * *"
 
 concurrency:
@@ -30,74 +34,51 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
 
-      - name: Refresh cache
+      - name: Refresh and repair cache
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           ENABLE_TMDB: "true"
           ENABLE_TMDB_EPISODES: "true"
+          FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
+          ENRICH_MOVIE_LIMIT: "120"
           ENRICH_SERIES_LIMIT: "200"
-          ENRICH_MOVIE_LIMIT: "0"
+          REPAIR_RETRY_HOURS: "72"
           MAX_EPISODE_SEASONS: "30"
           MAX_EPISODES_PER_SERIES: "1000"
-        run: |
-          if npm run | grep -q " refresh"; then
-            npm run refresh
-          elif [ -f scripts/refresh.js ]; then
-            node scripts/refresh.js
-          elif [ -f refresh-cache-with-repair.cjs ]; then
-            node refresh-cache-with-repair.cjs
-          elif [ -f scripts/refresh-cache.js ]; then
-            node scripts/refresh-cache.js
-          elif [ -f refresh-cache.js ]; then
-            node refresh-cache.js
-          else
-            echo "ERROR: No refresh script found."
-            echo "Available files:"
-            ls -la
-            echo "Available scripts:"
-            npm run
-            exit 1
-          fi
+          CACHE_FILE: "data/catalog-cache.json"
+        run: npm run refresh
 
-      - name: Commit refreshed cache
+      - name: Validate generated cache
+        env:
+          CACHE_FILE: "data/catalog-cache.json"
+          MIN_CACHE_ITEMS: "500"
+          MIN_CACHE_MOVIES: "400"
+          MIN_CACHE_SERIES: "50"
+          MAX_CACHE_DROP_RATIO: "0.20"
+          MIN_SERIES_EPISODE_COVERAGE: "0.80"
+        run: npm run validate-cache
+
+      - name: Preserve generated cache
+        run: |
+          mkdir -p /tmp/filmbaze-cache
+          cp data/catalog-cache.json /tmp/filmbaze-cache/catalog-cache.json
+
+      - name: Commit refreshed cache safely
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-
-          # uložíme nový cache súbor bokom
-          mkdir -p /tmp/filmbaze-cache
-
-          if [ -f data/catalog-cache.json ]; then
-            cp data/catalog-cache.json /tmp/filmbaze-cache/catalog-cache.json
-          else
-            echo "ERROR: data/catalog-cache.json was not created."
-            echo "Data folder:"
-            ls -la data || true
-            exit 1
-          fi
-
-          # stiahneme najnovší main bez rebase konfliktu
           git fetch origin main
           git reset --hard origin/main
-
-          # vrátime nový vygenerovaný cache súbor
           mkdir -p data
           cp /tmp/filmbaze-cache/catalog-cache.json data/catalog-cache.json
-
           git add data/catalog-cache.json
 
-          # ak sa nič nezmenilo, skončíme bez chyby
           if git diff --cached --quiet; then
             echo "No cache changes"
             exit 0
           fi
 
-          git commit -m "Refresh Filmbaze cache"
+          git commit -m "Refresh Filmbaze cache v3.4"
           git push origin HEAD:main
