@@ -12,7 +12,7 @@ on:
 
 concurrency:
   group: refresh-filmbaze-cache
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -45,14 +45,21 @@ jobs:
           ENRICH_MOVIE_LIMIT: "120"
           ENRICH_SERIES_LIMIT: "200"
           REPAIR_RETRY_HOURS: "72"
+          EPISODE_REPAIR_RETRY_HOURS: "0"
           MAX_EPISODE_SEASONS: "30"
           MAX_EPISODES_PER_SERIES: "1000"
           CACHE_FILE: "data/catalog-cache.json"
+          HTTP_RETRIES: "4"
+          HTTP_RETRY_BASE_MS: "1000"
+          HTTP_RETRY_MAX_MS: "30000"
         run: npm run refresh
 
       - name: Validate generated cache
         env:
           CACHE_FILE: "data/catalog-cache.json"
+          HTTP_RETRIES: "4"
+          HTTP_RETRY_BASE_MS: "1000"
+          HTTP_RETRY_MAX_MS: "30000"
           MIN_CACHE_ITEMS: "500"
           MIN_CACHE_MOVIES: "400"
           MIN_CACHE_SERIES: "50"
@@ -80,5 +87,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Refresh Filmbaze cache v3.4"
+          git commit -m "Refresh Filmbaze cache v3.4.3"
           git push origin HEAD:main
