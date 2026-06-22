@@ -1,5 +1,5 @@
 {
-  "at": 1782153984919,
+  "at": 1782155626000,
   "sourceHash": "e7a128ab0c8077e44ff1e81530736e7457c9979f",
   "items": [
     {
@@ -77335,29 +77335,119 @@
       "id": "tt34771210",
       "type": "series",
       "name": "Najdu si tě",
-      "poster": "https://image.tmdb.org/t/p/original/pb9oYHHNzauiCQZT03MpDAg46GI.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/pb9oYHHNzauiCQZT03MpDAg46GI.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/2yDDwP48GqL9Fpb6UEgGHyqM63y.jpg",
       "description": "Kvůli falešnému obvinění z vraždy vlastního syna skončí za mřížemi. Pak se ale dozví, že malý Matthew je možná pořád naživu, a rozhodne se ho zachránit.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 945746",
       "releaseInfo": "2026",
       "year": 2026,
+      "imdbId": "tt34771210",
+      "tmdbId": 278178,
       "genres": [
-        "CZ/SK"
+        "Drama",
+        "Mysteriózní",
+        "Krimi"
       ],
-      "imdbRating": "10",
-      "cast": [],
+      "imdbRating": "8.6",
+      "cast": [
+        "Sam Worthington",
+        "Britt Lower",
+        "Chi McBride",
+        "Logan Browning",
+        "Erin Richards",
+        "Jonathan Tucker",
+        "Milo Ventimiglia"
+      ],
       "director": [],
       "behaviorHints": {
-        "defaultVideoId": "tt34771210"
+        "defaultVideoId": "tt34771210:1:1"
       },
-      "videos": [],
+      "videos": [
+        {
+          "id": "tt34771210:1:1",
+          "title": "1. díl",
+          "season": 1,
+          "episode": 1,
+          "released": "2026-06-18",
+          "overview": "David Burroughs skončí ve vězení za vraždu, kterou nespáchal. Pak se ale dozví, že jeho syn je možná pořád naživu, a rozhodne se utéct.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/tDUUexyRzcPrjNaz9sZfcdnYTgS.jpg"
+        },
+        {
+          "id": "tt34771210:1:2",
+          "title": "2. díl",
+          "season": 1,
+          "episode": 2,
+          "released": "2026-06-18",
+          "overview": "David se chová co nejvíc nenápadně a do pátrání se vloží FBI. Mackenzieovi mají kvůli svojí roli v případu co vysvětlovat.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/6OEIZuhL8FaZVsRN4BG0Iz3rECO.jpg"
+        },
+        {
+          "id": "tt34771210:1:3",
+          "title": "3. díl",
+          "season": 1,
+          "episode": 3,
+          "released": "2026-06-18",
+          "overview": "David a Rachel se riskantně pustí do pátrání po Hilde Winslowové. Lenny s Philipem vyrazí všem dech novou informací o noci, kdy Matthew zemřel.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/49wwShw8OGYYdk1DUqI2b22Wyk1.jpg"
+        },
+        {
+          "id": "tt34771210:1:4",
+          "title": "4. díl",
+          "season": 1,
+          "episode": 4,
+          "released": "2026-06-18",
+          "overview": "Hayden se musí rozhodnout, jestli pomoct svému nečekanému hostu. Rachel je v koncích a Lenny předloží Cheryl nový zásadní důkaz.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/wzbLwhFShwo6bpABnIQJNhqiswg.jpg"
+        },
+        {
+          "id": "tt34771210:1:5",
+          "title": "5. díl",
+          "season": 1,
+          "episode": 5,
+          "released": "2026-06-18",
+          "overview": "David zajde do extrému, aby přilákal nepřítele. Rachel po nečekané zradě minimalizuje škody. Hayden si musí vybrat, na čí straně stát.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/bkhOGVJ6yHducLxPpejPspCbMZw.jpg"
+        },
+        {
+          "id": "tt34771210:1:6",
+          "title": "6. díl",
+          "season": 1,
+          "episode": 6,
+          "released": "2026-06-18",
+          "overview": "David má na výběr ze samých špatných možností. Sarah a Max za svoje pátrání draze zaplatí.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/5fkT9NCvSYr2orDfF0ekKH2T7XK.jpg"
+        },
+        {
+          "id": "tt34771210:1:7",
+          "title": "7. díl",
+          "season": 1,
+          "episode": 7,
+          "released": "2026-06-18",
+          "overview": "Klíčová stopa vede do nemocnice, ale David s Rachel musí přesvědčit Ronalda, aby jim pomohl. Sarah pokračuje ve vyšetřování s novým spojencem.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/m0AdtPqDZDcXDKZcTEExGFJKGvG.jpg"
+        },
+        {
+          "id": "tt34771210:1:8",
+          "title": "8. díl",
+          "season": 1,
+          "episode": 8,
+          "released": "2026-06-18",
+          "overview": "David a Rachel s nečekaným spojencem po boku mají jedinou šanci, jak vysvobodit Matthewa ze zajetí. Jestli to ale nezvládnou, tak už ho nikdy neuvidí.",
+          "thumbnail": "https://image.tmdb.org/t/p/w500/TOs0PsDUEz8mlo3XKAIBKQ0SOW.jpg"
+        }
+      ],
       "seriesInfo": {
-        "episodeCount": 0
+        "episodeCount": 8
       },
       "links": [
         {
           "name": "Filmbáze",
           "category": "Info",
           "url": "https://filmbaze.cz/title/945746"
+        },
+        {
+          "name": "TMDB",
+          "category": "Info",
+          "url": "https://www.themoviedb.org/tv/278178"
         },
         {
           "name": "IMDb",
@@ -77373,7 +77463,7 @@
         "dateAdded": "2026-06-17",
         "channelOrder": 0,
         "page": 1,
-        "episodeCount": 0,
+        "episodeCount": 8,
         "originalName": "I Will Find You",
         "detailChecked": true,
         "sourceTitle": "Najdu si tě"
@@ -84129,6 +84219,8 @@
       "description": "Bangkok, rok 1975: Charles Sobhraj je zloděj a podvodník, který se vydává za obchodníka s drahokamy a láká mladé lidi ze Západu do svého bytu, kde je zdroguje a okrade, a mnozí z nich nepřežijí. Herma...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 713402",
       "releaseInfo": "2020",
       "year": 2020,
+      "imdbId": "tt7985576",
+      "tmdbId": 93454,
       "runtime": "58 min",
       "genres": [
         "CZ/SK"
@@ -84137,7 +84229,7 @@
       "cast": [],
       "director": [],
       "behaviorHints": {
-        "defaultVideoId": "tt7985576"
+        "defaultVideoId": "tt7985576:1:1"
       },
       "videos": [],
       "seriesInfo": {
@@ -84166,7 +84258,7 @@
         "tmdbId": 93454,
         "imdbId": "tt7985576",
         "dateAdded": "2020-12-31",
-        "channelOrder": 37,
+        "channelOrder": 39,
         "page": 1,
         "episodeCount": 0,
         "originalName": "The Serpent",
