@@ -1,5 +1,5 @@
 {
-  "at": 1782893079723,
+  "at": 1782976065976,
   "sourceHash": "af168f4841ed08589fd6ffa3847b0e66db2f4135",
   "items": [
     {
@@ -113776,15 +113776,15 @@
   ],
   "lastError": null,
   "refreshStats": {
-    "at": "2026-07-01T08:04:37.435Z",
-    "sourceChanged": true,
+    "at": "2026-07-02T07:07:45.976Z",
+    "sourceChanged": false,
     "fetchedItems": 1136,
-    "newItems": 8,
-    "reusedItems": 1128,
+    "newItems": 0,
+    "reusedItems": 1136,
     "repairedItems": 0,
     "repairFailed": 0,
-    "repairDeferred": 17,
-    "enrichedMovies": 1,
-    "enrichedSeries": 7
+    "repairDeferred": 0,
+    "enrichedMovies": 0,
+    "enrichedSeries": 0
   }
 }
