@@ -1,5 +1,5 @@
 {
-  "at": 1783589518163,
+  "at": 1783668103495,
   "sourceHash": "36204ff4550778fbff729855d57ae146fc486f0c",
   "items": [
     {
@@ -28489,7 +28489,7 @@
       "id": "tt39385949",
       "type": "movie",
       "name": "Už není co ztratit",
-      "poster": "https://image.tmdb.org/t/p/w500/9FsSrhV4OM8dyyGR9dLF6auddW2.jpg",
+      "poster": "https://image.tmdb.org/t/p/original/9FsSrhV4OM8dyyGR9dLF6auddW2.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/6tByIjKn3VLEVHhfpiNNWrnSIOM.jpg",
       "description": "Jada obětovala pro mateřství všechno. Takže když její malý syn onemocní, rozhodne se pro něj najít dárce, ať už by ji to stálo cokoli.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 946014",
       "releaseInfo": "2026",
@@ -28498,10 +28498,9 @@
       "tmdbId": 1710008,
       "runtime": "99 min",
       "genres": [
-        "Drama",
-        "Akční"
+        "CZ/SK"
       ],
-      "imdbRating": "2.0",
+      "imdbRating": 2,
       "cast": [
         "Nawell Madani",
         "Guillaume Gouix",
@@ -33205,7 +33204,7 @@
       "id": "tt8950154",
       "type": "movie",
       "name": "Joe Baby",
-      "poster": "https://image.tmdb.org/t/p/original/w6vIEAwpUnSxACNsb3MNNT8rg8c.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/w6vIEAwpUnSxACNsb3MNNT8rg8c.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/q2BJ95zVRDRdrXbT6uw8Ypsy7WZ.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 34896",
       "releaseInfo": "2024",
@@ -33214,9 +33213,12 @@
       "tmdbId": 1224374,
       "runtime": "86 min",
       "genres": [
-        "CZ/SK"
+        "Akční",
+        "Thriller",
+        "Krimi",
+        "Mysteriózní"
       ],
-      "imdbRating": 5.8,
+      "imdbRating": "5.5",
       "cast": [
         "Dichen Lachman",
         "Willa Fitzgerald",
@@ -33262,8 +33264,8 @@
         "originalName": "Joe Baby",
         "detailChecked": true,
         "sourceTitle": "Joe Baby",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.776Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.102Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -40712,7 +40714,7 @@
       "id": "tt28637027",
       "type": "movie",
       "name": "Into the Deep",
-      "poster": "https://image.tmdb.org/t/p/original/qPvw21Y5pxojLQYDrK4ft5IYLlY.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/qPvw21Y5pxojLQYDrK4ft5IYLlY.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/804DmpPKcL9sTz2DQRY1HYBGKJk.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 747789",
       "releaseInfo": "2025",
@@ -40721,9 +40723,11 @@
       "tmdbId": 1388808,
       "runtime": "90 min",
       "genres": [
-        "CZ/SK"
+        "Horor",
+        "Akční",
+        "Thriller"
       ],
-      "imdbRating": 5.9,
+      "imdbRating": "5.9",
       "cast": [
         "Scout Taylor-Compton",
         "Richard Dreyfuss",
@@ -40769,8 +40773,8 @@
         "originalName": "Into the Deep",
         "detailChecked": true,
         "sourceTitle": "Into the Deep",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.803Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.120Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -44524,7 +44528,7 @@
       "id": "tt37847370",
       "type": "movie",
       "name": "Ozzy Osbourne: The Final Encore",
-      "poster": "https://image.tmdb.org/t/p/original/cOBAR3euW3R7j5ojBD0KoZy4kiy.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/cOBAR3euW3R7j5ojBD0KoZy4kiy.jpg",
       "background": "https://image.tmdb.org/t/p/original/cOBAR3euW3R7j5ojBD0KoZy4kiy.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 902580",
       "releaseInfo": "2025",
@@ -44569,8 +44573,8 @@
         "originalName": "Ozzy Osbourne: The Final Encore",
         "detailChecked": true,
         "sourceTitle": "Ozzy Osbourne: The Final Encore",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.828Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.141Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -44812,15 +44816,15 @@
       "id": "filmbaze:movie:901875",
       "type": "movie",
       "name": "Vánoční pásmo Život není krásný",
-      "poster": "https://image.tmdb.org/t/p/original/fXCSg6HF7BdUNZA9fOZKREozGwM.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/fXCSg6HF7BdUNZA9fOZKREozGwM.jpg",
       "background": "https://image.tmdb.org/t/p/original/fXCSg6HF7BdUNZA9fOZKREozGwM.jpg",
-      "description": "Advent je časem usebraní i dobrých skutků. S vědomím toho sebral režisér Marty Pohl, známý také jako kontroverzní rapper Řezník nebo autor Martyho frků, trojici hlubokých lidských příběhů a vytvořil z...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 901875",
+      "description": "Advent je časem usebraní i dobrých skutků. S vědomím toho sebral režisér Marty Pohl, známý také jako kontroverzní rapper Řezník nebo autor Martyho frků, trojici hlubokých lidských příběhů a vytvořil z nich vánoční pásmo nazvané podle prvního z nich – Život není krásný. Druhým filmem Máma má raka připomene zrození jednoho ze superhrdinů univerza ZNK, vařiče drog Grundzy. Štědrou nadílku vlídného humoru a kutálejících se trupů pak završí Párty Hárd. Na všechny pravověrné navíc čeká překvapení v podobě záběrů z napjatě očekávané lednové novinky Na plech, které se objeví jak v teaseru, tak i ve stejnojmenném videoklipu od skupiny Churaq Clique, který bude až do vydání filmu k vidění pouze v tomto vánočním pásmu.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 901875",
       "releaseInfo": "2024",
       "year": 2024,
       "tmdbId": 1618108,
       "runtime": "132 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
       "cast": [
         "Jan Sembdner",
@@ -44862,8 +44866,8 @@
         "originalName": "Vánoční pásmo Život není krásný",
         "detailChecked": true,
         "sourceTitle": "Vánoční pásmo Život není krásný",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.845Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.160Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -45390,17 +45394,18 @@
       "id": "filmbaze:movie:792792",
       "type": "movie",
       "name": "Švábi",
-      "poster": "https://image.tmdb.org/t/p/original/b8m8eP1jpIAi3KeE7tDRZWAKRSY.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/b8m8eP1jpIAi3KeE7tDRZWAKRSY.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/xZojfPkUxroAINGu9Kn7hLUIMGw.jpg",
-      "description": "Člověk řekne vtip a hned je bez práce. Tak nějak se cítí urolog Miloš. Učinil nevhodný vtip o vysokém úředníkovi a ten se ho teď snaží zničit. A kdyby jen... Celý dům divně páchne a všichni kolem něj...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 792792",
+      "description": "Člověk řekne vtip a hned je bez práce. Tak nějak se cítí urolog Miloš. Učinil nevhodný vtip o vysokém úředníkovi a ten se ho teď snaží zničit. A kdyby jen... Celý dům divně páchne a všichni kolem něj se chovají podezřele. Stylizovaný debut Luboše Kučery ukazuje současný svět jako bizarní panoptikum.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 792792",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1519387,
       "runtime": "63 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Horor"
       ],
-      "imdbRating": 6,
+      "imdbRating": "6.0",
       "cast": [
         "Rudolf Skopec",
         "Anita Gregorec",
@@ -45441,8 +45446,8 @@
         "originalName": "Švábi",
         "detailChecked": true,
         "sourceTitle": "Švábi",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.859Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.181Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -51562,7 +51567,7 @@
       "id": "tt25752340",
       "type": "movie",
       "name": "Un Coup de dés",
-      "poster": "https://image.tmdb.org/t/p/original/wpnvJYPkTS59up21hom7bsIAE3O.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/wpnvJYPkTS59up21hom7bsIAE3O.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/rsAar1g5m8VCEkwFnfkmc3XoW7Z.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 180188",
       "releaseInfo": "2024",
@@ -51571,9 +51576,10 @@
       "tmdbId": 1037827,
       "runtime": "84 min",
       "genres": [
-        "CZ/SK"
+        "Thriller",
+        "Krimi"
       ],
-      "imdbRating": 5.8,
+      "imdbRating": "5.8",
       "cast": [
         "Yvan Attal",
         "Maïwenn",
@@ -51619,8 +51625,8 @@
         "originalName": "Un Coup de dés",
         "detailChecked": true,
         "sourceTitle": "Un Coup de dés",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.878Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.209Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -57502,7 +57508,7 @@
       "id": "tt26218928",
       "type": "movie",
       "name": "Première affaire",
-      "poster": "https://image.tmdb.org/t/p/original/kFFBB1SaoTbZbBjj9xmv2v03Jff.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/kFFBB1SaoTbZbBjj9xmv2v03Jff.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/zPxFmbt6OGvs6E0molnCtoU7raE.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 363507",
       "releaseInfo": "2024",
@@ -57511,9 +57517,9 @@
       "tmdbId": 997509,
       "runtime": "98 min",
       "genres": [
-        "CZ/SK"
+        "Drama"
       ],
-      "imdbRating": 4.9,
+      "imdbRating": "4.9",
       "cast": [
         "Noée Abita",
         "Anders Danielsen Lie",
@@ -57559,8 +57565,8 @@
         "originalName": "Première affaire",
         "detailChecked": true,
         "sourceTitle": "Première affaire",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.896Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.230Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -58030,17 +58036,17 @@
       "id": "filmbaze:movie:728191",
       "type": "movie",
       "name": "Holka od vedle",
-      "poster": "https://image.tmdb.org/t/p/original/36deaIBXOzWfjngfnLRWGMErNcH.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/36deaIBXOzWfjngfnLRWGMErNcH.jpg",
       "background": "https://image.tmdb.org/t/p/original/36deaIBXOzWfjngfnLRWGMErNcH.jpg",
-      "description": "Kristýna má na první pohled poklidný život v malém městě. Pracuje v knihovně, vede komunitní centrum „Ostrov“ a má dlouholetého přítele Filipa. Když ale zjistí, že ji Filip podvádí, rozhodne se vztah...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 728191",
+      "description": "Kristýna má na první pohled poklidný život v malém městě. Pracuje v knihovně, vede komunitní centrum „Ostrov“ a má dlouholetého přítele Filipa. Když ale zjistí, že ji Filip podvádí, rozhodne se vztah ukončit a vzít život do vlastních rukou. S nadějí, že ji rodina podpoří, se obrací na své rodiče, kteří jí ale místo podpory přinášejí jen nevyžádané rady a své přesvědčení o tom, co je pro ni nejlepší. Ačkoliv je Kristýna odhodlaná postavit se na vlastní nohy, její máma s tátou jí to svými radami a zcela odlišným pohledem na život neusnadňují. Naštěstí má po boku svou nejlepší kamarádku Tamaru, která ji podporuje v tom, aby se přestala ohlížet na očekávání ostatních a konečně žila podle sebe. Ve chvíli, kdy se Kristýna rozhodne dát svému starému životu sbohem, vstoupí ji do cesty charismatický grafik Tomáš. Nyní stojí před těžkým rozhodnutím, zda setrvat ve známém, ale komplikovaném vztahu s Filipem, nebo udělat krok do neznáma s Tomášem. Najde nakonec Kristýna opravdovou lásku?\n\nZdroj: Filmbáze\n\nFilmbáze ID: 728191",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1400194,
       "runtime": "90 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
-      "imdbRating": 4,
+      "imdbRating": "4.0",
       "cast": [
         "Martina Babišová",
         "Kryštof Bartoš",
@@ -58081,8 +58087,8 @@
         "originalName": "Holka od vedle",
         "detailChecked": true,
         "sourceTitle": "Holka od vedle",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.910Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.246Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -61073,17 +61079,17 @@
       "id": "filmbaze:movie:749693",
       "type": "movie",
       "name": "Jak se nám to mohlo stát!?",
-      "poster": "https://image.tmdb.org/t/p/original/sh61Bo7RB4aS2t8FxNsSUwWW8PC.jpg",
-      "background": "https://image.tmdb.org/t/p/w1280/7NEFJdhZbz7hZv943RQcr5JFIb6.jpg",
-      "description": "Cimburk-Kolovratníkovi, početná aristokratická rodina, se při ohlášené svatbě svých dětí setkávají s mnohem skromnější rodinou Novákových. Budoucí nevěsta a ženich při té příležitosti nabídnou svým ro...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 749693",
+      "poster": "https://image.tmdb.org/t/p/w500/sh61Bo7RB4aS2t8FxNsSUwWW8PC.jpg",
+      "background": "https://image.tmdb.org/t/p/w1280/rbeiMZJNDyKfwqlJoYP5YXMSuRl.jpg",
+      "description": "Cimburk-Kolovratníkovi, početná aristokratická rodina, se při ohlášené svatbě svých dětí setkávají s mnohem skromnější rodinou Novákových. Budoucí nevěsta a ženich při té příležitosti nabídnou svým rodičům testy DNA, které odhalí jejich skutečný původ. Výsledky jsou naprosto nečekané a zapříčiní efekt bomby.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 749693",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1452368,
       "runtime": "100 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
-      "imdbRating": 4.7,
+      "imdbRating": "4.2",
       "cast": [
         "Miroslav Donutil",
         "Bolek Polívka",
@@ -61124,8 +61130,8 @@
         "originalName": "Jak se nám to mohlo stát!?",
         "detailChecked": true,
         "sourceTitle": "Jak se nám to mohlo stát!?",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.929Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.263Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -63875,7 +63881,7 @@
       "id": "tt27357183",
       "type": "movie",
       "name": "Get Fast",
-      "poster": "https://image.tmdb.org/t/p/original/tDpTR7xhHu9cz1X4JAIRFwXyf6U.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/tDpTR7xhHu9cz1X4JAIRFwXyf6U.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/JMlVj6X2F1PuDz9OyHShThzpa2.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 732243",
       "releaseInfo": "2024",
@@ -63884,9 +63890,11 @@
       "tmdbId": 1369679,
       "runtime": "88 min",
       "genres": [
-        "CZ/SK"
+        "Akční",
+        "Krimi",
+        "Thriller"
       ],
-      "imdbRating": 5.9,
+      "imdbRating": "6.0",
       "cast": [
         "James Clayton",
         "Lou Diamond Phillips",
@@ -63932,8 +63940,8 @@
         "originalName": "Get Fast",
         "detailChecked": true,
         "sourceTitle": "Get Fast",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.947Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.278Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -65713,17 +65721,17 @@
       "id": "filmbaze:movie:783020",
       "type": "movie",
       "name": "Když lumpa trápí pumpa",
-      "poster": "https://image.tmdb.org/t/p/original/xapgbYv4db9AEWodZbYkxT0YK5Q.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/xapgbYv4db9AEWodZbYkxT0YK5Q.jpg",
       "background": "https://image.tmdb.org/t/p/original/xapgbYv4db9AEWodZbYkxT0YK5Q.jpg",
-      "description": "Jakub Žiga mohl být kdysi hvězdou fotbalových trávníků. Jako mladík nosil dres prvoligového Baníku a snil o tom, že nastoupí v jeho základní jedenáctce. Slibně nastartovanou kariéru mu ale zastavily p...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 783020",
+      "description": "Jakub Žiga mohl být kdysi hvězdou fotbalových trávníků. Jako mladík nosil dres prvoligového Baníku a snil o tom, že nastoupí v jeho základní jedenáctce. Slibně nastartovanou kariéru mu ale zastavily problémy se srdcem. Od té doby bere léky, invalidní důchod, skuhrá na osud a sem tam s kamarádem Josefem Ferkešem i něco ukradne a zpeněží, což se pranic nelíbí Jakubově manželce Emě. Krádež pletiva v areálu základní školy, kam chodí obě Jakubovy dcery, a při které Jakuba nachytá ředitel školy Kovanda, dá ale věcem nečekaný spád, který přinese také jedno velké překvapení.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 783020",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1482006,
       "runtime": "68 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
-      "imdbRating": 6,
+      "imdbRating": "6.0",
       "cast": [
         "Zdeněk Godla",
         "Eva Leimbergerová",
@@ -65764,8 +65772,8 @@
         "originalName": "Když lumpa trápí pumpa",
         "detailChecked": true,
         "sourceTitle": "Když lumpa trápí pumpa",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.966Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.311Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -66006,7 +66014,7 @@
       "id": "tt15716284",
       "type": "movie",
       "name": "Memorias de un cuerpo que arde",
-      "poster": "https://image.tmdb.org/t/p/original/7nhzCZhe67wPwAcK2RKxn8TBQM1.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/7nhzCZhe67wPwAcK2RKxn8TBQM1.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/2jLTKV8M4m3ry6JQQ5fnqePr2vc.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 412504",
       "releaseInfo": "2024",
@@ -66015,9 +66023,9 @@
       "tmdbId": 1232350,
       "runtime": "90 min",
       "genres": [
-        "CZ/SK"
+        "Drama"
       ],
-      "imdbRating": 6.9,
+      "imdbRating": "6.9",
       "cast": [
         "Sol Carballo",
         "Paulina Bernini Víquez",
@@ -66063,8 +66071,8 @@
         "originalName": "Memorias de un cuerpo que arde",
         "detailChecked": true,
         "sourceTitle": "Memorias de un cuerpo que arde",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.980Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.328Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -77021,7 +77029,7 @@
       "id": "tt20414228",
       "type": "movie",
       "name": "Manta Manta - Zwoter Teil",
-      "poster": "https://image.tmdb.org/t/p/original/sYMPaNG3nl2tcYJfqXcMK5whUMt.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/sYMPaNG3nl2tcYJfqXcMK5whUMt.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/tTowHrLbxXxtiJT65HJVWSp0EqR.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 178693",
       "releaseInfo": "2023",
@@ -77030,9 +77038,11 @@
       "tmdbId": 1058100,
       "runtime": "127 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Akční",
+        "Dobrodružný"
       ],
-      "imdbRating": 4.9,
+      "imdbRating": "4.9",
       "cast": [
         "Til Schweiger",
         "Tina Ruland",
@@ -77078,8 +77088,8 @@
         "originalName": "Manta Manta - Zwoter Teil",
         "detailChecked": true,
         "sourceTitle": "Manta Manta - Zwoter Teil",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.010Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.345Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -84958,17 +84968,18 @@
       "id": "filmbaze:movie:4855",
       "type": "movie",
       "name": "Lítá v tom",
-      "poster": "https://image.tmdb.org/t/p/original/d2sNrpJbirrCQ17UDP9VPdgPXw.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/d2sNrpJbirrCQ17UDP9VPdgPXw.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/8pmUnYyLxxewsjEswqTqD05Sw7e.jpg",
-      "description": "Lukáš chce naposledy potěšit svou nemocnou maminku, která touží po vnucích. Přesvědčí proto těhotnou sousedku a bývalou striptérku Natáliu, aby sehrála jeho dívku a nastávající ženu. Maminka se ale zá...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 4855",
+      "description": "Lukáš chce naposledy potěšit svou nemocnou maminku, která touží po vnucích. Přesvědčí proto těhotnou sousedku a bývalou striptérku Natáliu, aby sehrála jeho dívku a nastávající ženu. Maminka se ale zázračně uzdraví a strhne se lavina nedorozumění a karambolů a několik životů se převrátí vzhůru nohama.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 4855",
       "releaseInfo": "2023",
       "year": 2023,
       "tmdbId": 857263,
       "runtime": "100 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Romantický"
       ],
-      "imdbRating": 6.7,
+      "imdbRating": "6.7",
       "cast": [
         "Kryštof Hádek",
         "Kristína Svarinská",
@@ -85009,8 +85020,8 @@
         "originalName": "Lítá v tom",
         "detailChecked": true,
         "sourceTitle": "Lítá v tom",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.030Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.366Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -93987,15 +93998,16 @@
       "id": "filmbaze:series:920710",
       "type": "series",
       "name": "Pád domu Kollerů",
-      "poster": "https://image.tmdb.org/t/p/original/aqkkqR59aMJx0pjZ4ngUzkz3jlL.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/aqkkqR59aMJx0pjZ4ngUzkz3jlL.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/oF2TwddD7635Vp16jTvXKZk1o1b.jpg",
-      "description": "Příběh čerstvé matky, brutálně vtipné životní smolařky Vendy Kollerové. Ta je pod tlakem okolností nucena nastěhovat se do domu svého dominantního otce Roberta Kollera. Její babička, čerstvá vdova Mar...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 920710",
+      "description": "Příběh čerstvé matky, brutálně vtipné životní smolařky Vendy Kollerové. Ta je pod tlakem okolností nucena nastěhovat se do domu svého dominantního otce Roberta Kollera. Její babička, čerstvá vdova Marta Kollerová, je všechno možné, jen ne smolař. Autoritativní významná psycholožka se po smrti manžela, dědy Berta, také rozhodne najít útočiště v domě svého poddajného syna Roberta. Ale nepřišla se přizpůsobit zaběhnutým pořádkům, přišla je přizpůsobit sobě. V domě brzy nezůstane kámen na kameni.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 920710",
       "releaseInfo": "2026",
       "year": 2026,
       "tmdbId": 274039,
       "runtime": "60 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Rodinný"
       ],
       "imdbRating": "3.5",
       "cast": [
@@ -94098,8 +94110,8 @@
         "originalName": "Pád domu Kollerů",
         "detailChecked": true,
         "sourceTitle": "Pád domu Kollerů",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.152Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.403Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -101602,17 +101614,19 @@
       "id": "filmbaze:series:817563",
       "type": "series",
       "name": "Štěstíčku naproti",
-      "poster": "https://image.tmdb.org/t/p/original/d1UP6stDx3hxGly3F0mtPOkcCqV.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/d1UP6stDx3hxGly3F0mtPOkcCqV.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/79LrSwaUtZey4RZSR04QETjtcN.jpg",
-      "description": "Oba milují fotbal víc než cokoli na světě. První pracuje na hospodářské kriminálce a na stole mu přistanou odposlechy, naznačující úplatky v druhé nejvyšší fotbalové soutěži. Jenže to nikoho nezajímá....\n\nZdroj: Filmbáze\n\nFilmbáze ID: 817563",
+      "description": "Oba milují fotbal víc než cokoli na světě. První pracuje na hospodářské kriminálce a na stole mu přistanou odposlechy, naznačující úplatky v druhé nejvyšší fotbalové soutěži. Jenže to nikoho nezajímá. Druhý je manažerem fotbalového klubu a snaží se stůj co stůj udržet svůj tým v první lize. A už neví kudy dál. Příběh (z) doby kdy český fotbal válcoval Evropu, ale v jeho zákulisí pořád vládla devadesátková pravidla.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 817563",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 274005,
       "runtime": "60 min",
       "genres": [
-        "CZ/SK"
+        "Krimi",
+        "Drama",
+        "Komedie"
       ],
-      "imdbRating": 4.5,
+      "imdbRating": "4.5",
       "cast": [
         "Marek Daniel",
         "Denisa Barešová",
@@ -101709,8 +101723,8 @@
         "originalName": "Štěstíčku naproti",
         "detailChecked": true,
         "sourceTitle": "Štěstíčku naproti",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.217Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.452Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -101987,16 +102001,17 @@
       "id": "filmbaze:series:806365",
       "type": "series",
       "name": "Monstrum: Příběh Eda Geina",
-      "poster": "https://image.tmdb.org/t/p/original/iDHzRALtZCzHVmx7uyjTTKvMAPB.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/iDHzRALtZCzHVmx7uyjTTKvMAPB.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/cm2oUAPiTE1ERoYYOzzgloQw4YZ.jpg",
       "description": "Šokující skutečný příběh Eda Geina, nechvalně známého vraha a vykradače hrobů, který se stal předlohou pro nejznámější hollywoodské filmové zabijáky.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 806365",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 286801,
       "genres": [
-        "CZ/SK"
+        "Krimi",
+        "Drama"
       ],
-      "imdbRating": 7.2,
+      "imdbRating": "7.2",
       "cast": [
         "Charlie Hunnam",
         "Suzanna Son",
@@ -102108,8 +102123,8 @@
         "originalName": "Monster: The Ed Gein Story",
         "detailChecked": true,
         "sourceTitle": "Monstrum: Příběh Eda Geina",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.261Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-10T07:21:43.493Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -114693,15 +114708,15 @@
   ],
   "lastError": null,
   "refreshStats": {
-    "at": "2026-07-09T09:31:58.027Z",
-    "sourceChanged": true,
+    "at": "2026-07-10T07:21:42.956Z",
+    "sourceChanged": false,
     "fetchedItems": 1145,
-    "newItems": 1,
-    "reusedItems": 1144,
-    "repairedItems": 0,
+    "newItems": 0,
+    "reusedItems": 1128,
+    "repairedItems": 17,
     "repairFailed": 0,
-    "repairDeferred": 18,
-    "enrichedMovies": 1,
-    "enrichedSeries": 0
+    "repairDeferred": 1,
+    "enrichedMovies": 14,
+    "enrichedSeries": 3
   }
 }
