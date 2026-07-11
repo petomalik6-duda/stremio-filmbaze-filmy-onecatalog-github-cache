@@ -1,0 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const file = process.env.CACHE_FILE || path.join(process.cwd(), 'data', 'catalog-cache.json');
+const cache = JSON.parse(fs.readFileSync(file, 'utf8'));
+const metas = Array.isArray(cache.metas) ? cache.metas : [];
+const order = x => Number(x?._addon?.channelOrder ?? 999999);
+const latestMovies = metas.filter(x => x?.type === 'movie').sort((a, b) => order(a) - order(b)).slice(0, 20);
+const latestSeries = metas.filter(x => x?.type === 'series').sort((a, b) => order(a) - order(b)).slice(0, 10);
+console.log('Cache generated:', cache.at ? new Date(Number(cache.at)).toISOString() : null);
+console.log('Refresh stats:', JSON.stringify(cache.refreshStats || {}, null, 2));
+console.log('\nLatest movies served to clients:');
+latestMovies.forEach((x, i) => console.log(`${String(i + 1).padStart(2, '0')}. [${order(x)}] ${x.name} (${x.releaseInfo || x.year || '?'}) | fb=${x?._addon?.filmbazeId}`));
+console.log('\nLatest series served to clients:');
+latestSeries.forEach((x, i) => console.log(`${String(i + 1).padStart(2, '0')}. [${order(x)}] ${x.name} (${x.releaseInfo || x.year || '?'}) | fb=${x?._addon?.filmbazeId} | episodes=${Array.isArray(x.videos) ? x.videos.length : 0}`));

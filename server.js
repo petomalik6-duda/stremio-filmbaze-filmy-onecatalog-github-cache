@@ -7,10 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
+const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 const PORT = Number(process.env.PORT || 7000);
 const PAGE_SIZE = Number(process.env.PAGE_SIZE || 100);
-const ADDON_ID = 'cz.filmbaze.json.filmy.serialy.v333';
-const ADDON_VERSION = '3.4.2';
+const ADDON_ID = 'cz.filmbaze.json.filmy.serialy.v347';
+const ADDON_VERSION = PACKAGE_JSON.version || '3.4.7';
 const DEFAULT_CACHE_FILE = path.join(__dirname, 'data', 'catalog-cache.json');
 
 let selectedCacheFile = null;
@@ -31,6 +32,14 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+
+
+function setFreshResponseHeaders(res) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+}
 
 function normalizeText(value = '') {
   return String(value)
@@ -421,7 +430,7 @@ function handleCatalog(req, res) {
       .slice(skip, skip + PAGE_SIZE)
       .map(toMetaPreview);
 
-    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    setFreshResponseHeaders(res);
     return res.json({ metas });
   } catch (error) {
     console.error('[catalog] error', error);
@@ -430,11 +439,12 @@ function handleCatalog(req, res) {
 }
 
 app.get('/', (req, res) => {
-  res.type('html').send('<h1>Filmbáze Stremio addon v3.4.2</h1><p><a href="/manifest.json">manifest.json</a></p><p><a href="/health">health</a></p>');
+  setFreshResponseHeaders(res);
+  res.type('html').send(`<h1>Filmbáze Stremio addon v${ADDON_VERSION}</h1><p><a href="/manifest.json">manifest.json</a></p><p><a href="/health">health</a></p><p><a href="/cache.json">cache.json</a></p>`);
 });
 
 app.get('/manifest.json', (req, res) => {
-  res.setHeader('Cache-Control', 'public, max-age=300');
+  setFreshResponseHeaders(res);
   res.json(manifest);
 });
 
@@ -442,6 +452,17 @@ app.get('/health', (req, res) => {
   const cache = loadCache();
   const stats = cacheStats(cache);
   const generatedAt = cache.raw?.at ? new Date(cache.raw.at).toISOString() : null;
+  const latestMovies = cache.items
+    .filter(item => getType(item) === 'movie')
+    .sort(sortCatalog)
+    .slice(0, 10)
+    .map(item => ({ name: getName(item), filmbazeId: getFilmbazeId(item), channelOrder: item?.channelOrder ?? item?._addon?.channelOrder ?? null }));
+  const latestSeries = cache.items
+    .filter(item => getType(item) === 'series')
+    .sort(sortCatalog)
+    .slice(0, 5)
+    .map(item => ({ name: getName(item), filmbazeId: getFilmbazeId(item), channelOrder: item?.channelOrder ?? item?._addon?.channelOrder ?? null }));
+  setFreshResponseHeaders(res);
   res.json({
     ok: stats.items > 0,
     addon: ADDON_ID,
@@ -454,8 +475,16 @@ app.get('/health', (req, res) => {
     lastError: cache.raw?.lastError || null,
     refreshStats: cache.raw?.refreshStats || null,
     pageSize: PAGE_SIZE,
+    latestMovies,
+    latestSeries,
     ...stats
   });
+});
+
+app.get('/cache.json', (req, res) => {
+  const cache = loadCache();
+  setFreshResponseHeaders(res);
+  return res.json(cache.raw || { at: 0, items: [], metas: [], lastError: 'cache not loaded' });
 });
 
 app.get('/catalog/:type/:id.json', handleCatalog);
@@ -470,7 +499,7 @@ app.get('/meta/:type/:id.json', (req, res) => {
     const type = req.params.type === 'series' ? 'series' : 'movie';
     const item = cache.byLookupId.get(`${type}:${req.params.id}`);
     if (!item) return res.json({ meta: null });
-    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=900');
+    setFreshResponseHeaders(res);
     return res.json({ meta: toMetaDetail(item) });
   } catch (error) {
     console.error('[meta] error', error);
@@ -479,6 +508,7 @@ app.get('/meta/:type/:id.json', (req, res) => {
 });
 
 app.get('/debug/cache', (req, res) => {
+  setFreshResponseHeaders(res);
   const cache = loadCache();
   res.json({
     ok: true,
@@ -499,6 +529,7 @@ app.get('/debug/cache', (req, res) => {
 });
 
 app.get('/debug/item/:type/:id', (req, res) => {
+  setFreshResponseHeaders(res);
   const cache = loadCache();
   const type = req.params.type === 'series' ? 'series' : 'movie';
   const item = cache.byLookupId.get(`${type}:${req.params.id}`);

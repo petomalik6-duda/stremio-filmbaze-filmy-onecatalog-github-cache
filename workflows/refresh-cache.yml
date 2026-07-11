@@ -75,6 +75,11 @@ jobs:
           MIN_SAFE_SOURCE_RATIO: "0.70"
         run: npm run safe-merge-cache
 
+      - name: Show latest titles that will be served
+        env:
+          CACHE_FILE: "data/catalog-cache.json"
+        run: npm run report-latest
+
       - name: Validate generated cache
         env:
           CACHE_FILE: "data/catalog-cache.json"
@@ -97,6 +102,6 @@ jobs:
             echo "No cache changes"
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.4.6"
+          git commit -m "Refresh Filmbaze cache v3.4.7"
           git pull --rebase --autostash
           git push

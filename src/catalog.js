@@ -279,10 +279,32 @@ function preservePreviousSourceOnPartialFetch(fetched, current, forceFull) {
   const partial = newItems.length < minSafeItems || ratio < minSafeRatio;
   if (!partial) return fetched;
 
-  console.warn(`[refresh] partial Filmbáze response detected: ${newItems.length}/${oldItems.length}; preserving previous source items`);
-  const merged = new Map(oldItems.map(item => [sourceItemKey(item), item]));
-  for (const item of newItems) merged.set(sourceItemKey(item), item);
-  const items = [...merged.values()];
+  console.warn(`[refresh] partial Filmbáze response detected: ${newItems.length}/${oldItems.length}; preserving previous source items and re-ranking fresh titles first`);
+
+  const mergeType = type => {
+    const fresh = newItems
+      .filter(item => item?.type === type)
+      .sort((a, b) => Number(a?.channelOrder ?? 999999) - Number(b?.channelOrder ?? 999999));
+    const freshKeys = new Set(fresh.map(sourceItemKey));
+    const preserved = oldItems
+      .filter(item => item?.type === type && !freshKeys.has(sourceItemKey(item)))
+      .sort((a, b) => {
+        const order = Number(a?.channelOrder ?? 999999) - Number(b?.channelOrder ?? 999999);
+        if (order) return order;
+        return String(b?.dateAdded || '').localeCompare(String(a?.dateAdded || ''));
+      });
+
+    return [...fresh, ...preserved].map((item, index) => ({
+      ...item,
+      channelOrder: index,
+      page: item?.page || Math.floor(index / 50) + 1
+    }));
+  };
+
+  const known = [...mergeType('movie'), ...mergeType('series')];
+  const knownKeys = new Set(known.map(sourceItemKey));
+  const other = [...newItems, ...oldItems].filter(item => !knownKeys.has(sourceItemKey(item)));
+  const items = [...known, ...other];
 
   return {
     ...fetched,
