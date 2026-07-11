@@ -1,6 +1,6 @@
 {
-  "at": 1783589518163,
-  "sourceHash": "36204ff4550778fbff729855d57ae146fc486f0c",
+  "at": 1783795288136,
+  "sourceHash": "aa1e517d3b5f91660dcc5a6d850a546426192972",
   "items": [
     {
       "source": "Filmbáze",
@@ -28482,6 +28482,384 @@
       "channelOrder": 120,
       "page": 3,
       "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-e815839dbccd",
+      "name": "Title: WEDOS.protection – Security verification",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-034a9c226aef",
+      "name": "Warning: Target URL returned error 401: Unauthorized",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-e32b1f32a7b8",
+      "name": "Markdown Content:",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-23d415decb3e",
+      "name": "WEDOS.protection has detected unusual activity from your browser.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-04bb38663e1e",
+      "name": "To access this website, please complete the security challenge below.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-72347bf58290",
+      "name": "**What to do**Solve the challenge – it runs automatically in your browser.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-e899576574ba",
+      "name": "Verifying...",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-2d9741952eff",
+      "name": "Wait a moment while the security check runs in the background.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-725ffb119bcc",
+      "name": "If prompted, follow the on-screen instructions to complete the challenge.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-3a11b675c464",
+      "name": "You will be redirected to the website automatically after verification.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-1573e79baf05",
+      "name": "This security check is powered by WEDOS.protection and helps protect the website from automated attacks.",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-191a28bc6379",
+      "name": "WEDOS.protection – ATP challenge – ALTCHA PoW",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-154658122604",
+      "name": "IP: 34.96.52.50",
+      "type": "movie",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-1df5fb326134",
+      "name": "Node: ac24-SanJose",
+      "type": "movie",
+      "year": 2026,
+      "releaseDate": "2026-01-01",
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-e90ae9fb5f5e",
+      "name": "Req-ID: a2df73a9-d800-4c6e-b018-87ae231afa42",
+      "type": "movie",
+      "year": 2026,
+      "releaseDate": "2026-01-01",
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-281b92ec601b",
+      "name": "Time: 2026-07-11 18:41:04 UTC",
+      "type": "movie",
+      "year": 2026,
+      "releaseDate": "2026-01-01",
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-movie-07b09b9ce23d",
+      "name": "Agent: like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "type": "movie",
+      "year": 2026,
+      "releaseDate": "2026-01-01",
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ/SK",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-series-06eb8d849695",
+      "name": "Title: Unauthorized",
+      "type": "series",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-series-034a9c226aef",
+      "name": "Warning: Target URL returned error 401: Unauthorized",
+      "type": "series",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-series-e32b1f32a7b8",
+      "name": "Markdown Content:",
+      "type": "series",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-series-ae024a7ee7ab",
+      "name": "401",
+      "type": "series",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
+      "detailChecked": true
+    },
+    {
+      "source": "Filmbáze",
+      "id": "reader-series-45e4ce8eedd9",
+      "name": "Unauthorized",
+      "type": "series",
+      "releaseDate": null,
+      "poster": null,
+      "background": null,
+      "description": "",
+      "status": "",
+      "certification": "",
+      "dateAdded": "",
+      "lang": "CZ",
+      "primaryVideo": null,
+      "sourceUrl": "https://filmbaze.cz/oblibene-serialy-v-cestine",
+      "detailChecked": true
     }
   ],
   "metas": [
@@ -28489,7 +28867,7 @@
       "id": "tt39385949",
       "type": "movie",
       "name": "Už není co ztratit",
-      "poster": "https://image.tmdb.org/t/p/w500/9FsSrhV4OM8dyyGR9dLF6auddW2.jpg",
+      "poster": "https://image.tmdb.org/t/p/original/9FsSrhV4OM8dyyGR9dLF6auddW2.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/6tByIjKn3VLEVHhfpiNNWrnSIOM.jpg",
       "description": "Jada obětovala pro mateřství všechno. Takže když její malý syn onemocní, rozhodne se pro něj najít dárce, ať už by ji to stálo cokoli.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 946014",
       "releaseInfo": "2026",
@@ -28498,10 +28876,9 @@
       "tmdbId": 1710008,
       "runtime": "99 min",
       "genres": [
-        "Drama",
-        "Akční"
+        "CZ/SK"
       ],
-      "imdbRating": "2.0",
+      "imdbRating": 2,
       "cast": [
         "Nawell Madani",
         "Guillaume Gouix",
@@ -28561,9 +28938,9 @@
       "id": "filmbaze:movie:914814",
       "type": "movie",
       "name": "Ovce žerou první",
-      "poster": "https://image.tmdb.org/t/p/original/ffkwRG33R18sjP8cHxqXsTs2Il2.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/ffkwRG33R18sjP8cHxqXsTs2Il2.jpg",
       "background": "https://image.tmdb.org/t/p/original/ffkwRG33R18sjP8cHxqXsTs2Il2.jpg",
-      "description": "Dušanův život se po rozchodu s přítelkyní rozpadá. Ve snaze získat ji zpět zaměří svou pozornost tam, kde je na všechno nějaká odpověď. Na mladé sebevědomé řečníky a motivátory, na osobní kouče, na bo...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 914814",
+      "description": "Dušanův život se po rozchodu s přítelkyní rozpadá. Ve snaze získat ji zpět zaměří svou pozornost tam, kde je na všechno nějaká odpověď. Na mladé sebevědomé řečníky a motivátory, na osobní kouče, na bohy úspěchu. Dušan má otázky, oni odpovědi. Dušan je zlomený, oni plní energie. Dušan potřebuje přítelkyni zpět, oni mají recept. Dušan je možná jenom ovce, ale i ty mohou někdy žrát první. A co na tom, jestli se to nakonec nějak zamotá.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 914814",
       "releaseInfo": "2026",
       "year": 2026,
       "tmdbId": 1656209,
@@ -28610,11 +28987,11 @@
         "originalName": "Ovce žerou první",
         "detailChecked": true,
         "sourceTitle": "Ovce žerou první",
-        "repairAttempts": 1,
-        "lastRepairAt": "2026-07-08T06:21:19.058Z",
+        "repairAttempts": 2,
+        "lastRepairAt": "2026-07-11T18:41:21.831Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
-          "new-item"
+          "missing-imdb"
         ],
         "remainingIssues": [
           "missing-imdb"
@@ -33205,7 +33582,7 @@
       "id": "tt8950154",
       "type": "movie",
       "name": "Joe Baby",
-      "poster": "https://image.tmdb.org/t/p/original/w6vIEAwpUnSxACNsb3MNNT8rg8c.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/w6vIEAwpUnSxACNsb3MNNT8rg8c.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/q2BJ95zVRDRdrXbT6uw8Ypsy7WZ.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 34896",
       "releaseInfo": "2024",
@@ -33214,9 +33591,12 @@
       "tmdbId": 1224374,
       "runtime": "86 min",
       "genres": [
-        "CZ/SK"
+        "Akční",
+        "Thriller",
+        "Krimi",
+        "Mysteriózní"
       ],
-      "imdbRating": 5.8,
+      "imdbRating": "5.5",
       "cast": [
         "Dichen Lachman",
         "Willa Fitzgerald",
@@ -33262,8 +33642,8 @@
         "originalName": "Joe Baby",
         "detailChecked": true,
         "sourceTitle": "Joe Baby",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.776Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:21.941Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -40712,7 +41092,7 @@
       "id": "tt28637027",
       "type": "movie",
       "name": "Into the Deep",
-      "poster": "https://image.tmdb.org/t/p/original/qPvw21Y5pxojLQYDrK4ft5IYLlY.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/qPvw21Y5pxojLQYDrK4ft5IYLlY.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/804DmpPKcL9sTz2DQRY1HYBGKJk.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 747789",
       "releaseInfo": "2025",
@@ -40721,9 +41101,11 @@
       "tmdbId": 1388808,
       "runtime": "90 min",
       "genres": [
-        "CZ/SK"
+        "Horor",
+        "Akční",
+        "Thriller"
       ],
-      "imdbRating": 5.9,
+      "imdbRating": "5.9",
       "cast": [
         "Scout Taylor-Compton",
         "Richard Dreyfuss",
@@ -40769,8 +41151,8 @@
         "originalName": "Into the Deep",
         "detailChecked": true,
         "sourceTitle": "Into the Deep",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.803Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.050Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -44524,7 +44906,7 @@
       "id": "tt37847370",
       "type": "movie",
       "name": "Ozzy Osbourne: The Final Encore",
-      "poster": "https://image.tmdb.org/t/p/original/cOBAR3euW3R7j5ojBD0KoZy4kiy.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/cOBAR3euW3R7j5ojBD0KoZy4kiy.jpg",
       "background": "https://image.tmdb.org/t/p/original/cOBAR3euW3R7j5ojBD0KoZy4kiy.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 902580",
       "releaseInfo": "2025",
@@ -44569,8 +44951,8 @@
         "originalName": "Ozzy Osbourne: The Final Encore",
         "detailChecked": true,
         "sourceTitle": "Ozzy Osbourne: The Final Encore",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.828Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.144Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -44812,15 +45194,15 @@
       "id": "filmbaze:movie:901875",
       "type": "movie",
       "name": "Vánoční pásmo Život není krásný",
-      "poster": "https://image.tmdb.org/t/p/original/fXCSg6HF7BdUNZA9fOZKREozGwM.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/fXCSg6HF7BdUNZA9fOZKREozGwM.jpg",
       "background": "https://image.tmdb.org/t/p/original/fXCSg6HF7BdUNZA9fOZKREozGwM.jpg",
-      "description": "Advent je časem usebraní i dobrých skutků. S vědomím toho sebral režisér Marty Pohl, známý také jako kontroverzní rapper Řezník nebo autor Martyho frků, trojici hlubokých lidských příběhů a vytvořil z...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 901875",
+      "description": "Advent je časem usebraní i dobrých skutků. S vědomím toho sebral režisér Marty Pohl, známý také jako kontroverzní rapper Řezník nebo autor Martyho frků, trojici hlubokých lidských příběhů a vytvořil z nich vánoční pásmo nazvané podle prvního z nich – Život není krásný. Druhým filmem Máma má raka připomene zrození jednoho ze superhrdinů univerza ZNK, vařiče drog Grundzy. Štědrou nadílku vlídného humoru a kutálejících se trupů pak završí Párty Hárd. Na všechny pravověrné navíc čeká překvapení v podobě záběrů z napjatě očekávané lednové novinky Na plech, které se objeví jak v teaseru, tak i ve stejnojmenném videoklipu od skupiny Churaq Clique, který bude až do vydání filmu k vidění pouze v tomto vánočním pásmu.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 901875",
       "releaseInfo": "2024",
       "year": 2024,
       "tmdbId": 1618108,
       "runtime": "132 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
       "cast": [
         "Jan Sembdner",
@@ -44862,8 +45244,8 @@
         "originalName": "Vánoční pásmo Život není krásný",
         "detailChecked": true,
         "sourceTitle": "Vánoční pásmo Život není krásný",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.845Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.254Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -45390,17 +45772,18 @@
       "id": "filmbaze:movie:792792",
       "type": "movie",
       "name": "Švábi",
-      "poster": "https://image.tmdb.org/t/p/original/b8m8eP1jpIAi3KeE7tDRZWAKRSY.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/b8m8eP1jpIAi3KeE7tDRZWAKRSY.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/xZojfPkUxroAINGu9Kn7hLUIMGw.jpg",
-      "description": "Člověk řekne vtip a hned je bez práce. Tak nějak se cítí urolog Miloš. Učinil nevhodný vtip o vysokém úředníkovi a ten se ho teď snaží zničit. A kdyby jen... Celý dům divně páchne a všichni kolem něj...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 792792",
+      "description": "Člověk řekne vtip a hned je bez práce. Tak nějak se cítí urolog Miloš. Učinil nevhodný vtip o vysokém úředníkovi a ten se ho teď snaží zničit. A kdyby jen... Celý dům divně páchne a všichni kolem něj se chovají podezřele. Stylizovaný debut Luboše Kučery ukazuje současný svět jako bizarní panoptikum.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 792792",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1519387,
       "runtime": "63 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Horor"
       ],
-      "imdbRating": 6,
+      "imdbRating": "6.0",
       "cast": [
         "Rudolf Skopec",
         "Anita Gregorec",
@@ -45441,8 +45824,8 @@
         "originalName": "Švábi",
         "detailChecked": true,
         "sourceTitle": "Švábi",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.859Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.392Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -51562,7 +51945,7 @@
       "id": "tt25752340",
       "type": "movie",
       "name": "Un Coup de dés",
-      "poster": "https://image.tmdb.org/t/p/original/wpnvJYPkTS59up21hom7bsIAE3O.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/wpnvJYPkTS59up21hom7bsIAE3O.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/rsAar1g5m8VCEkwFnfkmc3XoW7Z.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 180188",
       "releaseInfo": "2024",
@@ -51571,9 +51954,10 @@
       "tmdbId": 1037827,
       "runtime": "84 min",
       "genres": [
-        "CZ/SK"
+        "Thriller",
+        "Krimi"
       ],
-      "imdbRating": 5.8,
+      "imdbRating": "5.8",
       "cast": [
         "Yvan Attal",
         "Maïwenn",
@@ -51619,8 +52003,8 @@
         "originalName": "Un Coup de dés",
         "detailChecked": true,
         "sourceTitle": "Un Coup de dés",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.878Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.502Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -57502,7 +57886,7 @@
       "id": "tt26218928",
       "type": "movie",
       "name": "Première affaire",
-      "poster": "https://image.tmdb.org/t/p/original/kFFBB1SaoTbZbBjj9xmv2v03Jff.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/kFFBB1SaoTbZbBjj9xmv2v03Jff.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/zPxFmbt6OGvs6E0molnCtoU7raE.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 363507",
       "releaseInfo": "2024",
@@ -57511,9 +57895,9 @@
       "tmdbId": 997509,
       "runtime": "98 min",
       "genres": [
-        "CZ/SK"
+        "Drama"
       ],
-      "imdbRating": 4.9,
+      "imdbRating": "4.9",
       "cast": [
         "Noée Abita",
         "Anders Danielsen Lie",
@@ -57559,8 +57943,8 @@
         "originalName": "Première affaire",
         "detailChecked": true,
         "sourceTitle": "Première affaire",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.896Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.609Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -58030,17 +58414,17 @@
       "id": "filmbaze:movie:728191",
       "type": "movie",
       "name": "Holka od vedle",
-      "poster": "https://image.tmdb.org/t/p/original/36deaIBXOzWfjngfnLRWGMErNcH.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/36deaIBXOzWfjngfnLRWGMErNcH.jpg",
       "background": "https://image.tmdb.org/t/p/original/36deaIBXOzWfjngfnLRWGMErNcH.jpg",
-      "description": "Kristýna má na první pohled poklidný život v malém městě. Pracuje v knihovně, vede komunitní centrum „Ostrov“ a má dlouholetého přítele Filipa. Když ale zjistí, že ji Filip podvádí, rozhodne se vztah...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 728191",
+      "description": "Kristýna má na první pohled poklidný život v malém městě. Pracuje v knihovně, vede komunitní centrum „Ostrov“ a má dlouholetého přítele Filipa. Když ale zjistí, že ji Filip podvádí, rozhodne se vztah ukončit a vzít život do vlastních rukou. S nadějí, že ji rodina podpoří, se obrací na své rodiče, kteří jí ale místo podpory přinášejí jen nevyžádané rady a své přesvědčení o tom, co je pro ni nejlepší. Ačkoliv je Kristýna odhodlaná postavit se na vlastní nohy, její máma s tátou jí to svými radami a zcela odlišným pohledem na život neusnadňují. Naštěstí má po boku svou nejlepší kamarádku Tamaru, která ji podporuje v tom, aby se přestala ohlížet na očekávání ostatních a konečně žila podle sebe. Ve chvíli, kdy se Kristýna rozhodne dát svému starému životu sbohem, vstoupí ji do cesty charismatický grafik Tomáš. Nyní stojí před těžkým rozhodnutím, zda setrvat ve známém, ale komplikovaném vztahu s Filipem, nebo udělat krok do neznáma s Tomášem. Najde nakonec Kristýna opravdovou lásku?\n\nZdroj: Filmbáze\n\nFilmbáze ID: 728191",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1400194,
       "runtime": "90 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
-      "imdbRating": 4,
+      "imdbRating": "4.0",
       "cast": [
         "Martina Babišová",
         "Kryštof Bartoš",
@@ -58081,8 +58465,8 @@
         "originalName": "Holka od vedle",
         "detailChecked": true,
         "sourceTitle": "Holka od vedle",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.910Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.704Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -61073,17 +61457,17 @@
       "id": "filmbaze:movie:749693",
       "type": "movie",
       "name": "Jak se nám to mohlo stát!?",
-      "poster": "https://image.tmdb.org/t/p/original/sh61Bo7RB4aS2t8FxNsSUwWW8PC.jpg",
-      "background": "https://image.tmdb.org/t/p/w1280/7NEFJdhZbz7hZv943RQcr5JFIb6.jpg",
-      "description": "Cimburk-Kolovratníkovi, početná aristokratická rodina, se při ohlášené svatbě svých dětí setkávají s mnohem skromnější rodinou Novákových. Budoucí nevěsta a ženich při té příležitosti nabídnou svým ro...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 749693",
+      "poster": "https://image.tmdb.org/t/p/w500/sh61Bo7RB4aS2t8FxNsSUwWW8PC.jpg",
+      "background": "https://image.tmdb.org/t/p/w1280/rbeiMZJNDyKfwqlJoYP5YXMSuRl.jpg",
+      "description": "Cimburk-Kolovratníkovi, početná aristokratická rodina, se při ohlášené svatbě svých dětí setkávají s mnohem skromnější rodinou Novákových. Budoucí nevěsta a ženich při té příležitosti nabídnou svým rodičům testy DNA, které odhalí jejich skutečný původ. Výsledky jsou naprosto nečekané a zapříčiní efekt bomby.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 749693",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1452368,
       "runtime": "100 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
-      "imdbRating": 4.7,
+      "imdbRating": "4.2",
       "cast": [
         "Miroslav Donutil",
         "Bolek Polívka",
@@ -61124,8 +61508,8 @@
         "originalName": "Jak se nám to mohlo stát!?",
         "detailChecked": true,
         "sourceTitle": "Jak se nám to mohlo stát!?",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.929Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.804Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -63875,7 +64259,7 @@
       "id": "tt27357183",
       "type": "movie",
       "name": "Get Fast",
-      "poster": "https://image.tmdb.org/t/p/original/tDpTR7xhHu9cz1X4JAIRFwXyf6U.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/tDpTR7xhHu9cz1X4JAIRFwXyf6U.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/JMlVj6X2F1PuDz9OyHShThzpa2.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 732243",
       "releaseInfo": "2024",
@@ -63884,9 +64268,11 @@
       "tmdbId": 1369679,
       "runtime": "88 min",
       "genres": [
-        "CZ/SK"
+        "Akční",
+        "Krimi",
+        "Thriller"
       ],
-      "imdbRating": 5.9,
+      "imdbRating": "6.0",
       "cast": [
         "James Clayton",
         "Lou Diamond Phillips",
@@ -63932,8 +64318,8 @@
         "originalName": "Get Fast",
         "detailChecked": true,
         "sourceTitle": "Get Fast",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.947Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:22.922Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -65713,17 +66099,17 @@
       "id": "filmbaze:movie:783020",
       "type": "movie",
       "name": "Když lumpa trápí pumpa",
-      "poster": "https://image.tmdb.org/t/p/original/xapgbYv4db9AEWodZbYkxT0YK5Q.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/xapgbYv4db9AEWodZbYkxT0YK5Q.jpg",
       "background": "https://image.tmdb.org/t/p/original/xapgbYv4db9AEWodZbYkxT0YK5Q.jpg",
-      "description": "Jakub Žiga mohl být kdysi hvězdou fotbalových trávníků. Jako mladík nosil dres prvoligového Baníku a snil o tom, že nastoupí v jeho základní jedenáctce. Slibně nastartovanou kariéru mu ale zastavily p...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 783020",
+      "description": "Jakub Žiga mohl být kdysi hvězdou fotbalových trávníků. Jako mladík nosil dres prvoligového Baníku a snil o tom, že nastoupí v jeho základní jedenáctce. Slibně nastartovanou kariéru mu ale zastavily problémy se srdcem. Od té doby bere léky, invalidní důchod, skuhrá na osud a sem tam s kamarádem Josefem Ferkešem i něco ukradne a zpeněží, což se pranic nelíbí Jakubově manželce Emě. Krádež pletiva v areálu základní školy, kam chodí obě Jakubovy dcery, a při které Jakuba nachytá ředitel školy Kovanda, dá ale věcem nečekaný spád, který přinese také jedno velké překvapení.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 783020",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 1482006,
       "runtime": "68 min",
       "genres": [
-        "CZ/SK"
+        "Komedie"
       ],
-      "imdbRating": 6,
+      "imdbRating": "6.0",
       "cast": [
         "Zdeněk Godla",
         "Eva Leimbergerová",
@@ -65764,8 +66150,8 @@
         "originalName": "Když lumpa trápí pumpa",
         "detailChecked": true,
         "sourceTitle": "Když lumpa trápí pumpa",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.966Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:23.013Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -66006,7 +66392,7 @@
       "id": "tt15716284",
       "type": "movie",
       "name": "Memorias de un cuerpo que arde",
-      "poster": "https://image.tmdb.org/t/p/original/7nhzCZhe67wPwAcK2RKxn8TBQM1.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/7nhzCZhe67wPwAcK2RKxn8TBQM1.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/2jLTKV8M4m3ry6JQQ5fnqePr2vc.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 412504",
       "releaseInfo": "2024",
@@ -66015,9 +66401,9 @@
       "tmdbId": 1232350,
       "runtime": "90 min",
       "genres": [
-        "CZ/SK"
+        "Drama"
       ],
-      "imdbRating": 6.9,
+      "imdbRating": "6.9",
       "cast": [
         "Sol Carballo",
         "Paulina Bernini Víquez",
@@ -66063,8 +66449,8 @@
         "originalName": "Memorias de un cuerpo que arde",
         "detailChecked": true,
         "sourceTitle": "Memorias de un cuerpo que arde",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:07.980Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:23.107Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -77021,7 +77407,7 @@
       "id": "tt20414228",
       "type": "movie",
       "name": "Manta Manta - Zwoter Teil",
-      "poster": "https://image.tmdb.org/t/p/original/sYMPaNG3nl2tcYJfqXcMK5whUMt.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/sYMPaNG3nl2tcYJfqXcMK5whUMt.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/tTowHrLbxXxtiJT65HJVWSp0EqR.jpg",
       "description": "Zdroj: Filmbáze\n\nFilmbáze ID: 178693",
       "releaseInfo": "2023",
@@ -77030,9 +77416,11 @@
       "tmdbId": 1058100,
       "runtime": "127 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Akční",
+        "Dobrodružný"
       ],
-      "imdbRating": 4.9,
+      "imdbRating": "4.9",
       "cast": [
         "Til Schweiger",
         "Tina Ruland",
@@ -77078,8 +77466,8 @@
         "originalName": "Manta Manta - Zwoter Teil",
         "detailChecked": true,
         "sourceTitle": "Manta Manta - Zwoter Teil",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.010Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:23.219Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-description"
@@ -84958,17 +85346,18 @@
       "id": "filmbaze:movie:4855",
       "type": "movie",
       "name": "Lítá v tom",
-      "poster": "https://image.tmdb.org/t/p/original/d2sNrpJbirrCQ17UDP9VPdgPXw.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/d2sNrpJbirrCQ17UDP9VPdgPXw.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/8pmUnYyLxxewsjEswqTqD05Sw7e.jpg",
-      "description": "Lukáš chce naposledy potěšit svou nemocnou maminku, která touží po vnucích. Přesvědčí proto těhotnou sousedku a bývalou striptérku Natáliu, aby sehrála jeho dívku a nastávající ženu. Maminka se ale zá...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 4855",
+      "description": "Lukáš chce naposledy potěšit svou nemocnou maminku, která touží po vnucích. Přesvědčí proto těhotnou sousedku a bývalou striptérku Natáliu, aby sehrála jeho dívku a nastávající ženu. Maminka se ale zázračně uzdraví a strhne se lavina nedorozumění a karambolů a několik životů se převrátí vzhůru nohama.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 4855",
       "releaseInfo": "2023",
       "year": 2023,
       "tmdbId": 857263,
       "runtime": "100 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Romantický"
       ],
-      "imdbRating": 6.7,
+      "imdbRating": "6.7",
       "cast": [
         "Kryštof Hádek",
         "Kristína Svarinská",
@@ -85009,8 +85398,8 @@
         "originalName": "Lítá v tom",
         "detailChecked": true,
         "sourceTitle": "Lítá v tom",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.030Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:23.324Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -93987,15 +94376,16 @@
       "id": "filmbaze:series:920710",
       "type": "series",
       "name": "Pád domu Kollerů",
-      "poster": "https://image.tmdb.org/t/p/original/aqkkqR59aMJx0pjZ4ngUzkz3jlL.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/aqkkqR59aMJx0pjZ4ngUzkz3jlL.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/oF2TwddD7635Vp16jTvXKZk1o1b.jpg",
-      "description": "Příběh čerstvé matky, brutálně vtipné životní smolařky Vendy Kollerové. Ta je pod tlakem okolností nucena nastěhovat se do domu svého dominantního otce Roberta Kollera. Její babička, čerstvá vdova Mar...\n\nZdroj: Filmbáze\n\nFilmbáze ID: 920710",
+      "description": "Příběh čerstvé matky, brutálně vtipné životní smolařky Vendy Kollerové. Ta je pod tlakem okolností nucena nastěhovat se do domu svého dominantního otce Roberta Kollera. Její babička, čerstvá vdova Marta Kollerová, je všechno možné, jen ne smolař. Autoritativní významná psycholožka se po smrti manžela, dědy Berta, také rozhodne najít útočiště v domě svého poddajného syna Roberta. Ale nepřišla se přizpůsobit zaběhnutým pořádkům, přišla je přizpůsobit sobě. V domě brzy nezůstane kámen na kameni.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 920710",
       "releaseInfo": "2026",
       "year": 2026,
       "tmdbId": 274039,
       "runtime": "60 min",
       "genres": [
-        "CZ/SK"
+        "Komedie",
+        "Rodinný"
       ],
       "imdbRating": "3.5",
       "cast": [
@@ -94098,8 +94488,8 @@
         "originalName": "Pád domu Kollerů",
         "detailChecked": true,
         "sourceTitle": "Pád domu Kollerů",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.152Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:23.599Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -101602,17 +101992,19 @@
       "id": "filmbaze:series:817563",
       "type": "series",
       "name": "Štěstíčku naproti",
-      "poster": "https://image.tmdb.org/t/p/original/d1UP6stDx3hxGly3F0mtPOkcCqV.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/d1UP6stDx3hxGly3F0mtPOkcCqV.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/79LrSwaUtZey4RZSR04QETjtcN.jpg",
-      "description": "Oba milují fotbal víc než cokoli na světě. První pracuje na hospodářské kriminálce a na stole mu přistanou odposlechy, naznačující úplatky v druhé nejvyšší fotbalové soutěži. Jenže to nikoho nezajímá....\n\nZdroj: Filmbáze\n\nFilmbáze ID: 817563",
+      "description": "Oba milují fotbal víc než cokoli na světě. První pracuje na hospodářské kriminálce a na stole mu přistanou odposlechy, naznačující úplatky v druhé nejvyšší fotbalové soutěži. Jenže to nikoho nezajímá. Druhý je manažerem fotbalového klubu a snaží se stůj co stůj udržet svůj tým v první lize. A už neví kudy dál. Příběh (z) doby kdy český fotbal válcoval Evropu, ale v jeho zákulisí pořád vládla devadesátková pravidla.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 817563",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 274005,
       "runtime": "60 min",
       "genres": [
-        "CZ/SK"
+        "Krimi",
+        "Drama",
+        "Komedie"
       ],
-      "imdbRating": 4.5,
+      "imdbRating": "4.5",
       "cast": [
         "Marek Daniel",
         "Denisa Barešová",
@@ -101709,8 +102101,8 @@
         "originalName": "Štěstíčku naproti",
         "detailChecked": true,
         "sourceTitle": "Štěstíčku naproti",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.217Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:23.816Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -101987,16 +102379,17 @@
       "id": "filmbaze:series:806365",
       "type": "series",
       "name": "Monstrum: Příběh Eda Geina",
-      "poster": "https://image.tmdb.org/t/p/original/iDHzRALtZCzHVmx7uyjTTKvMAPB.jpg",
+      "poster": "https://image.tmdb.org/t/p/w500/iDHzRALtZCzHVmx7uyjTTKvMAPB.jpg",
       "background": "https://image.tmdb.org/t/p/w1280/cm2oUAPiTE1ERoYYOzzgloQw4YZ.jpg",
       "description": "Šokující skutečný příběh Eda Geina, nechvalně známého vraha a vykradače hrobů, který se stal předlohou pro nejznámější hollywoodské filmové zabijáky.\n\nZdroj: Filmbáze\n\nFilmbáze ID: 806365",
       "releaseInfo": "2025",
       "year": 2025,
       "tmdbId": 286801,
       "genres": [
-        "CZ/SK"
+        "Krimi",
+        "Drama"
       ],
-      "imdbRating": 7.2,
+      "imdbRating": "7.2",
       "cast": [
         "Charlie Hunnam",
         "Suzanna Son",
@@ -102108,8 +102501,8 @@
         "originalName": "Monster: The Ed Gein Story",
         "detailChecked": true,
         "sourceTitle": "Monstrum: Příběh Eda Geina",
-        "repairAttempts": 5,
-        "lastRepairAt": "2026-07-07T07:09:08.261Z",
+        "repairAttempts": 6,
+        "lastRepairAt": "2026-07-11T18:41:24.029Z",
         "repairStatus": "resolved",
         "lastRepairReasons": [
           "missing-imdb"
@@ -114689,19 +115082,1195 @@
         "lastRepairReasons": [],
         "remainingIssues": []
       }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-e815839dbccd",
+      "type": "movie",
+      "name": "Title: WEDOS.protection – Security verification",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-e815839dbccd",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-e815839dbccd"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-e815839dbccd"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-e815839dbccd",
+        "filmbazeId": "reader-movie-e815839dbccd",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Title: WEDOS.protection – Security verification",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.126Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-034a9c226aef",
+      "type": "movie",
+      "name": "Warning: Target URL returned error 401: Unauthorized",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-034a9c226aef",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-034a9c226aef"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-034a9c226aef"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-034a9c226aef",
+        "filmbazeId": "reader-movie-034a9c226aef",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Warning: Target URL returned error 401: Unauthorized",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.216Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-e32b1f32a7b8",
+      "type": "movie",
+      "name": "Markdown Content:",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-e32b1f32a7b8",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-e32b1f32a7b8"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-e32b1f32a7b8"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-e32b1f32a7b8",
+        "filmbazeId": "reader-movie-e32b1f32a7b8",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Markdown Content:",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.346Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-23d415decb3e",
+      "type": "movie",
+      "name": "WEDOS.protection has detected unusual activity from your browser.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-23d415decb3e",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-23d415decb3e"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-23d415decb3e"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-23d415decb3e",
+        "filmbazeId": "reader-movie-23d415decb3e",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "WEDOS.protection has detected unusual activity from your browser.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.439Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-04bb38663e1e",
+      "type": "movie",
+      "name": "To access this website, please complete the security challenge below.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-04bb38663e1e",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-04bb38663e1e"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-04bb38663e1e"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-04bb38663e1e",
+        "filmbazeId": "reader-movie-04bb38663e1e",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "To access this website, please complete the security challenge below.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.533Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-72347bf58290",
+      "type": "movie",
+      "name": "**What to do**Solve the challenge – it runs automatically in your browser.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-72347bf58290",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-72347bf58290"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-72347bf58290"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-72347bf58290",
+        "filmbazeId": "reader-movie-72347bf58290",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "**What to do**Solve the challenge – it runs automatically in your browser.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.623Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-e899576574ba",
+      "type": "movie",
+      "name": "The Battle of Ilovaisk: Verifying Russian Military Presence in Ukraine",
+      "poster": "https://image.tmdb.org/t/p/w500/wBBzpYswDmjqEeNZmsJyUWrmLDc.jpg",
+      "background": "https://image.tmdb.org/t/p/w500/wBBzpYswDmjqEeNZmsJyUWrmLDc.jpg",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-e899576574ba",
+      "releaseInfo": "2019",
+      "year": 2019,
+      "tmdbId": 762395,
+      "runtime": "9 min",
+      "genres": [
+        "Dokumentární"
+      ],
+      "cast": [],
+      "director": [
+        "Forensic Architecture"
+      ],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-e899576574ba"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-e899576574ba"
+        },
+        {
+          "name": "TMDB",
+          "category": "Info",
+          "url": "https://www.themoviedb.org/movie/762395"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-e899576574ba",
+        "filmbazeId": "reader-movie-e899576574ba",
+        "tmdbId": 762395,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": "The Battle of Ilovaisk: Verifying Russian Military Presence in Ukraine",
+        "detailChecked": true,
+        "sourceTitle": "Verifying...",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.896Z",
+        "repairStatus": "resolved",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-imdb",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-2d9741952eff",
+      "type": "movie",
+      "name": "Wait a moment while the security check runs in the background.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-2d9741952eff",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-2d9741952eff"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-2d9741952eff"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-2d9741952eff",
+        "filmbazeId": "reader-movie-2d9741952eff",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Wait a moment while the security check runs in the background.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:24.986Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-725ffb119bcc",
+      "type": "movie",
+      "name": "If prompted, follow the on-screen instructions to complete the challenge.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-725ffb119bcc",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-725ffb119bcc"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-725ffb119bcc"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-725ffb119bcc",
+        "filmbazeId": "reader-movie-725ffb119bcc",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "If prompted, follow the on-screen instructions to complete the challenge.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.080Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-3a11b675c464",
+      "type": "movie",
+      "name": "You will be redirected to the website automatically after verification.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-3a11b675c464",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-3a11b675c464"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-3a11b675c464"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-3a11b675c464",
+        "filmbazeId": "reader-movie-3a11b675c464",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "You will be redirected to the website automatically after verification.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.171Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-1573e79baf05",
+      "type": "movie",
+      "name": "This security check is powered by WEDOS.protection and helps protect the website from automated attacks.",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-1573e79baf05",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-1573e79baf05"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-1573e79baf05"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-1573e79baf05",
+        "filmbazeId": "reader-movie-1573e79baf05",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "This security check is powered by WEDOS.protection and helps protect the website from automated attacks.",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.264Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-191a28bc6379",
+      "type": "movie",
+      "name": "WEDOS.protection – ATP challenge – ALTCHA PoW",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-191a28bc6379",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-191a28bc6379"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-191a28bc6379"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-191a28bc6379",
+        "filmbazeId": "reader-movie-191a28bc6379",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "WEDOS.protection – ATP challenge – ALTCHA PoW",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.355Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-154658122604",
+      "type": "movie",
+      "name": "IP: 34.96.52.50",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-154658122604",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-154658122604"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-154658122604"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-154658122604",
+        "filmbazeId": "reader-movie-154658122604",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "IP: 34.96.52.50",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.461Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-1df5fb326134",
+      "type": "movie",
+      "name": "Node: ac24-SanJose",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-1df5fb326134",
+      "releaseInfo": "2026",
+      "year": 2026,
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-1df5fb326134"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-1df5fb326134"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-1df5fb326134",
+        "filmbazeId": "reader-movie-1df5fb326134",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Node: ac24-SanJose",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.553Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-e90ae9fb5f5e",
+      "type": "movie",
+      "name": "Req-ID: a2df73a9-d800-4c6e-b018-87ae231afa42",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-e90ae9fb5f5e",
+      "releaseInfo": "2026",
+      "year": 2026,
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-e90ae9fb5f5e"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-e90ae9fb5f5e"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-e90ae9fb5f5e",
+        "filmbazeId": "reader-movie-e90ae9fb5f5e",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Req-ID: a2df73a9-d800-4c6e-b018-87ae231afa42",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.707Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-281b92ec601b",
+      "type": "movie",
+      "name": "Time: 2026-07-11 18:41:04 UTC",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-281b92ec601b",
+      "releaseInfo": "2026",
+      "year": 2026,
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-281b92ec601b"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-281b92ec601b"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-281b92ec601b",
+        "filmbazeId": "reader-movie-281b92ec601b",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Time: 2026-07-11 18:41:04 UTC",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.808Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:movie:reader-movie-07b09b9ce23d",
+      "type": "movie",
+      "name": "Agent: like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-movie-07b09b9ce23d",
+      "releaseInfo": "2026",
+      "year": 2026,
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:movie:reader-movie-07b09b9ce23d"
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-movie-07b09b9ce23d"
+        }
+      ],
+      "_addon": {
+        "key": "reader-movie-07b09b9ce23d",
+        "filmbazeId": "reader-movie-07b09b9ce23d",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Agent: like Gecko) Chrome/150.0.0.0 Safari/537.36",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:25.898Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:series:reader-series-06eb8d849695",
+      "type": "series",
+      "name": "Title: Unauthorized",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-series-06eb8d849695",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:series:reader-series-06eb8d849695:1:1"
+      },
+      "videos": [],
+      "seriesInfo": {
+        "episodeCount": 0
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-series-06eb8d849695"
+        }
+      ],
+      "_addon": {
+        "key": "reader-series-06eb8d849695",
+        "filmbazeId": "reader-series-06eb8d849695",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Title: Unauthorized",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:26.001Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description",
+          "missing-episodes"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:series:reader-series-034a9c226aef",
+      "type": "series",
+      "name": "Warning: Target URL returned error 401: Unauthorized",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-series-034a9c226aef",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:series:reader-series-034a9c226aef:1:1"
+      },
+      "videos": [],
+      "seriesInfo": {
+        "episodeCount": 0
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-series-034a9c226aef"
+        }
+      ],
+      "_addon": {
+        "key": "reader-series-034a9c226aef",
+        "filmbazeId": "reader-series-034a9c226aef",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Warning: Target URL returned error 401: Unauthorized",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:26.091Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description",
+          "missing-episodes"
+        ]
+      }
+    },
+    {
+      "id": "filmbaze:series:reader-series-e32b1f32a7b8",
+      "type": "series",
+      "name": "Markdown Content:",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-series-e32b1f32a7b8",
+      "genres": [
+        "CZ/SK"
+      ],
+      "cast": [],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "filmbaze:series:reader-series-e32b1f32a7b8:1:1"
+      },
+      "videos": [],
+      "seriesInfo": {
+        "episodeCount": 0
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-series-e32b1f32a7b8"
+        }
+      ],
+      "_addon": {
+        "key": "reader-series-e32b1f32a7b8",
+        "filmbazeId": "reader-series-e32b1f32a7b8",
+        "tmdbId": null,
+        "imdbId": null,
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 0,
+        "originalName": null,
+        "detailChecked": true,
+        "sourceTitle": "Markdown Content:",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:26.225Z",
+        "repairStatus": "not-found",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-tmdb",
+          "missing-imdb",
+          "missing-poster",
+          "missing-description",
+          "missing-episodes"
+        ]
+      }
+    },
+    {
+      "id": "tt0978757",
+      "type": "series",
+      "name": "Room 401",
+      "poster": "https://image.tmdb.org/t/p/w500/eGdHv3dbGC263VDZfU0YO1FGEki.jpg",
+      "background": "https://image.tmdb.org/t/p/w500/eGdHv3dbGC263VDZfU0YO1FGEki.jpg",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-series-ae024a7ee7ab",
+      "releaseInfo": "2007",
+      "year": 2007,
+      "imdbId": "tt0978757",
+      "tmdbId": 13145,
+      "runtime": "30 min",
+      "genres": [
+        "Reality",
+        "Sci-Fi & Fantasy"
+      ],
+      "imdbRating": "7.5",
+      "cast": [
+        "Jared Padalecki",
+        "Rob Zabrecky"
+      ],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "tt0978757:1:1"
+      },
+      "videos": [
+        {
+          "id": "tt0978757:1:1",
+          "title": "1. epizoda",
+          "season": 1,
+          "episode": 1,
+          "released": "2007-07-17"
+        },
+        {
+          "id": "tt0978757:1:2",
+          "title": "2. epizoda",
+          "season": 1,
+          "episode": 2,
+          "released": "2007-07-24"
+        },
+        {
+          "id": "tt0978757:1:3",
+          "title": "3. epizoda",
+          "season": 1,
+          "episode": 3,
+          "released": "2007-07-31"
+        },
+        {
+          "id": "tt0978757:1:4",
+          "title": "4. epizoda",
+          "season": 1,
+          "episode": 4,
+          "released": "2007-08-07"
+        },
+        {
+          "id": "tt0978757:1:5",
+          "title": "5. epizoda",
+          "season": 1,
+          "episode": 5,
+          "released": "2007-08-14"
+        },
+        {
+          "id": "tt0978757:1:6",
+          "title": "6. epizoda",
+          "season": 1,
+          "episode": 6,
+          "released": "2007-08-14"
+        },
+        {
+          "id": "tt0978757:1:7",
+          "title": "7. epizoda",
+          "season": 1,
+          "episode": 7,
+          "released": "2007-08-21"
+        },
+        {
+          "id": "tt0978757:1:8",
+          "title": "8. epizoda",
+          "season": 1,
+          "episode": 8,
+          "released": "2007-08-21"
+        }
+      ],
+      "seriesInfo": {
+        "episodeCount": 8
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-series-ae024a7ee7ab"
+        },
+        {
+          "name": "TMDB",
+          "category": "Info",
+          "url": "https://www.themoviedb.org/tv/13145"
+        },
+        {
+          "name": "IMDb",
+          "category": "Info",
+          "url": "https://www.imdb.com/title/tt0978757/"
+        }
+      ],
+      "_addon": {
+        "key": "reader-series-ae024a7ee7ab",
+        "filmbazeId": "reader-series-ae024a7ee7ab",
+        "tmdbId": 13145,
+        "imdbId": "tt0978757",
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 8,
+        "originalName": "Room 401",
+        "detailChecked": true,
+        "sourceTitle": "401",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:26.789Z",
+        "repairStatus": "resolved",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-description"
+        ]
+      }
+    },
+    {
+      "id": "tt14534210",
+      "type": "series",
+      "name": "Unauthorized Biographies with Peter Graves",
+      "description": "Zdroj: Filmbáze\n\nFilmbáze ID: reader-series-45e4ce8eedd9",
+      "releaseInfo": "1993",
+      "year": 1993,
+      "imdbId": "tt14534210",
+      "tmdbId": 96086,
+      "runtime": "43 min",
+      "genres": [
+        "Dokumentární"
+      ],
+      "cast": [
+        "Peter Graves"
+      ],
+      "director": [],
+      "behaviorHints": {
+        "defaultVideoId": "tt14534210:1:1"
+      },
+      "videos": [
+        {
+          "id": "tt14534210:1:1",
+          "title": "1. epizoda",
+          "season": 1,
+          "episode": 1,
+          "released": "1993-01-01"
+        },
+        {
+          "id": "tt14534210:1:2",
+          "title": "2. epizoda",
+          "season": 1,
+          "episode": 2,
+          "released": "1993-01-01"
+        },
+        {
+          "id": "tt14534210:1:3",
+          "title": "3. epizoda",
+          "season": 1,
+          "episode": 3,
+          "released": "1993-01-01"
+        },
+        {
+          "id": "tt14534210:1:4",
+          "title": "4. epizoda",
+          "season": 1,
+          "episode": 4,
+          "released": "1993-01-01"
+        }
+      ],
+      "seriesInfo": {
+        "episodeCount": 4
+      },
+      "links": [
+        {
+          "name": "Filmbáze",
+          "category": "Info",
+          "url": "https://filmbaze.cz/title/reader-series-45e4ce8eedd9"
+        },
+        {
+          "name": "TMDB",
+          "category": "Info",
+          "url": "https://www.themoviedb.org/tv/96086"
+        },
+        {
+          "name": "IMDb",
+          "category": "Info",
+          "url": "https://www.imdb.com/title/tt14534210/"
+        }
+      ],
+      "_addon": {
+        "key": "reader-series-45e4ce8eedd9",
+        "filmbazeId": "reader-series-45e4ce8eedd9",
+        "tmdbId": 96086,
+        "imdbId": "tt14534210",
+        "dateAdded": "",
+        "channelOrder": 999999,
+        "page": null,
+        "episodeCount": 4,
+        "originalName": "Unauthorized Biographies with Peter Graves",
+        "detailChecked": true,
+        "sourceTitle": "Unauthorized",
+        "repairAttempts": 1,
+        "lastRepairAt": "2026-07-11T18:41:28.135Z",
+        "repairStatus": "resolved",
+        "lastRepairReasons": [
+          "new-item"
+        ],
+        "remainingIssues": [
+          "missing-poster",
+          "missing-description"
+        ]
+      }
     }
   ],
   "lastError": null,
   "refreshStats": {
-    "at": "2026-07-09T09:31:58.027Z",
+    "at": "2026-07-11T18:41:21.713Z",
     "sourceChanged": true,
-    "fetchedItems": 1145,
-    "newItems": 1,
-    "reusedItems": 1144,
-    "repairedItems": 0,
+    "fetchedItems": 22,
+    "newItems": 22,
+    "reusedItems": 1127,
+    "repairedItems": 18,
     "repairFailed": 0,
-    "repairDeferred": 18,
-    "enrichedMovies": 1,
-    "enrichedSeries": 0
+    "repairDeferred": 0,
+    "enrichedMovies": 32,
+    "enrichedSeries": 8,
+    "partialFetch": true,
+    "preservedSourceItems": 1145
   }
 }
