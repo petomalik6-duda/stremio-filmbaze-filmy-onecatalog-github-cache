@@ -268,10 +268,14 @@ function sourceHash(items) {
     .digest('hex');
 }
 
-function preservePreviousSourceOnPartialFetch(fetched, current, forceFull) {
+function preservePreviousSourceOnPartialFetch(fetched, current) {
   const newItems = Array.isArray(fetched?.items) ? fetched.items : [];
   const oldItems = Array.isArray(current?.items) ? current.items : [];
-  if (forceFull || !oldItems.length) return fetched;
+  const forceFullSource = String(process.env.FORCE_FULL_SOURCE_REFRESH || 'false').toLowerCase() === 'true';
+  if (forceFullSource || !oldItems.length) return fetched;
+
+  // forceFull controls TMDB metadata enrichment only. It must not disable source
+  // preservation when the daily source fetch intentionally reads just page 1.
 
   const minSafeItems = Number(process.env.MIN_SAFE_SOURCE_ITEMS || 500);
   const minSafeRatio = Number(process.env.MIN_SAFE_SOURCE_RATIO || 0.70);
@@ -375,7 +379,17 @@ export async function refreshCache({ forceFull = false } = {}) {
 
       setStage('fetch-filmbaze-json');
       const rawFetched = await fetchFilmbazeItems();
-      const fetched = preservePreviousSourceOnPartialFetch(rawFetched, current, forceFull);
+
+      // A WEDOS block with zero usable source items must never touch the stored cache.
+      // The workflow exits successfully, validates the previous cache and commits nothing.
+      if (rawFetched.blocked && rawFetched.items.length === 0 && current.metas.length) {
+        console.warn(`[refresh] Filmbáze blocked this run: ${rawFetched.blockReason || 'WEDOS security response'}`);
+        console.warn(`[refresh] Keeping previous cache unchanged (${current.metas.length} metas).`);
+        setStage('filmbaze-blocked-cache-preserved');
+        return current.metas;
+      }
+
+      const fetched = preservePreviousSourceOnPartialFetch(rawFetched, current);
       setStage(`fetched-${rawFetched.items.length}-items${fetched.partialFetch ? '-partial-preserved' : ''}`);
 
       if (!fetched.items.length) throw new Error('Filmbáze JSON returned 0 items.');
@@ -397,6 +411,10 @@ export async function refreshCache({ forceFull = false } = {}) {
         setStage('source-unchanged-no-repairs');
         const refreshStats = buildRefreshStats({ sourceChanged: false, fetchedItems: fetched.items.length });
         refreshStats.reusedItems = current.metas.length;
+        refreshStats.sourceBlocked = Boolean(rawFetched.blocked);
+        refreshStats.sourceBlockReason = rawFetched.blockReason || null;
+        refreshStats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
+        refreshStats.incrementalSourceFetch = Boolean(rawFetched.incremental);
 
         cache = {
           ...current,
@@ -419,6 +437,10 @@ export async function refreshCache({ forceFull = false } = {}) {
       const stats = buildRefreshStats({ sourceChanged, fetchedItems: fetched.rawFetchedItems ?? fetched.items.length });
       stats.partialFetch = Boolean(fetched.partialFetch);
       stats.preservedSourceItems = fetched.partialFetch ? fetched.items.length - (fetched.rawFetchedItems || 0) : 0;
+      stats.sourceBlocked = Boolean(rawFetched.blocked);
+      stats.sourceBlockReason = rawFetched.blockReason || null;
+      stats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
+      stats.incrementalSourceFetch = Boolean(rawFetched.incremental);
       const metas = [];
       let movieBudgetUsed = 0;
       let seriesBudgetUsed = 0;

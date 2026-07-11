@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import * as cheerio from 'cheerio';
-import { getWithRetry } from './http.js';
+import { getWithRetry, isFilmbazeBlockedError, getFilmbazeRequestState } from './http.js';
 
 const MOVIES_URL =
   process.env.FILMBAZE_MOVIES_URL ||
@@ -23,6 +23,11 @@ const STRICT_MOVIE_FILTER = String(process.env.STRICT_MOVIE_FILTER || 'true').to
 const USE_READER_FALLBACK = String(process.env.USE_READER_FALLBACK || 'true').toLowerCase() !== 'false';
 const ENABLE_FILMBAZE_DETAIL = String(process.env.ENABLE_FILMBAZE_DETAIL || 'true').toLowerCase() !== 'false';
 const FILMBAZE_DETAIL_LIMIT = Number(process.env.FILMBAZE_DETAIL_LIMIT || 2000);
+const FILMBAZE_INCREMENTAL = String(process.env.FILMBAZE_INCREMENTAL || 'false').toLowerCase() === 'true';
+const FILMBAZE_API_ONLY = String(process.env.FILMBAZE_API_ONLY || 'false').toLowerCase() === 'true';
+const FILMBAZE_BETWEEN_CHANNELS_MS = Math.max(0, Number(process.env.FILMBAZE_BETWEEN_CHANNELS_MS || 4000));
+const MAX_MOVIE_PAGES = Math.max(1, Number(process.env.MAX_MOVIE_PAGES || (FILMBAZE_INCREMENTAL ? 1 : MAX_PAGES)));
+const MAX_SERIES_PAGES = Math.max(1, Number(process.env.MAX_SERIES_PAGES || (FILMBAZE_INCREMENTAL ? 1 : MAX_PAGES)));
 
 let lastDebug = {
   movies: [],
@@ -47,12 +52,11 @@ function channelApiUrl(type, page) {
 }
 
 function pageUrls(baseUrl, page, type) {
-  const variants = [];
+  const api = channelApiUrl(type, page);
+  if (FILMBAZE_API_ONLY) return [api];
 
-  // Correct Filmbáze API discovered from browser Network.
-  variants.push(channelApiUrl(type, page));
+  const variants = [api];
 
-  // Public route variants as fallback.
   const a = new URL(baseUrl);
   if (page > 1) a.searchParams.set('page', String(page));
   variants.push(a.toString());
@@ -60,10 +64,6 @@ function pageUrls(baseUrl, page, type) {
   const b = new URL(baseUrl);
   if (page > 1) b.searchParams.set('content_page', String(page));
   variants.push(b.toString());
-
-  const c = new URL(baseUrl);
-  if (page > 1) c.searchParams.set('p', String(page));
-  variants.push(c.toString());
 
   return [...new Set(variants)];
 }
@@ -81,26 +81,36 @@ async function fetchFilmbazePage(baseUrl, page, type) {
   let lastError = null;
 
   for (const url of pageUrls(baseUrl, page, type)) {
-    // 0) Direct Filmbáze API JSON.
-    if (url.includes('/api/v1/channel/')) {
+    const isApi = url.includes('/api/v1/channel/');
+
+    if (isApi) {
       try {
         const response = await getWithRetry(url, {
           headers: {
-            'Accept': 'application/json',
-            'Referer': baseUrl
+            Accept: 'application/json',
+            Referer: baseUrl
           }
-        });
+        }, 1);
 
-        if (typeof response.data === 'object') {
+        if (typeof response.data === 'object' && response.data !== null) {
           return { payload: response.data, mode: 'channel-api', url };
         }
+
+        const jsonPayload = extractJsonFromHtml(String(response.data || ''));
+        if (jsonPayload) return { payload: jsonPayload, mode: 'channel-api-html-json', url };
+
+        throw new Error('Filmbáze channel API returned no usable JSON payload.');
       } catch (error) {
         lastError = error;
         logPageError(type, page, 'channel-api', url, error.message);
+        if (isFilmbazeBlockedError(error)) throw error;
+        if (FILMBAZE_API_ONLY) throw error;
+        continue;
       }
     }
 
-    // 1) Inertia partial JSON first. This is important for pagination.
+    // Public page fallback is disabled for the daily workflow. It is available only
+    // for manual diagnostics because each fallback request increases WEDOS pressure.
     try {
       const response = await getWithRetry(url, {
         headers: {
@@ -108,61 +118,26 @@ async function fetchFilmbazePage(baseUrl, page, type) {
           'X-Requested-With': 'XMLHttpRequest',
           'X-Inertia-Partial-Component': 'ChannelPage',
           'X-Inertia-Partial-Data': 'content,pagination',
-          'Referer': baseUrl,
-          'Accept': 'application/json,text/html;q=0.9,*/*;q=0.8'
+          Referer: baseUrl,
+          Accept: 'application/json,text/html;q=0.9,*/*;q=0.8'
         }
-      });
+      }, 1);
 
-      if (typeof response.data === 'object') return { payload: response.data, mode: 'inertia-json', url };
+      if (typeof response.data === 'object' && response.data !== null) {
+        return { payload: response.data, mode: 'inertia-json', url };
+      }
 
       const jsonPayload = extractJsonFromHtml(String(response.data || ''));
       if (jsonPayload) return { payload: jsonPayload, mode: 'inertia-html-json', url };
     } catch (error) {
       lastError = error;
       logPageError(type, page, 'inertia', url, error.message);
-    }
-
-    // 2) Plain HTML/Inertia page.
-    try {
-      const response = await getWithRetry(url, {
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8',
-          'Referer': baseUrl
-        }
-      });
-
-      if (typeof response.data === 'object') return { payload: response.data, mode: 'plain-json', url };
-
-      const htmlPayload = extractJsonFromHtml(String(response.data || ''));
-      if (htmlPayload) return { payload: htmlPayload, mode: 'html-json', url };
-    } catch (error) {
-      lastError = error;
-      logPageError(type, page, 'html', url, error.message);
-    }
-
-    // 3) Reader fallback only for page 1. Reader usually cannot trigger infinite scroll pages.
-    if (USE_READER_FALLBACK && page === 1) {
-      try {
-        const fallback = readerUrl(url);
-        const response = await getWithRetry(fallback, {
-          headers: { Accept: 'text/plain,text/markdown,*/*' }
-        });
-        const readerText = String(response.data || '');
-        if (isBlockedReaderResponse(readerText)) {
-          logPageError(type, page, 'reader-blocked', fallback, 'Reader returned WEDOS/401 security challenge');
-          continue;
-        }
-        return { payload: { __readerText: readerText }, mode: 'reader', url: fallback };
-      } catch (error) {
-        lastError = error;
-        logPageError(type, page, 'reader', url, error.message);
-      }
+      if (isFilmbazeBlockedError(error)) throw error;
     }
   }
 
   throw lastError || new Error(`Could not fetch Filmbáze page ${baseUrl} page ${page}`);
 }
-
 function logPageError(type, page, mode, url, error) {
   lastDebug.errors.push({ type, page, mode, url, error });
   if (lastDebug.errors.length > 50) lastDebug.errors.shift();
@@ -236,7 +211,9 @@ async function fetchChannelItems({ url, type, maxItems }) {
   let pages = 0;
   const seenPageSignatures = new Set();
 
-  while (nextPage && pages < MAX_PAGES && all.length < maxItems) {
+  const pageLimit = type === 'series' ? MAX_SERIES_PAGES : MAX_MOVIE_PAGES;
+
+  while (nextPage && pages < pageLimit && all.length < maxItems) {
     pages += 1;
 
     const { payload, mode, url: usedUrl } = await fetchFilmbazePage(url, nextPage, type);
@@ -291,7 +268,7 @@ async function fetchChannelItems({ url, type, maxItems }) {
     const perPage = Number(content.per_page || 50);
 
     if (explicitNext) nextPage = Number(explicitNext);
-    else if (received >= perPage && pages < MAX_PAGES) nextPage += 1;
+    else if (received >= perPage && pages < pageLimit) nextPage += 1;
     else nextPage = null;
   }
 
@@ -476,7 +453,7 @@ function extractOriginalName(payload) {
 }
 
 async function enrichFilmbazeDetails(items) {
-  if (!ENABLE_FILMBAZE_DETAIL) return items;
+  if (!ENABLE_FILMBAZE_DETAIL || FILMBAZE_DETAIL_LIMIT <= 0) return items;
 
   const out = [];
   let checked = 0;
@@ -497,33 +474,58 @@ async function enrichFilmbazeDetails(items) {
 export async function fetchFilmbazeItems() {
   lastDebug = { movies: [], series: [], errors: [] };
 
-  const [movies, series] = await Promise.allSettled([
-    fetchChannelItems({ url: MOVIES_URL, type: 'movie', maxItems: MAX_ITEMS }),
-    fetchChannelItems({ url: SERIES_URL, type: 'series', maxItems: MAX_SERIES_ITEMS })
-  ]);
+  let movieItems = [];
+  let seriesItems = [];
+  let blocked = false;
+  let blockReason = null;
 
-  const movieItems = movies.status === 'fulfilled' ? movies.value : [];
-  const seriesItems = series.status === 'fulfilled' ? series.value : [];
-
-  if (movies.status === 'rejected') {
-    console.error('[filmbaze] movies failed:', movies.reason.message);
-    lastDebug.errors.push({ type: 'movie', error: movies.reason.message });
+  try {
+    movieItems = await fetchChannelItems({ url: MOVIES_URL, type: 'movie', maxItems: MAX_ITEMS });
+  } catch (error) {
+    console.error('[filmbaze] movies failed:', error.message);
+    lastDebug.errors.push({ type: 'movie', error: error.message, code: error.code || null });
+    blocked = isFilmbazeBlockedError(error);
+    if (blocked) blockReason = error.message;
   }
 
-  if (series.status === 'rejected') {
-    console.error('[filmbaze] series failed:', series.reason.message);
-    lastDebug.errors.push({ type: 'series', error: series.reason.message });
+  // Avoid simultaneous requests to the same protected host. If WEDOS opened the
+  // circuit, the second channel is skipped without another network request.
+  if (!blocked && FILMBAZE_BETWEEN_CHANNELS_MS > 0) {
+    await new Promise(resolve => setTimeout(resolve, FILMBAZE_BETWEEN_CHANNELS_MS));
+  }
+
+  if (!blocked) {
+    try {
+      seriesItems = await fetchChannelItems({ url: SERIES_URL, type: 'series', maxItems: MAX_SERIES_ITEMS });
+    } catch (error) {
+      console.error('[filmbaze] series failed:', error.message);
+      lastDebug.errors.push({ type: 'series', error: error.message, code: error.code || null });
+      if (isFilmbazeBlockedError(error)) {
+        blocked = true;
+        blockReason = error.message;
+      }
+    }
   }
 
   const items = await enrichFilmbazeDetails([...movieItems, ...seriesItems]);
+  const requestState = getFilmbazeRequestState();
 
   const sourceHash = crypto.createHash('sha1')
     .update(items.map(x => `${x.type}|${x.id}|${x.name}|${x.releaseDate}`).join('|'))
     .digest('hex');
 
-  return { sourceUrl: MOVIES_URL, moviesUrl: MOVIES_URL, seriesUrl: SERIES_URL, sourceHash, items };
+  return {
+    sourceUrl: MOVIES_URL,
+    moviesUrl: MOVIES_URL,
+    seriesUrl: SERIES_URL,
+    sourceHash,
+    items,
+    blocked: blocked || requestState.circuitOpen,
+    blockReason: blockReason || requestState.reason || null,
+    requestState,
+    incremental: FILMBAZE_INCREMENTAL
+  };
 }
-
 function normalizeFilmbazeTitle(item, requestedType, sourceUrl) {
   if (!item) return null;
 

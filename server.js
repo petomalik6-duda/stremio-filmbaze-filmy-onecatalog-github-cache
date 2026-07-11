@@ -10,8 +10,8 @@ const app = express();
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 const PORT = Number(process.env.PORT || 7000);
 const PAGE_SIZE = Number(process.env.PAGE_SIZE || 100);
-const ADDON_ID = 'cz.filmbaze.json.filmy.serialy.v347';
-const ADDON_VERSION = PACKAGE_JSON.version || '3.4.7';
+const ADDON_ID = 'cz.filmbaze.json.filmy.serialy.v350';
+const ADDON_VERSION = PACKAGE_JSON.version || '3.5.0';
 const DEFAULT_CACHE_FILE = path.join(__dirname, 'data', 'catalog-cache.json');
 
 let selectedCacheFile = null;

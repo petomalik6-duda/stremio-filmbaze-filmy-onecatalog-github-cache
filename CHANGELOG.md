@@ -1,3 +1,10 @@
+# v3.4.9 – Volný hráč recovery
+
+- Adds Filmbáze title 258618 “Volný hráč” (IMDb tt29942429, TMDB 1001374) to the last valid cache.
+- Places it first in the movie catalog.
+- Uses addon ID v349 to bypass stale Nuvio catalog cache.
+- Keeps the WEDOS protection from v3.4.8.
+
 # v3.4.8 – WEDOS data pollution fix
 
 - Removed 37 fake WEDOS/401 reader entries from cache.
@@ -22,3 +29,14 @@
 - Added `EPISODE_REPAIR_RETRY_HOURS` (workflow default: `0`).
 - TMDB episode loader now probes season endpoints when `number_of_seasons` exists but the embedded `seasons` array is temporarily empty.
 - Preserves all v3.4.2 stability improvements.
+
+## 3.5.0
+
+- denný low-request refresh s jednou stránkou na kanál,
+- sekvenčné načítanie filmov a seriálov,
+- Filmbáze request rate-limit a request budget,
+- circuit breaker pri WEDOS/401/403/429,
+- okamžité zachovanie starej cache pri blokovaní,
+- vypnuté detailné Filmbáze requesty a reader fallback v dennom workflowe,
+- oddelený TMDB full rebuild od bezpečného source merge,
+- nový addon ID `cz.filmbaze.json.filmy.serialy.v350`.
