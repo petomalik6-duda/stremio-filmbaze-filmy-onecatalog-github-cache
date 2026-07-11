@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       force_full:
-        description: "Force full TMDB rebuild"
+        description: "Force full TMDB metadata rebuild (source still stays incremental/safe)"
+        required: false
+        default: "false"
+      deep_source_scan:
+        description: "Manual deeper Filmbaze scan (more requests; leave false for normal use)"
         required: false
         default: "false"
   schedule:
@@ -20,7 +24,7 @@ permissions:
 jobs:
   refresh-cache:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
 
     steps:
       - name: Checkout repository
@@ -40,6 +44,31 @@ jobs:
       - name: Verify installed addon version
         run: node -p "'Running addon version ' + require('./package.json').version"
 
+      - name: Configure low-request source mode
+        shell: bash
+        run: |
+          DEEP_SOURCE_SCAN="${{ github.event.inputs.deep_source_scan || 'false' }}"
+
+          if [ "$DEEP_SOURCE_SCAN" = "true" ]; then
+            echo "Manual deep source scan enabled."
+            echo "FILMBAZE_INCREMENTAL=false" >> "$GITHUB_ENV"
+            echo "MAX_MOVIE_PAGES=4" >> "$GITHUB_ENV"
+            echo "MAX_SERIES_PAGES=3" >> "$GITHUB_ENV"
+            echo "MAX_ITEMS=200" >> "$GITHUB_ENV"
+            echo "MAX_SERIES_ITEMS=150" >> "$GITHUB_ENV"
+            echo "FILMBAZE_MAX_REQUESTS=8" >> "$GITHUB_ENV"
+            echo "FILMBAZE_MIN_REQUEST_INTERVAL_MS=5000" >> "$GITHUB_ENV"
+          else
+            echo "Daily incremental source scan enabled: one page per channel."
+            echo "FILMBAZE_INCREMENTAL=true" >> "$GITHUB_ENV"
+            echo "MAX_MOVIE_PAGES=1" >> "$GITHUB_ENV"
+            echo "MAX_SERIES_PAGES=1" >> "$GITHUB_ENV"
+            echo "MAX_ITEMS=50" >> "$GITHUB_ENV"
+            echo "MAX_SERIES_ITEMS=50" >> "$GITHUB_ENV"
+            echo "FILMBAZE_MAX_REQUESTS=3" >> "$GITHUB_ENV"
+            echo "FILMBAZE_MIN_REQUEST_INTERVAL_MS=4000" >> "$GITHUB_ENV"
+          fi
+
       - name: Backup last valid cache
         run: |
           test -f data/catalog-cache.json
@@ -51,24 +80,28 @@ jobs:
           ENABLE_TMDB: "true"
           ENABLE_TMDB_EPISODES: "true"
           FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
-          ENRICH_MOVIE_LIMIT: "40"
-          ENRICH_SERIES_LIMIT: "20"
-          REPAIR_RETRY_HOURS: "72"
-          EPISODE_REPAIR_RETRY_HOURS: "168"
+          FORCE_FULL_SOURCE_REFRESH: "false"
+          ENRICH_MOVIE_LIMIT: "25"
+          ENRICH_SERIES_LIMIT: "10"
+          REPAIR_RETRY_HOURS: "168"
+          EPISODE_REPAIR_RETRY_HOURS: "336"
           MAX_EPISODE_SEASONS: "12"
           MAX_EPISODES_PER_SERIES: "250"
           CACHE_FILE: "data/catalog-cache.json"
-          FILMBAZE_DETAIL_LIMIT: "80"
+          FILMBAZE_API_ONLY: "true"
+          FILMBAZE_BETWEEN_CHANNELS_MS: "5000"
+          ENABLE_FILMBAZE_DETAIL: "false"
+          FILMBAZE_DETAIL_LIMIT: "0"
           USE_READER_FALLBACK: "false"
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
           REQUEST_TIMEOUT_MS: "12000"
           HTTP_RETRIES: "2"
-          HTTP_RETRY_BASE_MS: "1000"
-          HTTP_RETRY_MAX_MS: "8000"
+          HTTP_RETRY_BASE_MS: "1200"
+          HTTP_RETRY_MAX_MS: "6000"
         run: npm run refresh
 
-      - name: Restore missing items after partial source response
+      - name: Restore missing items after incremental source response
         env:
           CACHE_FILE: "data/catalog-cache.json"
           PREVIOUS_CACHE_FILE: "data/catalog-cache.before-refresh.json"
@@ -100,9 +133,9 @@ jobs:
           git config user.email "github-actions@github.com"
           git add data/catalog-cache.json
           if git diff --cached --quiet; then
-            echo "No cache changes"
+            echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.4.8"
+          git commit -m "Refresh Filmbaze cache v3.5.0"
           git pull --rebase --autostash
           git push
