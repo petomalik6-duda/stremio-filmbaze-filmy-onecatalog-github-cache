@@ -48,7 +48,7 @@ export async function getWithRetry(url, options = {}, attempts = DEFAULT_ATTEMPT
         validateStatus: status => status >= 200 && status < 400,
         ...options,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; StremioFilmbazeJsonAddon/3.4.2; +https://www.stremio.com/)',
+          'User-Agent': 'Mozilla/5.0 (compatible; StremioFilmbazeJsonAddon/3.4.8; +https://www.stremio.com/)',
           'Accept': 'application/json, text/html;q=0.9, */*;q=0.8',
           ...(options.headers || {})
         }

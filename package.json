@@ -1,6 +1,6 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.4.7",
+  "version": "3.4.8",
   "type": "module",
   "description": "Filmbaze catalog/meta addon with immediate retry for missing series episodes, smart incremental repair and resilient TMDB metadata refresh.",
   "main": "server.js",

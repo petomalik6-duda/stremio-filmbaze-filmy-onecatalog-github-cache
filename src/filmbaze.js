@@ -72,6 +72,11 @@ function readerUrl(url) {
   return `https://r.jina.ai/${url}`;
 }
 
+function isBlockedReaderResponse(text) {
+  const value = String(text || '');
+  return /WEDOS\.protection|Security verification|Target URL returned error 401|\b401\s*Unauthorized\b|ALTCHA|security challenge|unusual activity from your browser|Req-ID:|Node:\s*ac\d+|Agent:\s*like Gecko/i.test(value);
+}
+
 async function fetchFilmbazePage(baseUrl, page, type) {
   let lastError = null;
 
@@ -142,7 +147,12 @@ async function fetchFilmbazePage(baseUrl, page, type) {
         const response = await getWithRetry(fallback, {
           headers: { Accept: 'text/plain,text/markdown,*/*' }
         });
-        return { payload: { __readerText: String(response.data || '') }, mode: 'reader', url: fallback };
+        const readerText = String(response.data || '');
+        if (isBlockedReaderResponse(readerText)) {
+          logPageError(type, page, 'reader-blocked', fallback, 'Reader returned WEDOS/401 security challenge');
+          continue;
+        }
+        return { payload: { __readerText: readerText }, mode: 'reader', url: fallback };
       } catch (error) {
         lastError = error;
         logPageError(type, page, 'reader', url, error.message);
@@ -290,6 +300,11 @@ async function fetchChannelItems({ url, type, maxItems }) {
 }
 
 function parseReaderText(text, type, sourceUrl) {
+  if (isBlockedReaderResponse(text)) {
+    console.warn(`[filmbaze] rejected blocked reader response for ${type}`);
+    return [];
+  }
+
   const items = [];
   const lines = String(text || '').split(/\r?\n/).map(clean).filter(Boolean);
 
@@ -332,7 +347,7 @@ function parseReaderText(text, type, sourceUrl) {
 function isLikelyTitleLine(line) {
   const t = clean(line);
   if (!t || t.length < 2 || t.length > 120) return false;
-  if (/cookie|reklama|facebook|instagram|youtube|kontakt|podmínky|menu|filmbaze\.cz|javascript enabled|novinky s českým dabingem|oblíbené seriály/i.test(t)) return false;
+  if (/cookie|reklama|facebook|instagram|youtube|kontakt|podmínky|menu|filmbaze\.cz|javascript enabled|novinky s českým dabingem|oblíbené seriály|WEDOS|security verification|unauthorized|security challenge|unusual activity|Req-ID|Node:|Agent:|Markdown Content|Target URL returned error/i.test(t)) return false;
   if (/^\d+(\.\d+)?\s*\/\s*10$/.test(t)) return false;
   if (/^\d{1,3}\s*%$/.test(t)) return false;
   if (/^(film|filmy|seriál|seriály|žánry|hrají|režie|více|read more)$/i.test(t)) return false;

@@ -1,3 +1,9 @@
+# v3.4.8 – WEDOS data pollution fix
+
+- Removed 37 fake WEDOS/401 reader entries from cache.
+- Rejected challenge pages before title parsing.
+- Added validator protection and disabled reader fallback in workflow.
+
 # v3.4.7 – live new films fix
 
 - Server and manifest version are now read from package.json.

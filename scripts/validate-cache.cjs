@@ -39,6 +39,12 @@ const seriesWithEpisodes = series.filter(meta => Array.isArray(meta.videos) && m
 const ids = metas.map(meta => meta?.id).filter(Boolean);
 const duplicateIds = ids.length - new Set(ids).size;
 const invalidMetas = metas.filter(meta => !meta?.id || !meta?.name || !['movie', 'series'].includes(meta?.type));
+const blockedPattern = /WEDOS\.protection|Security verification|401\s*Unauthorized|Target URL returned error|security challenge|unusual activity from your browser|Req-ID:|Node:\s*ac\d+|Agent:\s*like Gecko|Markdown Content:/i;
+const poisonedItems = items.filter(item => String(item?.id || '').startsWith('reader-') && blockedPattern.test(String(item?.name || '')));
+const poisonedMetas = metas.filter(meta => {
+  const sourceId = String(meta?._addon?.filmbazeId || '');
+  return (sourceId.startsWith('reader-') || String(meta?.id || '').includes(':reader-')) && blockedPattern.test(`${meta?.name || ''} ${meta?.description || ''}`);
+});
 
 if (!current.sourceHash) fail('sourceHash is empty.');
 if (items.length < minItems) fail(`Too few source items: ${items.length} < ${minItems}`);
@@ -48,6 +54,8 @@ if (series.length < minSeries) fail(`Too few series: ${series.length} < ${minSer
 if (metas.length < Math.floor(items.length * 0.8)) fail(`Meta/source ratio too low: ${metas.length}/${items.length}`);
 if (duplicateIds > 0) fail(`Duplicate Stremio IDs: ${duplicateIds}`);
 if (invalidMetas.length > 0) fail(`Invalid metas: ${invalidMetas.length}`);
+if (poisonedItems.length > 0) fail(`Blocked/WEDOS page was parsed as source titles: ${poisonedItems.length}`);
+if (poisonedMetas.length > 0) fail(`Blocked/WEDOS page was parsed as metas: ${poisonedMetas.length}`);
 
 if (series.length > 0) {
   const coverage = seriesWithEpisodes.length / series.length;
