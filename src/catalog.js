@@ -1,6 +1,7 @@
 import { fetchFilmbazeItems } from './filmbaze.js';
 import { tmdbResolve } from './tmdb.js';
 import { readStore, writeStore, storePath } from './store.js';
+import crypto from 'crypto';
 
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_HOURS || 24) * 60 * 60 * 1000;
 const ENRICH_LIMIT = Number(process.env.ENRICH_LIMIT || 0);
@@ -257,6 +258,41 @@ async function enrichItem(item, previous, reasons) {
   }
 }
 
+function sourceItemKey(item) {
+  return `${item?.type || ''}:${item?.id || ''}`;
+}
+
+function sourceHash(items) {
+  return crypto.createHash('sha1')
+    .update((items || []).map(x => `${x.type}|${x.id}|${x.name}|${x.releaseDate || ''}`).join('|'))
+    .digest('hex');
+}
+
+function preservePreviousSourceOnPartialFetch(fetched, current, forceFull) {
+  const newItems = Array.isArray(fetched?.items) ? fetched.items : [];
+  const oldItems = Array.isArray(current?.items) ? current.items : [];
+  if (forceFull || !oldItems.length) return fetched;
+
+  const minSafeItems = Number(process.env.MIN_SAFE_SOURCE_ITEMS || 500);
+  const minSafeRatio = Number(process.env.MIN_SAFE_SOURCE_RATIO || 0.70);
+  const ratio = oldItems.length ? newItems.length / oldItems.length : 1;
+  const partial = newItems.length < minSafeItems || ratio < minSafeRatio;
+  if (!partial) return fetched;
+
+  console.warn(`[refresh] partial Filmbáze response detected: ${newItems.length}/${oldItems.length}; preserving previous source items`);
+  const merged = new Map(oldItems.map(item => [sourceItemKey(item), item]));
+  for (const item of newItems) merged.set(sourceItemKey(item), item);
+  const items = [...merged.values()];
+
+  return {
+    ...fetched,
+    items,
+    sourceHash: sourceHash(items),
+    partialFetch: true,
+    rawFetchedItems: newItems.length
+  };
+}
+
 function buildRefreshStats({ sourceChanged, fetchedItems }) {
   return {
     at: new Date().toISOString(),
@@ -316,8 +352,9 @@ export async function refreshCache({ forceFull = false } = {}) {
       const current = cache.at ? cache : await loadFromDisk();
 
       setStage('fetch-filmbaze-json');
-      const fetched = await fetchFilmbazeItems();
-      setStage(`fetched-${fetched.items.length}-items`);
+      const rawFetched = await fetchFilmbazeItems();
+      const fetched = preservePreviousSourceOnPartialFetch(rawFetched, current, forceFull);
+      setStage(`fetched-${rawFetched.items.length}-items${fetched.partialFetch ? '-partial-preserved' : ''}`);
 
       if (!fetched.items.length) throw new Error('Filmbáze JSON returned 0 items.');
 
@@ -357,7 +394,9 @@ export async function refreshCache({ forceFull = false } = {}) {
         return cache.metas;
       }
 
-      const stats = buildRefreshStats({ sourceChanged, fetchedItems: fetched.items.length });
+      const stats = buildRefreshStats({ sourceChanged, fetchedItems: fetched.rawFetchedItems ?? fetched.items.length });
+      stats.partialFetch = Boolean(fetched.partialFetch);
+      stats.preservedSourceItems = fetched.partialFetch ? fetched.items.length - (fetched.rawFetchedItems || 0) : 0;
       const metas = [];
       let movieBudgetUsed = 0;
       let seriesBudgetUsed = 0;

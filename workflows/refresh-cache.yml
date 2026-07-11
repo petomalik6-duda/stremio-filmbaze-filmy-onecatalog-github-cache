@@ -1,0 +1,102 @@
+name: Refresh Filmbaze cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_full:
+        description: "Force full TMDB rebuild"
+        required: false
+        default: "false"
+  schedule:
+    - cron: "20 3 * * *"
+
+concurrency:
+  group: refresh-filmbaze-cache
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify installed addon version
+        run: node -p "'Running addon version ' + require('./package.json').version"
+
+      - name: Backup last valid cache
+        run: |
+          test -f data/catalog-cache.json
+          cp data/catalog-cache.json data/catalog-cache.before-refresh.json
+
+      - name: Refresh and repair cache
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          ENABLE_TMDB: "true"
+          ENABLE_TMDB_EPISODES: "true"
+          FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full || 'false' }}
+          ENRICH_MOVIE_LIMIT: "40"
+          ENRICH_SERIES_LIMIT: "20"
+          REPAIR_RETRY_HOURS: "72"
+          EPISODE_REPAIR_RETRY_HOURS: "168"
+          MAX_EPISODE_SEASONS: "12"
+          MAX_EPISODES_PER_SERIES: "250"
+          CACHE_FILE: "data/catalog-cache.json"
+          FILMBAZE_DETAIL_LIMIT: "80"
+          MIN_SAFE_SOURCE_ITEMS: "500"
+          MIN_SAFE_SOURCE_RATIO: "0.70"
+          REQUEST_TIMEOUT_MS: "12000"
+          HTTP_RETRIES: "2"
+          HTTP_RETRY_BASE_MS: "1000"
+          HTTP_RETRY_MAX_MS: "8000"
+        run: npm run refresh
+
+      - name: Restore missing items after partial source response
+        env:
+          CACHE_FILE: "data/catalog-cache.json"
+          PREVIOUS_CACHE_FILE: "data/catalog-cache.before-refresh.json"
+          MIN_SAFE_SOURCE_ITEMS: "500"
+          MIN_SAFE_SOURCE_RATIO: "0.70"
+        run: npm run safe-merge-cache
+
+      - name: Validate generated cache
+        env:
+          CACHE_FILE: "data/catalog-cache.json"
+          MIN_CACHE_ITEMS: "500"
+          MIN_CACHE_MOVIES: "400"
+          MIN_CACHE_SERIES: "50"
+          MAX_CACHE_DROP_RATIO: "0.20"
+          MIN_SERIES_EPISODE_COVERAGE: "0.80"
+        run: npm run validate-cache
+
+      - name: Remove temporary backup
+        run: rm -f data/catalog-cache.before-refresh.json
+
+      - name: Commit refreshed cache safely
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data/catalog-cache.json
+          if git diff --cached --quiet; then
+            echo "No cache changes"
+            exit 0
+          fi
+          git commit -m "Refresh Filmbaze cache v3.4.6"
+          git pull --rebase --autostash
+          git push
