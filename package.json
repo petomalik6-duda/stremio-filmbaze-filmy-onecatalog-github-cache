@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "type": "module",
-  "description": "Filmbaze catalog/meta addon with hybrid incremental refresh: direct API, safe Reader window, multi-query public search-index discovery, strict TMDB/IMDb promotion, diagnostics and WEDOS-safe cache preservation.",
+  "description": "Filmbaze catalog/meta addon with hybrid incremental refresh: direct API, safe Reader window, Jina JSON-first public search-index discovery, strict TMDB/IMDb promotion, diagnostics and WEDOS-safe cache preservation.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

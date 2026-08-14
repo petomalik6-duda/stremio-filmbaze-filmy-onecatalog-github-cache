@@ -4,8 +4,9 @@ const USE_INDEXED_FALLBACK = String(process.env.USE_INDEXED_FALLBACK || 'true').
 const INDEXED_FALLBACK_MAX_ITEMS = Math.max(1, Number(process.env.INDEXED_FALLBACK_MAX_ITEMS || 30));
 const INDEXED_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.INDEXED_SEARCH_MAX_QUERIES || 4));
 const JINA_API_KEY = String(process.env.JINA_API_KEY || '').trim();
-const JINA_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.JINA_SEARCH_MAX_QUERIES || 1));
+const JINA_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.JINA_SEARCH_MAX_QUERIES || 2));
 const INDEXED_TIMEOUT_MS = Math.max(3000, Number(process.env.INDEXED_TIMEOUT_MS || 12000));
+const JINA_TIMEOUT_MS = Math.max(5000, Number(process.env.JINA_TIMEOUT_MS || 30000));
 
 function decodeXml(value) {
   return String(value || '')
@@ -30,16 +31,16 @@ function xmlTag(block, tag) {
   return match ? clean(stripTags(match[1])) : '';
 }
 
-async function fetchText(url, headers = {}) {
+async function fetchText(url, headers = {}, timeoutMs = INDEXED_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), INDEXED_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
       method: 'GET',
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.1)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.3)',
         'Accept-Language': 'cs-CZ,cs;q=0.9,en;q=0.7',
         ...headers
       }
@@ -255,6 +256,68 @@ export function parseDuckDuckGoHtml(html, type, sourceUrl) {
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
 
+function jinaResultEntries(payload) {
+  const out = [];
+  const seen = new Set();
+  const stack = [payload];
+
+  while (stack.length) {
+    const value = stack.shift();
+    if (!value) continue;
+    if (Array.isArray(value)) {
+      stack.push(...value);
+      continue;
+    }
+    if (typeof value !== 'object') continue;
+
+    const url = value.url || value.link || value.sourceUrl || value.source_url || value?.source?.url || '';
+    const title = value.title || value.name || '';
+    const content = value.content || value.markdown || value.description || value.text || value.snippet || '';
+    if (url || title || content) {
+      const key = `${url}|${title}|${String(content).slice(0, 100)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push({ url: String(url || ''), title: String(title || ''), content: String(content || '') });
+      }
+    }
+
+    for (const [key, child] of Object.entries(value)) {
+      if (['usage', 'tokens'].includes(key)) continue;
+      if (child && typeof child === 'object') stack.push(child);
+    }
+  }
+
+  return out;
+}
+
+export function parseJinaSearchJson(payload, type, sourceUrl) {
+  const hints = [];
+  const entries = jinaResultEntries(payload);
+
+  for (const entry of entries) {
+    const combined = clean(`${entry.title} ${entry.content}`);
+    if (!entry.url) continue;
+    hints.push(...parseTrustedSnippet({
+      title: entry.title,
+      link: entry.url,
+      description: entry.content,
+      type,
+      sourceUrl,
+      evidence: 'jina-search-json'
+    }));
+
+    // Some Jina JSON responses put the whole page in content while title is
+    // generic. For the exact channel/home page, parse the content directly too.
+    if (trustedIndexPage(entry.url, sourceUrl, type, combined)) {
+      hints.push(...parseLeadingHints(entry.content, type, sourceUrl, 'jina-search-json-content'));
+      hints.push(...parseBeforePosterHints(entry.content, type, sourceUrl, 'jina-search-json-content'));
+      hints.push(...parsePosterHints(entry.content, type, sourceUrl, 'jina-search-json-content'));
+    }
+  }
+
+  return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
+}
+
 export function parseJinaSearch(text, type, sourceUrl) {
   const raw = String(text || '');
   const hints = [];
@@ -340,6 +403,25 @@ export function indexedQueries(type, sourceUrl) {
   return [...new Set(base)].slice(0, INDEXED_SEARCH_MAX_QUERIES);
 }
 
+export function jinaQueries(type, sourceUrl) {
+  let host = 'filmbaze.cz';
+  try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
+
+  if (type === 'series') {
+    return [
+      `site:${host} "Oblíbené seriály v češtině"`,
+      `site:${host} "Oblíbené seriály"`,
+      `"${sourceUrl}"`
+    ];
+  }
+
+  return [
+    `site:${host} "Novinky s českým dabingem"`,
+    `site:${host} "Nové filmy na internetu s českým dabingem"`,
+    `"${sourceUrl}"`
+  ];
+}
+
 async function fetchBingHints(type, sourceUrl, queries) {
   const items = [];
   const errors = [];
@@ -381,32 +463,54 @@ async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
   return { items: dedupeHints(items), errors, successfulQueries };
 }
 
-async function fetchJinaHints(type, sourceUrl, queries) {
-  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0 };
+async function fetchJinaHints(type, sourceUrl) {
+  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, jsonResults: 0 };
   const items = [];
   const errors = [];
   let successfulQueries = 0;
+  let responseBytes = 0;
+  let jsonResults = 0;
+  const queries = jinaQueries(type, sourceUrl).slice(0, JINA_SEARCH_MAX_QUERIES);
 
-  for (const query of queries.slice(0, JINA_SEARCH_MAX_QUERIES)) {
+  for (const query of queries) {
     try {
+      // Current Jina Reader/Search docs support ?q= and JSON output. JSON is
+      // considerably more stable than parsing the rendered markdown wrapper.
       const url = `https://s.jina.ai/?q=${encodeURIComponent(query)}`;
       const text = await fetchText(url, {
         Authorization: `Bearer ${JINA_API_KEY}`,
-        Accept: 'text/plain,text/markdown;q=0.9,*/*;q=0.8'
-      });
+        Accept: 'application/json',
+        'X-No-Cache': 'true',
+        'X-Timeout': '30'
+      }, JINA_TIMEOUT_MS);
       successfulQueries += 1;
-      items.push(...parseJinaSearch(text, type, sourceUrl));
+      responseBytes += Buffer.byteLength(text, 'utf8');
+
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch {}
+      if (parsed) {
+        const entries = jinaResultEntries(parsed);
+        jsonResults += entries.length;
+        items.push(...parseJinaSearchJson(parsed, type, sourceUrl));
+      } else {
+        // Backward compatibility if Jina returns markdown/text despite Accept.
+        items.push(...parseJinaSearch(text, type, sourceUrl));
+      }
+
+      // One trusted Filmbáze channel/home result is enough. Try the second Jina
+      // query only if the first produced no usable catalog hint.
+      if (dedupeHints(items).length > 0) break;
     } catch (error) {
       errors.push(`${query}: ${error.message}`);
     }
   }
 
-  return { items: dedupeHints(items), errors, successfulQueries };
+  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, jsonResults };
 }
 
 export async function fetchIndexedCatalogHints(type, sourceUrl) {
   if (!USE_INDEXED_FALLBACK) {
-    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [], jinaConfigured: Boolean(JINA_API_KEY) };
+    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [], jinaConfigured: Boolean(JINA_API_KEY), jinaResponseBytes: 0, jinaJsonResults: 0, jinaSuccessfulQueries: 0 };
   }
 
   const queries = indexedQueries(type, sourceUrl);
@@ -414,17 +518,25 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
   const attemptedProviders = [];
   const errors = [];
   const items = [];
+  let jinaResponseBytes = 0;
+  let jinaJsonResults = 0;
+  let jinaSuccessfulQueries = 0;
 
   // API-backed search is preferred when configured. Unlike scraping a public
   // search HTML page, s.jina.ai has a documented authenticated API contract.
   if (JINA_API_KEY) {
-    const jina = await fetchJinaHints(type, sourceUrl, queries);
+    const jina = await fetchJinaHints(type, sourceUrl);
     attemptedProviders.push('jina-search');
+    jinaResponseBytes += Number(jina.responseBytes || 0);
+    jinaJsonResults += Number(jina.jsonResults || 0);
+    jinaSuccessfulQueries += Number(jina.successfulQueries || 0);
     errors.push(...jina.errors.map(error => `jina-search: ${error}`));
     if (jina.items.length) {
       providers.push('jina-search');
       items.push(...jina.items);
     }
+    // Keep provider diagnostics even when parsing yields zero hints.
+    if (jina.queries?.length) queries.push(...jina.queries);
   }
 
   // Keep no-key providers as best-effort secondary discovery only.
@@ -456,6 +568,9 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
     attemptedProviders: [...new Set(attemptedProviders)],
     errors,
     queries,
-    jinaConfigured: Boolean(JINA_API_KEY)
+    jinaConfigured: Boolean(JINA_API_KEY),
+    jinaResponseBytes,
+    jinaJsonResults,
+    jinaSuccessfulQueries
   };
 }

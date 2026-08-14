@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseBingRss, parseDuckDuckGoHtml, parseJinaSearch, indexedQueries } from '../src/indexed.js';
+import { parseBingRss, parseDuckDuckGoHtml, parseJinaSearch, parseJinaSearchJson, indexedQueries, jinaQueries } from '../src/indexed.js';
 
 const movieUrl = 'https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu';
 const seriesUrl = 'https://filmbaze.cz/oblibene-serialy-v-cestine';
@@ -43,6 +43,26 @@ assert(seriesDdgHints.some(x => x.name === 'Montmartre'));
 const seriesText = `Result: ${seriesUrl}\n2026. Testovací seriál · Poster for Testovací seriál. 8.0 / 10`;
 const seriesHints = parseJinaSearch(seriesText, 'series', seriesUrl);
 assert(seriesHints.some(x => x.name === 'Testovací seriál' && x.year === 2026));
+
+
+const jinaJson = {
+  code: 200,
+  status: 20000,
+  data: [
+    {
+      title: 'Nové filmy na internetu s českým dabingem',
+      url: movieUrl,
+      content: 'Novinky s českým dabingem ; Poster for Tenkrát v Gaze. 5.4 / 10. Tenkrát v Gaze ; Poster for Julian. 6.7 / 10. Julian ; Poster for Zvukař. 7 / 10. Zvukař'
+    }
+  ]
+};
+const jinaJsonHints = parseJinaSearchJson(jinaJson, 'movie', movieUrl);
+assert(jinaJsonHints.some(x => x.name === 'Tenkrát v Gaze'));
+assert(jinaJsonHints.some(x => x.name === 'Zvukař'));
+
+const jq = jinaQueries('movie', movieUrl);
+assert(jq[0].includes('Novinky s českým dabingem'));
+assert(!jq[0].includes('/novinky-s-ceskym-dabingem-na-netu'));
 
 const movieQueries = indexedQueries('movie', movieUrl);
 assert(movieQueries.length >= 3);

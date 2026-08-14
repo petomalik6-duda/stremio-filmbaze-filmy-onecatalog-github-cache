@@ -281,6 +281,27 @@ function sourceTitleYearKey(item) {
   return title ? `${item?.type || ''}:${title}:${year || ''}` : '';
 }
 
+function sourceTitleOnlyKey(item) {
+  const title = normalizeSourceTitle(item?.name || item?.title || item?.originalName || '');
+  return title ? `${item?.type || ''}:${title}` : '';
+}
+
+function uniqueByTitle(items = []) {
+  const buckets = new Map();
+  for (const item of items) {
+    const key = sourceTitleOnlyKey(item);
+    if (!key) continue;
+    const list = buckets.get(key) || [];
+    list.push(item);
+    buckets.set(key, list);
+  }
+  const out = new Map();
+  for (const [key, list] of buckets) {
+    if (list.length === 1) out.set(key, list[0]);
+  }
+  return out;
+}
+
 function safeIndexedResolution(item, meta) {
   if (!item?.indexedFallback || !meta) return true;
   if (!meta.tmdbId || !validImdb(meta.imdbId)) return false;
@@ -317,18 +338,22 @@ function reconcileReaderItemsWithPrevious(newItems, oldItems) {
     const key = sourceTitleYearKey(oldItem);
     if (key && !previousByTitleYear.has(key)) previousByTitleYear.set(key, oldItem);
   }
+  const previousByUniqueTitle = uniqueByTitle(oldItems || []);
 
   return (newItems || []).map(item => {
     if (!item?.readerFallback && !item?.indexedFallback) return item;
-    const previous = previousByTitleYear.get(sourceTitleYearKey(item));
+    const previous = previousByTitleYear.get(sourceTitleYearKey(item))
+      || (!Number(item?.year || 0) ? previousByUniqueTitle.get(sourceTitleOnlyKey(item)) : null);
     if (!previous) return item;
 
-    // Keep the real Filmbáze id and source fields from the previous cache, while
-    // using the reader order to move currently listed titles to the front.
+    // Search/Reader snippets often omit the year. If the normalized title is
+    // unique in the existing cache, reuse the real Filmbáze identity and year.
+    // This prevents a current indexed hint from becoming a duplicate "new" item.
     return {
       ...previous,
       ...item,
       id: previous.id,
+      year: item.year || previous.year,
       poster: previous.poster || item.poster || null,
       background: previous.background || item.background || null,
       description: previous.description || item.description || '',
@@ -427,6 +452,9 @@ function applyIndexedDiagnostics(stats, rawFetched) {
   stats.indexedQueries = rawFetched?.indexedQueries || [];
   stats.indexedErrors = rawFetched?.indexedErrors || [];
   stats.indexedJinaConfigured = Boolean(rawFetched?.indexedJinaConfigured);
+  stats.indexedJinaSuccessfulQueries = Number(rawFetched?.indexedJinaSuccessfulQueries || 0);
+  stats.indexedJinaResponseBytes = Number(rawFetched?.indexedJinaResponseBytes || 0);
+  stats.indexedJinaJsonResults = Number(rawFetched?.indexedJinaJsonResults || 0);
   return stats;
 }
 

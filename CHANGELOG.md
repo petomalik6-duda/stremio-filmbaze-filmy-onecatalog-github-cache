@@ -1,3 +1,12 @@
+# v3.6.3 – Jina JSON fallback fix
+
+- Jina Search now uses a reliable phrase query first instead of a path-only `site:` query.
+- Requests Jina Search as JSON and parses result `url/title/content` directly.
+- Tries a second Jina query only when the first produces zero usable Filmbáze hints.
+- Adds diagnostics: successful Jina queries, JSON result count and response byte count.
+- Reconciles year-less indexed hints with a unique existing title to prevent duplicate catalog entries.
+- Keeps the existing WEDOS-safe rule: indexed data can only add/re-rank; it never replaces the historical cache.
+
 # 3.6.2
 
 - prefers authenticated Jina Search (`s.jina.ai`) when `JINA_API_KEY` is configured

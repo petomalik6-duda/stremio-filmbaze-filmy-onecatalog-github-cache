@@ -566,6 +566,9 @@ export async function fetchFilmbazeItems() {
   let indexedErrors = [];
   let indexedItems = [];
   let indexedJinaConfigured = false;
+  let indexedJinaSuccessfulQueries = 0;
+  let indexedJinaResponseBytes = 0;
+  let indexedJinaJsonResults = 0;
 
   // When WEDOS blocks the origin, discover only a small newest-title window
   // from public search-index snippets. The complete historical cache is kept
@@ -583,10 +586,13 @@ export async function fetchFilmbazeItems() {
     indexedQueries = [...new Set([...(movieIndexed.queries || []), ...(seriesIndexed.queries || [])])];
     indexedErrors = [...movieIndexed.errors, ...seriesIndexed.errors];
     indexedJinaConfigured = Boolean(movieIndexed.jinaConfigured || seriesIndexed.jinaConfigured);
+    indexedJinaSuccessfulQueries = Number(movieIndexed.jinaSuccessfulQueries || 0) + Number(seriesIndexed.jinaSuccessfulQueries || 0);
+    indexedJinaResponseBytes = Number(movieIndexed.jinaResponseBytes || 0) + Number(seriesIndexed.jinaResponseBytes || 0);
+    indexedJinaJsonResults = Number(movieIndexed.jinaJsonResults || 0) + Number(seriesIndexed.jinaJsonResults || 0);
 
     console.log(`[filmbaze] indexed fallback attempted providers: ${indexedAttemptedProviders.join(', ') || 'none'}`);
     console.log(`[filmbaze] indexed fallback queries: ${indexedQueries.join(' || ') || 'none'}`);
-    console.log(`[filmbaze] Jina Search configured: ${indexedJinaConfigured}`);
+    console.log(`[filmbaze] Jina Search configured: ${indexedJinaConfigured}; successful queries: ${indexedJinaSuccessfulQueries}; JSON results: ${indexedJinaJsonResults}; response bytes: ${indexedJinaResponseBytes}`);
     if (indexedFallback) {
       console.warn(`[filmbaze] indexed fallback discovered ${indexedItems.length} current catalog hints via ${indexedProviders.join(', ') || 'public index'}`);
       console.log('[filmbaze] indexed titles:', indexedItems.slice(0, 20).map(item => `${item.type}:${item.name}${item.year ? ` (${item.year})` : ''}`).join(' | '));
@@ -620,7 +626,10 @@ export async function fetchFilmbazeItems() {
     indexedQueries,
     indexedErrors,
     indexedItems: indexedItems.length,
-    indexedJinaConfigured
+    indexedJinaConfigured,
+    indexedJinaSuccessfulQueries,
+    indexedJinaResponseBytes,
+    indexedJinaJsonResults
   };
 }
 
