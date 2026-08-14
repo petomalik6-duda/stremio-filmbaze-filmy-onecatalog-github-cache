@@ -69,6 +69,9 @@ jobs:
             echo "FILMBAZE_MIN_REQUEST_INTERVAL_MS=4000" >> "$GITHUB_ENV"
           fi
 
+      - name: Test hybrid index parser
+        run: npm run test:indexed
+
       - name: Backup last valid cache
         run: |
           test -f data/catalog-cache.json
@@ -93,6 +96,9 @@ jobs:
           ENABLE_FILMBAZE_DETAIL: "false"
           FILMBAZE_DETAIL_LIMIT: "0"
           USE_READER_FALLBACK: "true"
+          USE_INDEXED_FALLBACK: "true"
+          INDEXED_FALLBACK_MAX_ITEMS: "20"
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
           REQUEST_TIMEOUT_MS: "12000"
@@ -130,7 +136,7 @@ jobs:
           console.log('Cache age hours:', Number.isFinite(ageHours) ? ageHours.toFixed(2) : 'infinite');
           console.log('Refresh stats:', JSON.stringify(cache.refreshStats || null));
           if (!at || ageHours > maxHours) {
-            console.error(`Cache is older than ${maxHours} hours. Filmbáze/API and reader fallback did not produce a fresh cache.`);
+            console.error(`Cache is older than ${maxHours} hours. Filmbáze/API, reader fallback and hybrid public-index fallback did not produce a verified fresh cache.`);
             process.exit(1);
           }
           NODE
@@ -157,6 +163,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.5.1"
+          git commit -m "Refresh Filmbaze cache v3.6.0 hybrid"
           git pull --rebase --autostash
           git push
