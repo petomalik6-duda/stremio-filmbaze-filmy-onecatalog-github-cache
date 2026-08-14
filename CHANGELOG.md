@@ -1,3 +1,13 @@
+# v3.6.1 Hybrid Refresh Fix
+
+- multi-query Bing RSS discovery
+- DuckDuckGo HTML as an independent public-index fallback
+- accepts current Filmbáze homepage snippets only when they explicitly identify the movie/series section
+- does not guess a year for Poster entries when the snippet does not provide one
+- persists current hybrid diagnostics even when the previous cache is preserved
+- reports attempted providers, queries, accepted/rejected hints and failure reason
+- public-index candidates are still promoted only after strict TMDB + IMDb verification
+
 # v3.6.0 Hybrid Refresh
 
 - Added public search-index fallback for WEDOS/401 outages.

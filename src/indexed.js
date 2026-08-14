@@ -1,7 +1,8 @@
 import crypto from 'crypto';
 
 const USE_INDEXED_FALLBACK = String(process.env.USE_INDEXED_FALLBACK || 'true').toLowerCase() !== 'false';
-const INDEXED_FALLBACK_MAX_ITEMS = Math.max(1, Number(process.env.INDEXED_FALLBACK_MAX_ITEMS || 20));
+const INDEXED_FALLBACK_MAX_ITEMS = Math.max(1, Number(process.env.INDEXED_FALLBACK_MAX_ITEMS || 30));
+const INDEXED_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.INDEXED_SEARCH_MAX_QUERIES || 4));
 const JINA_API_KEY = String(process.env.JINA_API_KEY || '').trim();
 const INDEXED_TIMEOUT_MS = Math.max(3000, Number(process.env.INDEXED_TIMEOUT_MS || 12000));
 
@@ -37,7 +38,7 @@ async function fetchText(url, headers = {}) {
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.1)',
         'Accept-Language': 'cs-CZ,cs;q=0.9,en;q=0.7',
         ...headers
       }
@@ -62,6 +63,14 @@ function normalizeTitle(value) {
 function getYear(value) {
   const match = String(value || '').match(/\b(19\d{2}|20\d{2})\b/);
   return match ? Number(match[1]) : undefined;
+}
+
+function getLocalPosterYear(value) {
+  const text = String(value || '');
+  const fullDate = text.match(/\b\d{1,2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*(19\d{2}|20\d{2})\b/);
+  if (fullDate) return Number(fullDate[1]);
+  const earlyYear = text.slice(0, 28).match(/\b(19\d{2}|20\d{2})\b/);
+  return earlyYear ? Number(earlyYear[1]) : undefined;
 }
 
 function stableSyntheticId(type, name, year) {
@@ -113,17 +122,19 @@ function parsePosterHints(text, type, sourceUrl, evidence) {
   const raw = clean(text);
   if (!raw) return [];
 
-  const commonYear = getYear(raw) || new Date().getUTCFullYear();
   const hints = [];
   const regex = /Poster for\s+(.+?)(?=(?:\.\s+\d+(?:\.\d+)?\s*\/\s*10)|(?:\.\s+\d{1,2}\.\s*\d{1,2}\.\s*\d{4})|(?:\s+Poster for)|(?:\s*[·|]\s*)|$)/gi;
-  let match;
+  const matches = [...raw.matchAll(regex)];
 
-  while ((match = regex.exec(raw))) {
+  for (let index = 0; index < matches.length; index += 1) {
+    const match = matches[index];
     const name = normalizeTitle(match[1]);
     if (!isUsableTitle(name)) continue;
 
-    const after = raw.slice(match.index, match.index + match[0].length + 120);
-    const year = getYear(after) || commonYear;
+    const start = match.index + match[0].length;
+    const nextStart = index + 1 < matches.length ? matches[index + 1].index : Math.min(raw.length, start + 120);
+    const localAfter = raw.slice(start, Math.min(nextStart, start + 90));
+    const year = getLocalPosterYear(localAfter);
     const hint = makeHint({ type, name, year, sourceUrl, evidence });
     if (hint) hints.push(hint);
   }
@@ -131,24 +142,53 @@ function parsePosterHints(text, type, sourceUrl, evidence) {
   return hints;
 }
 
-function sameSourcePage(link, sourceUrl) {
+function parseLeadingHints(text, type, sourceUrl, evidence) {
+  const raw = clean(text);
+  const hints = [];
+  const regex = /\b(19\d{2}|20\d{2})\.\s+(.+?)\s*[·|]\s*Poster for/gi;
+  let match;
+  while ((match = regex.exec(raw))) {
+    const hint = makeHint({ type, name: match[2], year: Number(match[1]), sourceUrl, evidence });
+    if (hint) hints.push(hint);
+  }
+  return hints;
+}
+
+function canonicalUrl(value) {
   try {
-    const a = new URL(link);
-    const b = new URL(sourceUrl);
-    const norm = path => path.replace(/\/+$/, '') || '/';
-    return a.hostname.toLowerCase().replace(/^www\./, '') === b.hostname.toLowerCase().replace(/^www\./, '')
-      && norm(a.pathname) === norm(b.pathname);
+    const u = new URL(value);
+    return {
+      host: u.hostname.toLowerCase().replace(/^www\./, ''),
+      path: (u.pathname.replace(/\/+$/, '') || '/').toLowerCase()
+    };
   } catch {
-    return false;
+    return null;
   }
 }
 
-function parseLeadingHint(text, type, sourceUrl, evidence) {
-  const raw = clean(text);
-  const match = raw.match(/\b(19\d{2}|20\d{2})\.\s+(.+?)\s*[·|]\s*Poster for/i);
-  if (!match) return [];
-  const hint = makeHint({ type, name: match[2], year: Number(match[1]), sourceUrl, evidence });
-  return hint ? [hint] : [];
+function trustedIndexPage(link, sourceUrl, type, combinedText = '') {
+  const a = canonicalUrl(link);
+  const b = canonicalUrl(sourceUrl);
+  if (!a || !b || a.host !== b.host) return false;
+  if (a.path === b.path) return true;
+
+  // Filmbáze home page exposes the same newest-movie / popular-series windows
+  // and is frequently indexed more recently than the dedicated channel page.
+  if (a.path === '/') {
+    if (type === 'series') return /obl[ií]ben[eé]\s+seri[aá]ly|seri[aá]ly\s+v\s+č[eé]štin[eě]/i.test(combinedText);
+    return /novinky\s+s\s+česk[ýy]m\s+dabingem|nov[eé]\s+filmy|česk[ýy]m\s+a\s+slovensk[ýy]m\s+dabingem/i.test(combinedText);
+  }
+
+  return false;
+}
+
+function parseTrustedSnippet({ title, link, description, type, sourceUrl, evidence }) {
+  const combined = clean(`${title || ''} ${description || ''}`);
+  if (!trustedIndexPage(link, sourceUrl, type, combined)) return [];
+  return dedupeHints([
+    ...parseLeadingHints(combined, type, sourceUrl, evidence),
+    ...parsePosterHints(combined, type, sourceUrl, evidence)
+  ]);
 }
 
 export function parseBingRss(xml, type, sourceUrl) {
@@ -159,13 +199,36 @@ export function parseBingRss(xml, type, sourceUrl) {
     const title = xmlTag(block, 'title');
     const link = xmlTag(block, 'link');
     const description = xmlTag(block, 'description');
+    hints.push(...parseTrustedSnippet({ title, link, description, type, sourceUrl, evidence: 'bing-rss-snippet' }));
+  }
 
-    // Only trust a snippet for the actual Filmbáze catalogue page.
-    if (!sameSourcePage(link, sourceUrl)) continue;
+  return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
+}
 
-    const combined = `${title} ${description}`;
-    hints.push(...parseLeadingHint(combined, type, sourceUrl, 'bing-rss-source-snippet'));
-    hints.push(...parsePosterHints(combined, type, sourceUrl, 'bing-rss-source-snippet'));
+function decodeSearchRedirect(href) {
+  const value = String(href || '').trim();
+  if (!value) return '';
+  try {
+    const absolute = value.startsWith('//') ? `https:${value}` : value;
+    const u = new URL(absolute, 'https://duckduckgo.com');
+    const uddg = u.searchParams.get('uddg');
+    return uddg ? decodeURIComponent(uddg) : u.toString();
+  } catch {
+    return value;
+  }
+}
+
+export function parseDuckDuckGoHtml(html, type, sourceUrl) {
+  const hints = [];
+  const raw = String(html || '');
+  const regex = /<a\b[^>]*class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>[\s\S]*?<[^>]*class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\//gi;
+  let match;
+
+  while ((match = regex.exec(raw))) {
+    const link = decodeSearchRedirect(decodeXml(match[1]));
+    const title = clean(stripTags(match[2]));
+    const description = clean(stripTags(match[3]));
+    hints.push(...parseTrustedSnippet({ title, link, description, type, sourceUrl, evidence: 'duckduckgo-html-snippet' }));
   }
 
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
@@ -178,8 +241,8 @@ export function parseJinaSearch(text, type, sourceUrl) {
   const matches = [...raw.matchAll(new RegExp(escaped, 'gi'))];
 
   for (const match of matches) {
-    const context = raw.slice(Math.max(0, match.index - 500), match.index + sourceUrl.length + 1800);
-    hints.push(...parseLeadingHint(context, type, sourceUrl, 'jina-search-source-snippet'));
+    const context = raw.slice(Math.max(0, match.index - 700), match.index + sourceUrl.length + 2200);
+    hints.push(...parseLeadingHints(context, type, sourceUrl, 'jina-search-source-snippet'));
     hints.push(...parsePosterHints(context, type, sourceUrl, 'jina-search-source-snippet'));
   }
 
@@ -204,65 +267,140 @@ function dedupeHints(items) {
   return out;
 }
 
-function bingQuery(type) {
-  return type === 'series'
-    ? 'site:filmbaze.cz "Oblíbené seriály" "Poster for"'
-    : 'site:filmbaze.cz "Nové filmy na internetu s českým dabingem" "Poster for"';
+export function indexedQueries(type, sourceUrl) {
+  let host = 'filmbaze.cz';
+  let path = '';
+  try {
+    const u = new URL(sourceUrl);
+    host = u.hostname.replace(/^www\./, '');
+    path = u.pathname.replace(/\/+$/, '');
+  } catch {}
+
+  const year = new Date().getUTCFullYear();
+  const base = [`site:${host}${path}`, `"${sourceUrl}"`];
+
+  if (type === 'series') {
+    base.push(`site:${host} "Oblíbené seriály v češtině"`);
+    base.push(`site:${host} "Oblíbené seriály" ${year}`);
+  } else {
+    base.push(`site:${host} "Novinky s českým dabingem"`);
+    base.push(`site:${host} "Nové filmy" "českým dabingem" ${year}`);
+  }
+
+  return [...new Set(base)].slice(0, INDEXED_SEARCH_MAX_QUERIES);
 }
 
-async function fetchBingHints(type, sourceUrl) {
-  const url = `https://www.bing.com/search?format=rss&q=${encodeURIComponent(bingQuery(type))}`;
-  const text = await fetchText(url, {
-    Accept: 'application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.8'
-  });
-  return parseBingRss(text, type, sourceUrl);
+async function fetchBingHints(type, sourceUrl, queries) {
+  const items = [];
+  const errors = [];
+  let successfulQueries = 0;
+
+  for (const query of queries) {
+    try {
+      const url = `https://www.bing.com/search?format=rss&q=${encodeURIComponent(query)}`;
+      const text = await fetchText(url, { Accept: 'application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.8' });
+      successfulQueries += 1;
+      items.push(...parseBingRss(text, type, sourceUrl));
+      if (dedupeHints(items).length >= INDEXED_FALLBACK_MAX_ITEMS) break;
+    } catch (error) {
+      errors.push(`${query}: ${error.message}`);
+    }
+  }
+
+  return { items: dedupeHints(items), errors, successfulQueries };
 }
 
-async function fetchJinaHints(type, sourceUrl) {
-  if (!JINA_API_KEY) return [];
-  const url = `https://s.jina.ai/?q=${encodeURIComponent(bingQuery(type))}`;
-  const text = await fetchText(url, {
-    Authorization: `Bearer ${JINA_API_KEY}`,
-    Accept: 'text/plain,text/markdown;q=0.9,*/*;q=0.8'
-  });
-  return parseJinaSearch(text, type, sourceUrl);
+async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
+  const items = [];
+  const errors = [];
+  let successfulQueries = 0;
+
+  // Two DDG queries are enough as a secondary provider and keep public-search load low.
+  for (const query of queries.slice(0, 2)) {
+    try {
+      const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+      const text = await fetchText(url, { Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8' });
+      successfulQueries += 1;
+      items.push(...parseDuckDuckGoHtml(text, type, sourceUrl));
+      if (dedupeHints(items).length >= INDEXED_FALLBACK_MAX_ITEMS) break;
+    } catch (error) {
+      errors.push(`${query}: ${error.message}`);
+    }
+  }
+
+  return { items: dedupeHints(items), errors, successfulQueries };
+}
+
+async function fetchJinaHints(type, sourceUrl, queries) {
+  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0 };
+  const items = [];
+  const errors = [];
+  let successfulQueries = 0;
+
+  for (const query of queries.slice(0, 2)) {
+    try {
+      const url = `https://s.jina.ai/?q=${encodeURIComponent(query)}`;
+      const text = await fetchText(url, {
+        Authorization: `Bearer ${JINA_API_KEY}`,
+        Accept: 'text/plain,text/markdown;q=0.9,*/*;q=0.8'
+      });
+      successfulQueries += 1;
+      items.push(...parseJinaSearch(text, type, sourceUrl));
+    } catch (error) {
+      errors.push(`${query}: ${error.message}`);
+    }
+  }
+
+  return { items: dedupeHints(items), errors, successfulQueries };
 }
 
 export async function fetchIndexedCatalogHints(type, sourceUrl) {
   if (!USE_INDEXED_FALLBACK) {
-    return { items: [], used: false, providers: [], errors: [] };
+    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [] };
   }
 
+  const queries = indexedQueries(type, sourceUrl);
   const providers = [];
+  const attemptedProviders = [];
   const errors = [];
   const items = [];
 
-  if (JINA_API_KEY) {
-    try {
-      const jina = await fetchJinaHints(type, sourceUrl);
-      if (jina.length) {
-        providers.push('jina-search');
-        items.push(...jina);
-      }
-    } catch (error) {
-      errors.push(`jina-search: ${error.message}`);
+  const bing = await fetchBingHints(type, sourceUrl, queries);
+  attemptedProviders.push('bing-rss');
+  errors.push(...bing.errors.map(error => `bing-rss: ${error}`));
+  if (bing.items.length) {
+    providers.push('bing-rss');
+    items.push(...bing.items);
+  }
+
+  // If Bing snippets are sparse/stale, use an independent HTML search index.
+  if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
+    const ddg = await fetchDuckDuckGoHints(type, sourceUrl, queries);
+    attemptedProviders.push('duckduckgo-html');
+    errors.push(...ddg.errors.map(error => `duckduckgo-html: ${error}`));
+    if (ddg.items.length) {
+      providers.push('duckduckgo-html');
+      items.push(...ddg.items);
     }
   }
 
-  try {
-    const bing = await fetchBingHints(type, sourceUrl);
-    if (bing.length) {
-      providers.push('bing-rss');
-      items.push(...bing);
+  if (JINA_API_KEY && dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
+    const jina = await fetchJinaHints(type, sourceUrl, queries);
+    attemptedProviders.push('jina-search');
+    errors.push(...jina.errors.map(error => `jina-search: ${error}`));
+    if (jina.items.length) {
+      providers.push('jina-search');
+      items.push(...jina.items);
     }
-  } catch (error) {
-    errors.push(`bing-rss: ${error.message}`);
   }
 
+  const finalItems = dedupeHints(items).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
   return {
-    items: dedupeHints(items).slice(0, INDEXED_FALLBACK_MAX_ITEMS),
-    used: items.length > 0,
-    providers,
-    errors
+    items: finalItems,
+    used: finalItems.length > 0,
+    providers: [...new Set(providers)],
+    attemptedProviders: [...new Set(attemptedProviders)],
+    errors,
+    queries
   };
 }

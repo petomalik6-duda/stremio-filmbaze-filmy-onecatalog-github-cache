@@ -1,4 +1,4 @@
-# Hybrid refresh v3.6.0
+# Hybrid refresh v3.6.1
 
 The daily refresh now uses this order:
 
@@ -17,3 +17,8 @@ A title found only by the public index is added only after TMDB resolution confi
 Unverified candidates are discarded for that run.
 
 `JINA_API_KEY` is optional. Without it, the refresh still tries the Bing RSS search-index fallback. If you later add a Jina key as a GitHub secret, Jina Search becomes an additional discovery provider.
+
+
+## v3.6.1 public-index fix
+
+When Filmbáze/WEDOS blocks the origin, the refresh now tries multiple Bing RSS queries and a DuckDuckGo HTML fallback. It accepts snippets only from the dedicated Filmbáze channel page or from the Filmbáze homepage when the snippet explicitly identifies the matching section. Indexed candidates never replace the historical cache and are promoted only after strict TMDB + IMDb verification. Current-attempt diagnostics are persisted even when the old cache is preserved.

@@ -418,6 +418,17 @@ function buildRefreshStats({ sourceChanged, fetchedItems }) {
   };
 }
 
+
+function applyIndexedDiagnostics(stats, rawFetched) {
+  stats.indexedFallback = Boolean(rawFetched?.indexedFallback);
+  stats.indexedItems = Number(rawFetched?.indexedItems || 0);
+  stats.indexedProviders = rawFetched?.indexedProviders || [];
+  stats.indexedAttemptedProviders = rawFetched?.indexedAttemptedProviders || [];
+  stats.indexedQueries = rawFetched?.indexedQueries || [];
+  stats.indexedErrors = rawFetched?.indexedErrors || [];
+  return stats;
+}
+
 function validateInMemory(items, metas) {
   if (!Array.isArray(items) || !items.length) throw new Error('Refresh produced no source items.');
   if (!Array.isArray(metas) || !metas.length) throw new Error('Refresh produced no metas.');
@@ -455,6 +466,7 @@ export function refreshCacheBackground(options = {}) {
 export async function refreshCache({ forceFull = false } = {}) {
   if (running) return running;
   runningStartedAt = Date.now();
+  let attemptStats = null;
 
   running = (async () => {
     try {
@@ -469,6 +481,21 @@ export async function refreshCache({ forceFull = false } = {}) {
       if (rawFetched.blocked && rawFetched.items.length === 0 && current.metas.length) {
         console.warn(`[refresh] Filmbáze blocked this run: ${rawFetched.blockReason || 'WEDOS security response'}`);
         console.warn(`[refresh] Keeping previous cache unchanged (${current.metas.length} metas).`);
+        attemptStats = applyIndexedDiagnostics(buildRefreshStats({ sourceChanged: false, fetchedItems: 0 }), rawFetched);
+        attemptStats.failed = true;
+        attemptStats.failure = 'Blocked source and public-index fallback produced 0 usable hints.';
+        attemptStats.sourceBlocked = true;
+        attemptStats.sourceBlockReason = rawFetched.blockReason || null;
+        attemptStats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
+        await writeStore({
+          at: current.at,
+          sourceHash: current.sourceHash,
+          items: current.items,
+          metas: current.metas,
+          lastError: attemptStats.failure,
+          refreshStats: attemptStats
+        });
+        cache = { ...current, byId: buildIndex(current.metas), lastError: attemptStats.failure, refreshStats: attemptStats };
         setStage('filmbaze-blocked-cache-preserved');
         return current.metas;
       }
@@ -510,10 +537,8 @@ export async function refreshCache({ forceFull = false } = {}) {
         refreshStats.sourceBlockReason = rawFetched.blockReason || null;
         refreshStats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
         refreshStats.incrementalSourceFetch = Boolean(rawFetched.incremental);
-        refreshStats.indexedFallback = Boolean(rawFetched.indexedFallback);
-        refreshStats.indexedItems = Number(rawFetched.indexedItems || 0);
-        refreshStats.indexedProviders = rawFetched.indexedProviders || [];
-        refreshStats.indexedErrors = rawFetched.indexedErrors || [];
+        applyIndexedDiagnostics(refreshStats, rawFetched);
+        attemptStats = refreshStats;
 
         cache = {
           ...current,
@@ -540,10 +565,8 @@ export async function refreshCache({ forceFull = false } = {}) {
       stats.sourceBlockReason = rawFetched.blockReason || null;
       stats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
       stats.incrementalSourceFetch = Boolean(rawFetched.incremental);
-      stats.indexedFallback = Boolean(rawFetched.indexedFallback);
-      stats.indexedItems = Number(rawFetched.indexedItems || 0);
-      stats.indexedProviders = rawFetched.indexedProviders || [];
-      stats.indexedErrors = rawFetched.indexedErrors || [];
+      applyIndexedDiagnostics(stats, rawFetched);
+      attemptStats = stats;
       const metas = [];
       const acceptedIndexedSourceKeys = new Set();
       const rejectedIndexedSourceKeys = new Set();
@@ -636,7 +659,9 @@ export async function refreshCache({ forceFull = false } = {}) {
       // strict TMDB/IMDb validation. Otherwise leave the old cache untouched.
       if (rawFetched.blocked && rawFetched.indexedFallback &&
           stats.indexedKnownMatches === 0 && stats.indexedAccepted === 0) {
-        throw new Error('Hybrid fallback found no verified Filmbáze title; previous cache preserved.');
+        stats.failed = true;
+        stats.failure = `Hybrid fallback found ${stats.indexedItems || 0} hints but no title passed verification.`;
+        throw new Error(stats.failure);
       }
 
       validateInMemory(finalItems, metas);
@@ -665,7 +690,14 @@ export async function refreshCache({ forceFull = false } = {}) {
       console.log('[refresh] stats:', JSON.stringify(stats));
       return metas;
     } catch (error) {
+      const failureStats = attemptStats ? {
+        ...attemptStats,
+        failed: true,
+        failure: error.message,
+        failedAt: new Date().toISOString()
+      } : (cache.refreshStats || null);
       cache.lastError = error.message;
+      if (failureStats) cache.refreshStats = failureStats;
       setStage('failed');
 
       await writeStore({
@@ -674,9 +706,10 @@ export async function refreshCache({ forceFull = false } = {}) {
         items: cache.items || [],
         metas: cache.metas || [],
         lastError: error.message,
-        refreshStats: cache.refreshStats || null
+        refreshStats: failureStats
       }).catch(() => {});
 
+      if (failureStats) console.error('[refresh] failed stats:', JSON.stringify(failureStats));
       throw error;
     }
   })();

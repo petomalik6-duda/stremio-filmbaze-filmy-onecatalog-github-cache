@@ -555,13 +555,15 @@ export async function fetchFilmbazeItems() {
   const requestState = getFilmbazeRequestState();
   let indexedFallback = false;
   let indexedProviders = [];
+  let indexedAttemptedProviders = [];
+  let indexedQueries = [];
   let indexedErrors = [];
   let indexedItems = [];
 
   // When WEDOS blocks the origin, discover only a small newest-title window
   // from public search-index snippets. The complete historical cache is kept
   // by catalog.js; these hints can only add/re-rank items after strict checks.
-  if (requestState.circuitOpen) {
+  if (blocked || requestState.circuitOpen) {
     const [movieIndexed, seriesIndexed] = await Promise.all([
       fetchIndexedCatalogHints('movie', MOVIES_URL),
       fetchIndexedCatalogHints('series', SERIES_URL)
@@ -570,14 +572,20 @@ export async function fetchFilmbazeItems() {
     indexedItems = [...movieIndexed.items, ...seriesIndexed.items];
     indexedFallback = indexedItems.length > 0;
     indexedProviders = [...new Set([...movieIndexed.providers, ...seriesIndexed.providers])];
+    indexedAttemptedProviders = [...new Set([...(movieIndexed.attemptedProviders || []), ...(seriesIndexed.attemptedProviders || [])])];
+    indexedQueries = [...new Set([...(movieIndexed.queries || []), ...(seriesIndexed.queries || [])])];
     indexedErrors = [...movieIndexed.errors, ...seriesIndexed.errors];
 
+    console.log(`[filmbaze] indexed fallback attempted providers: ${indexedAttemptedProviders.join(', ') || 'none'}`);
+    console.log(`[filmbaze] indexed fallback queries: ${indexedQueries.join(' || ') || 'none'}`);
     if (indexedFallback) {
       console.warn(`[filmbaze] indexed fallback discovered ${indexedItems.length} current catalog hints via ${indexedProviders.join(', ') || 'public index'}`);
+      console.log('[filmbaze] indexed titles:', indexedItems.slice(0, 20).map(item => `${item.type}:${item.name}${item.year ? ` (${item.year})` : ''}`).join(' | '));
       movieItems = mergeHints(movieItems, indexedItems.filter(item => item.type === 'movie'));
       seriesItems = mergeHints(seriesItems, indexedItems.filter(item => item.type === 'series'));
-    } else if (indexedErrors.length) {
-      console.warn('[filmbaze] indexed fallback produced no usable hints:', indexedErrors.join(' | '));
+    } else {
+      console.warn('[filmbaze] indexed fallback produced no usable hints.');
+      if (indexedErrors.length) console.warn('[filmbaze] indexed fallback errors:', indexedErrors.join(' | '));
     }
   }
 
@@ -599,6 +607,8 @@ export async function fetchFilmbazeItems() {
     incremental: FILMBAZE_INCREMENTAL,
     indexedFallback,
     indexedProviders,
+    indexedAttemptedProviders,
+    indexedQueries,
     indexedErrors,
     indexedItems: indexedItems.length
   };
