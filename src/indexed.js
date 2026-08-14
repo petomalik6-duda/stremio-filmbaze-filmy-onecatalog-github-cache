@@ -5,8 +5,14 @@ const INDEXED_FALLBACK_MAX_ITEMS = Math.max(1, Number(process.env.INDEXED_FALLBA
 const INDEXED_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.INDEXED_SEARCH_MAX_QUERIES || 4));
 const JINA_API_KEY = String(process.env.JINA_API_KEY || '').trim();
 const JINA_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.JINA_SEARCH_MAX_QUERIES || 2));
+const BRAVE_SEARCH_API_KEY = String(process.env.BRAVE_SEARCH_API_KEY || '').trim();
+const BRAVE_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.BRAVE_SEARCH_MAX_QUERIES || 2));
 const INDEXED_TIMEOUT_MS = Math.max(3000, Number(process.env.INDEXED_TIMEOUT_MS || 12000));
 const JINA_TIMEOUT_MS = Math.max(5000, Number(process.env.JINA_TIMEOUT_MS || 30000));
+const BRAVE_TIMEOUT_MS = Math.max(5000, Number(process.env.BRAVE_TIMEOUT_MS || 15000));
+const SERPAPI_KEY = String(process.env.SERPAPI_KEY || '').trim();
+const SERPAPI_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.SERPAPI_SEARCH_MAX_QUERIES || 2));
+const SERPAPI_TIMEOUT_MS = Math.max(5000, Number(process.env.SERPAPI_TIMEOUT_MS || 20000));
 
 function decodeXml(value) {
   return String(value || '')
@@ -40,12 +46,20 @@ async function fetchText(url, headers = {}, timeoutMs = INDEXED_TIMEOUT_MS) {
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.4)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.6)',
         'Accept-Language': 'cs-CZ,cs;q=0.9,en;q=0.7',
         ...headers
       }
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status} from ${url}`);
+    if (!response.ok) {
+      let safeUrl = String(url);
+      try {
+        const u = new URL(url);
+        for (const key of ['api_key', 'key', 'token']) if (u.searchParams.has(key)) u.searchParams.set(key, 'REDACTED');
+        safeUrl = u.toString();
+      } catch {}
+      throw new Error(`HTTP ${response.status} from ${safeUrl}`);
+    }
     return await response.text();
   } finally {
     clearTimeout(timeout);
@@ -342,6 +356,79 @@ export function parseJinaSearchJson(payload, type, sourceUrl) {
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
 
+
+export function parseSerpApiSearchJson(payload, type, sourceUrl) {
+  const hints = [];
+  const results = Array.isArray(payload?.organic_results) ? payload.organic_results : [];
+
+  for (const result of results) {
+    const url = String(result?.link || result?.redirect_link || '');
+    if (!url) continue;
+    const title = clean(stripTags(result?.title || ''));
+    const snippets = [result?.snippet, result?.description]
+      .map(value => clean(stripTags(value || ''))).filter(Boolean);
+
+    for (const snippet of snippets) {
+      hints.push(...parseTrustedSnippet({
+        title, link: url, description: snippet, type, sourceUrl,
+        evidence: 'serpapi-google-snippet'
+      }));
+    }
+
+    const combined = clean(`${title} ${snippets.join(' ')}`);
+    if (trustedIndexPage(url, sourceUrl, type, combined)) {
+      for (const snippet of snippets) {
+        hints.push(...parseLeadingHints(snippet, type, sourceUrl, 'serpapi-google-snippet'));
+        hints.push(...parseBeforePosterHints(snippet, type, sourceUrl, 'serpapi-google-snippet'));
+        hints.push(...parsePosterHints(snippet, type, sourceUrl, 'serpapi-google-snippet'));
+      }
+    }
+  }
+
+  return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
+}
+
+export function parseBraveSearchJson(payload, type, sourceUrl) {
+  const hints = [];
+  const results = Array.isArray(payload?.web?.results) ? payload.web.results : [];
+
+  for (const result of results) {
+    const url = String(result?.url || '');
+    if (!url) continue;
+    const title = clean(stripTags(result?.title || ''));
+    const snippets = [
+      result?.description,
+      ...(Array.isArray(result?.extra_snippets) ? result.extra_snippets : [])
+    ].map(value => clean(stripTags(value || ''))).filter(Boolean);
+
+    // Brave returns search-index snippets directly. It does not need the addon
+    // to open the Filmbaze result URL, so WEDOS on the origin cannot replace
+    // these snippets with a security page. Only trust the exact channel/home
+    // page to avoid promoting unrelated Filmbaze title pages.
+    for (const snippet of snippets) {
+      hints.push(...parseTrustedSnippet({
+        title,
+        link: url,
+        description: snippet,
+        type,
+        sourceUrl,
+        evidence: 'brave-search-snippet'
+      }));
+    }
+
+    const combined = clean(`${title} ${snippets.join(' ')}`);
+    if (trustedIndexPage(url, sourceUrl, type, combined)) {
+      for (const snippet of snippets) {
+        hints.push(...parseLeadingHints(snippet, type, sourceUrl, 'brave-search-snippet'));
+        hints.push(...parseBeforePosterHints(snippet, type, sourceUrl, 'brave-search-snippet'));
+        hints.push(...parsePosterHints(snippet, type, sourceUrl, 'brave-search-snippet'));
+      }
+    }
+  }
+
+  return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
+}
+
 export function parseJinaSearch(text, type, sourceUrl) {
   const raw = String(text || '');
   const hints = [];
@@ -427,6 +514,45 @@ export function indexedQueries(type, sourceUrl) {
   return [...new Set(base)].slice(0, INDEXED_SEARCH_MAX_QUERIES);
 }
 
+
+export function serpApiQueries(type, sourceUrl) {
+  let host = 'filmbaze.cz';
+  try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
+
+  if (type === 'series') {
+    return [
+      `"${sourceUrl}"`,
+      `site:${host} "Oblíbené seriály v češtině" "Poster for"`,
+      `site:${host} "Oblíbené seriály v češtině"`
+    ];
+  }
+
+  return [
+    `"${sourceUrl}"`,
+    `site:${host} "Novinky s českým dabingem" "Poster for"`,
+    `site:${host} "Novinky s českým dabingem"`
+  ];
+}
+
+export function braveQueries(type, sourceUrl) {
+  let host = 'filmbaze.cz';
+  try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
+
+  if (type === 'series') {
+    return [
+      `site:${host} "Oblíbené seriály v češtině"`,
+      `"${sourceUrl}"`,
+      `site:${host} "Oblíbené seriály" "Poster for"`
+    ];
+  }
+
+  return [
+    `site:${host} "Novinky s českým dabingem"`,
+    `"${sourceUrl}"`,
+    `site:${host} "Novinky s českým dabingem" "Poster for"`
+  ];
+}
+
 export function jinaQueries(type, sourceUrl) {
   let host = 'filmbaze.cz';
   try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
@@ -487,6 +613,100 @@ async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
   return { items: dedupeHints(items), errors, successfulQueries };
 }
 
+
+async function fetchSerpApiHints(type, sourceUrl) {
+  if (!SERPAPI_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, results: 0, resultSamples: [] };
+  const items = []; const errors = []; const resultSamples = [];
+  let successfulQueries = 0; let responseBytes = 0; let resultCount = 0;
+  const queries = serpApiQueries(type, sourceUrl).slice(0, SERPAPI_SEARCH_MAX_QUERIES);
+
+  for (const query of queries) {
+    try {
+      const params = new URLSearchParams({
+        engine: 'google', q: query, api_key: SERPAPI_KEY, hl: 'cs', gl: 'cz',
+        google_domain: 'google.cz', num: '20', safe: 'active'
+      });
+      const text = await fetchText(`https://serpapi.com/search.json?${params.toString()}`, {
+        Accept: 'application/json', 'Cache-Control': 'no-cache'
+      }, SERPAPI_TIMEOUT_MS);
+      successfulQueries += 1; responseBytes += Buffer.byteLength(text, 'utf8');
+      const parsed = JSON.parse(text);
+      if (parsed?.error) throw new Error(`SerpAPI: ${String(parsed.error).slice(0, 300)}`);
+      const results = Array.isArray(parsed?.organic_results) ? parsed.organic_results : [];
+      resultCount += results.length;
+      for (const result of results.slice(0, 6)) {
+        if (resultSamples.length >= 10) break;
+        resultSamples.push({
+          title: clean(stripTags(result?.title || '')).slice(0, 120),
+          url: String(result?.link || '').slice(0, 240),
+          hasSnippet: Boolean(clean(stripTags(result?.snippet || result?.description || ''))),
+          position: Number(result?.position || 0) || undefined
+        });
+      }
+      items.push(...parseSerpApiSearchJson(parsed, type, sourceUrl));
+      if (dedupeHints(items).length > 0) break;
+    } catch (error) {
+      errors.push(`${query}: ${String(error?.message || error).replace(/api_key=[^&\s]+/gi, 'api_key=REDACTED')}`);
+    }
+  }
+  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, results: resultCount, resultSamples };
+}
+
+async function fetchBraveHints(type, sourceUrl) {
+  if (!BRAVE_SEARCH_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, results: 0, resultSamples: [] };
+
+  const items = [];
+  const errors = [];
+  let successfulQueries = 0;
+  let responseBytes = 0;
+  let resultCount = 0;
+  const resultSamples = [];
+  const queries = braveQueries(type, sourceUrl).slice(0, BRAVE_SEARCH_MAX_QUERIES);
+
+  for (const query of queries) {
+    try {
+      const params = new URLSearchParams({
+        q: query,
+        count: '20',
+        country: 'CZ',
+        search_lang: 'cs',
+        safesearch: 'moderate',
+        extra_snippets: 'true'
+      });
+      const url = `https://api.search.brave.com/res/v1/web/search?${params.toString()}`;
+      const text = await fetchText(url, {
+        Accept: 'application/json',
+        'Accept-Encoding': 'gzip',
+        'X-Subscription-Token': BRAVE_SEARCH_API_KEY,
+        'Cache-Control': 'no-cache'
+      }, BRAVE_TIMEOUT_MS);
+
+      successfulQueries += 1;
+      responseBytes += Buffer.byteLength(text, 'utf8');
+      const parsed = JSON.parse(text);
+      const results = Array.isArray(parsed?.web?.results) ? parsed.web.results : [];
+      resultCount += results.length;
+
+      for (const result of results.slice(0, 5)) {
+        if (resultSamples.length >= 10) break;
+        resultSamples.push({
+          title: clean(stripTags(result?.title || '')).slice(0, 120),
+          url: String(result?.url || '').slice(0, 240),
+          hasDescription: Boolean(clean(stripTags(result?.description || ''))),
+          extraSnippets: Array.isArray(result?.extra_snippets) ? result.extra_snippets.length : 0
+        });
+      }
+
+      items.push(...parseBraveSearchJson(parsed, type, sourceUrl));
+      if (dedupeHints(items).length > 0) break;
+    } catch (error) {
+      errors.push(`${query}: ${error.message}`);
+    }
+  }
+
+  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, results: resultCount, resultSamples };
+}
+
 async function fetchJinaHints(type, sourceUrl) {
   if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, jsonResults: 0, resultSamples: [] };
   const items = [];
@@ -538,71 +758,49 @@ async function fetchJinaHints(type, sourceUrl) {
 }
 
 export async function fetchIndexedCatalogHints(type, sourceUrl) {
-  if (!USE_INDEXED_FALLBACK) {
-    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [], jinaConfigured: Boolean(JINA_API_KEY), jinaResponseBytes: 0, jinaJsonResults: 0, jinaSuccessfulQueries: 0, jinaResultSamples: [] };
-  }
+  if (!USE_INDEXED_FALLBACK) return {
+    items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [],
+    serpApiConfigured: Boolean(SERPAPI_KEY), serpApiResponseBytes: 0, serpApiResults: 0,
+    serpApiSuccessfulQueries: 0, serpApiResultSamples: []
+  };
 
   const queries = indexedQueries(type, sourceUrl);
-  const providers = [];
-  const attemptedProviders = [];
-  const errors = [];
-  const items = [];
-  let jinaResponseBytes = 0;
-  let jinaJsonResults = 0;
-  let jinaSuccessfulQueries = 0;
-  const jinaResultSamples = [];
+  const providers = []; const attemptedProviders = []; const errors = []; const items = [];
+  let serpApiResponseBytes = 0; let serpApiResults = 0; let serpApiSuccessfulQueries = 0;
+  const serpApiResultSamples = [];
 
-  // API-backed search is preferred when configured. Unlike scraping a public
-  // search HTML page, s.jina.ai has a documented authenticated API contract.
-  if (JINA_API_KEY) {
-    const jina = await fetchJinaHints(type, sourceUrl);
-    attemptedProviders.push('jina-search');
-    jinaResponseBytes += Number(jina.responseBytes || 0);
-    jinaJsonResults += Number(jina.jsonResults || 0);
-    jinaSuccessfulQueries += Number(jina.successfulQueries || 0);
-    jinaResultSamples.push(...(jina.resultSamples || []));
-    errors.push(...jina.errors.map(error => `jina-search: ${error}`));
-    if (jina.items.length) {
-      providers.push('jina-search');
-      items.push(...jina.items);
-    }
-    // Keep provider diagnostics even when parsing yields zero hints.
-    if (jina.queries?.length) queries.push(...jina.queries);
+  if (SERPAPI_KEY) {
+    const serp = await fetchSerpApiHints(type, sourceUrl);
+    attemptedProviders.push('serpapi-google');
+    serpApiResponseBytes += Number(serp.responseBytes || 0);
+    serpApiResults += Number(serp.results || 0);
+    serpApiSuccessfulQueries += Number(serp.successfulQueries || 0);
+    serpApiResultSamples.push(...(serp.resultSamples || []));
+    errors.push(...serp.errors.map(error => `serpapi-google: ${error}`));
+    if (serp.items.length) { providers.push('serpapi-google'); items.push(...serp.items); }
+    if (serp.queries?.length) queries.push(...serp.queries);
   }
 
-  // Keep no-key providers as best-effort secondary discovery only.
   if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
     const bing = await fetchBingHints(type, sourceUrl, queries);
     attemptedProviders.push('bing-rss');
     errors.push(...bing.errors.map(error => `bing-rss: ${error}`));
-    if (bing.items.length) {
-      providers.push('bing-rss');
-      items.push(...bing.items);
-    }
+    if (bing.items.length) { providers.push('bing-rss'); items.push(...bing.items); }
   }
 
   if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
     const ddg = await fetchDuckDuckGoHints(type, sourceUrl, queries);
     attemptedProviders.push('duckduckgo-html');
     errors.push(...ddg.errors.map(error => `duckduckgo-html: ${error}`));
-    if (ddg.items.length) {
-      providers.push('duckduckgo-html');
-      items.push(...ddg.items);
-    }
+    if (ddg.items.length) { providers.push('duckduckgo-html'); items.push(...ddg.items); }
   }
 
   const finalItems = dedupeHints(items).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
   return {
-    items: finalItems,
-    used: finalItems.length > 0,
-    providers: [...new Set(providers)],
-    attemptedProviders: [...new Set(attemptedProviders)],
-    errors,
-    queries,
-    jinaConfigured: Boolean(JINA_API_KEY),
-    jinaResponseBytes,
-    jinaJsonResults,
-    jinaSuccessfulQueries,
-    jinaResultSamples: jinaResultSamples.slice(0, 10)
+    items: finalItems, used: finalItems.length > 0, providers: [...new Set(providers)],
+    attemptedProviders: [...new Set(attemptedProviders)], errors, queries: [...new Set(queries)],
+    serpApiConfigured: Boolean(SERPAPI_KEY), serpApiResponseBytes, serpApiResults,
+    serpApiSuccessfulQueries, serpApiResultSamples: serpApiResultSamples.slice(0, 10)
   };
 }
+

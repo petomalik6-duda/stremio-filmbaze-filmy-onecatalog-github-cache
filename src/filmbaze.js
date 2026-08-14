@@ -21,7 +21,7 @@ const MAX_PAGES = Number(process.env.MAX_PAGES || 50);
 const MAX_ITEMS = Number(process.env.MAX_ITEMS || 2000);
 const MAX_SERIES_ITEMS = Number(process.env.MAX_SERIES_ITEMS || process.env.MAX_SERIES || 2000);
 const STRICT_MOVIE_FILTER = String(process.env.STRICT_MOVIE_FILTER || 'true').toLowerCase() !== 'false';
-const USE_READER_FALLBACK = String(process.env.USE_READER_FALLBACK || 'true').toLowerCase() !== 'false';
+const USE_READER_FALLBACK = String(process.env.USE_READER_FALLBACK || 'false').toLowerCase() !== 'false';
 const ENABLE_FILMBAZE_DETAIL = String(process.env.ENABLE_FILMBAZE_DETAIL || 'true').toLowerCase() !== 'false';
 const FILMBAZE_DETAIL_LIMIT = Number(process.env.FILMBAZE_DETAIL_LIMIT || 2000);
 const FILMBAZE_INCREMENTAL = String(process.env.FILMBAZE_INCREMENTAL || 'false').toLowerCase() === 'true';
@@ -565,11 +565,11 @@ export async function fetchFilmbazeItems() {
   let indexedQueries = [];
   let indexedErrors = [];
   let indexedItems = [];
-  let indexedJinaConfigured = false;
-  let indexedJinaSuccessfulQueries = 0;
-  let indexedJinaResponseBytes = 0;
-  let indexedJinaJsonResults = 0;
-  let indexedJinaResultSamples = [];
+  let indexedSerpApiConfigured = false;
+  let indexedSerpApiSuccessfulQueries = 0;
+  let indexedSerpApiResponseBytes = 0;
+  let indexedSerpApiResults = 0;
+  let indexedSerpApiResultSamples = [];
 
   // When WEDOS blocks the origin, discover only a small newest-title window
   // from public search-index snippets. The complete historical cache is kept
@@ -586,16 +586,16 @@ export async function fetchFilmbazeItems() {
     indexedAttemptedProviders = [...new Set([...(movieIndexed.attemptedProviders || []), ...(seriesIndexed.attemptedProviders || [])])];
     indexedQueries = [...new Set([...(movieIndexed.queries || []), ...(seriesIndexed.queries || [])])];
     indexedErrors = [...movieIndexed.errors, ...seriesIndexed.errors];
-    indexedJinaConfigured = Boolean(movieIndexed.jinaConfigured || seriesIndexed.jinaConfigured);
-    indexedJinaSuccessfulQueries = Number(movieIndexed.jinaSuccessfulQueries || 0) + Number(seriesIndexed.jinaSuccessfulQueries || 0);
-    indexedJinaResponseBytes = Number(movieIndexed.jinaResponseBytes || 0) + Number(seriesIndexed.jinaResponseBytes || 0);
-    indexedJinaJsonResults = Number(movieIndexed.jinaJsonResults || 0) + Number(seriesIndexed.jinaJsonResults || 0);
-    indexedJinaResultSamples = [...(movieIndexed.jinaResultSamples || []), ...(seriesIndexed.jinaResultSamples || [])].slice(0, 10);
+    indexedSerpApiConfigured = Boolean(movieIndexed.serpApiConfigured || seriesIndexed.serpApiConfigured);
+    indexedSerpApiSuccessfulQueries = Number(movieIndexed.serpApiSuccessfulQueries || 0) + Number(seriesIndexed.serpApiSuccessfulQueries || 0);
+    indexedSerpApiResponseBytes = Number(movieIndexed.serpApiResponseBytes || 0) + Number(seriesIndexed.serpApiResponseBytes || 0);
+    indexedSerpApiResults = Number(movieIndexed.serpApiResults || 0) + Number(seriesIndexed.serpApiResults || 0);
+    indexedSerpApiResultSamples = [...(movieIndexed.serpApiResultSamples || []), ...(seriesIndexed.serpApiResultSamples || [])].slice(0, 10);
 
     console.log(`[filmbaze] indexed fallback attempted providers: ${indexedAttemptedProviders.join(', ') || 'none'}`);
     console.log(`[filmbaze] indexed fallback queries: ${indexedQueries.join(' || ') || 'none'}`);
-    console.log(`[filmbaze] Jina Search configured: ${indexedJinaConfigured}; successful queries: ${indexedJinaSuccessfulQueries}; JSON results: ${indexedJinaJsonResults}; response bytes: ${indexedJinaResponseBytes}`);
-    if (indexedJinaResultSamples.length) console.log('[filmbaze] Jina result samples:', JSON.stringify(indexedJinaResultSamples));
+    console.log(`[filmbaze] SerpAPI configured: ${indexedSerpApiConfigured}; successful queries: ${indexedSerpApiSuccessfulQueries}; organic results: ${indexedSerpApiResults}; response bytes: ${indexedSerpApiResponseBytes}`);
+    if (indexedSerpApiResultSamples.length) console.log('[filmbaze] SerpAPI result samples:', JSON.stringify(indexedSerpApiResultSamples));
     if (indexedFallback) {
       console.warn(`[filmbaze] indexed fallback discovered ${indexedItems.length} current catalog hints via ${indexedProviders.join(', ') || 'public index'}`);
       console.log('[filmbaze] indexed titles:', indexedItems.slice(0, 20).map(item => `${item.type}:${item.name}${item.year ? ` (${item.year})` : ''}`).join(' | '));
@@ -629,11 +629,11 @@ export async function fetchFilmbazeItems() {
     indexedQueries,
     indexedErrors,
     indexedItems: indexedItems.length,
-    indexedJinaConfigured,
-    indexedJinaSuccessfulQueries,
-    indexedJinaResponseBytes,
-    indexedJinaJsonResults,
-    indexedJinaResultSamples
+    indexedSerpApiConfigured,
+    indexedSerpApiSuccessfulQueries,
+    indexedSerpApiResponseBytes,
+    indexedSerpApiResults,
+    indexedSerpApiResultSamples
   };
 }
 

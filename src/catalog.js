@@ -451,11 +451,11 @@ function applyIndexedDiagnostics(stats, rawFetched) {
   stats.indexedAttemptedProviders = rawFetched?.indexedAttemptedProviders || [];
   stats.indexedQueries = rawFetched?.indexedQueries || [];
   stats.indexedErrors = rawFetched?.indexedErrors || [];
-  stats.indexedJinaConfigured = Boolean(rawFetched?.indexedJinaConfigured);
-  stats.indexedJinaSuccessfulQueries = Number(rawFetched?.indexedJinaSuccessfulQueries || 0);
-  stats.indexedJinaResponseBytes = Number(rawFetched?.indexedJinaResponseBytes || 0);
-  stats.indexedJinaJsonResults = Number(rawFetched?.indexedJinaJsonResults || 0);
-  stats.indexedJinaResultSamples = Array.isArray(rawFetched?.indexedJinaResultSamples) ? rawFetched.indexedJinaResultSamples.slice(0, 10) : [];
+  stats.indexedSerpApiConfigured = Boolean(rawFetched?.indexedSerpApiConfigured);
+  stats.indexedSerpApiSuccessfulQueries = Number(rawFetched?.indexedSerpApiSuccessfulQueries || 0);
+  stats.indexedSerpApiResponseBytes = Number(rawFetched?.indexedSerpApiResponseBytes || 0);
+  stats.indexedSerpApiResults = Number(rawFetched?.indexedSerpApiResults || 0);
+  stats.indexedSerpApiResultSamples = Array.isArray(rawFetched?.indexedSerpApiResultSamples) ? rawFetched.indexedSerpApiResultSamples.slice(0, 10) : [];
   return stats;
 }
 
@@ -513,9 +513,9 @@ export async function refreshCache({ forceFull = false } = {}) {
         console.warn(`[refresh] Keeping previous cache unchanged (${current.metas.length} metas).`);
         attemptStats = applyIndexedDiagnostics(buildRefreshStats({ sourceChanged: false, fetchedItems: 0 }), rawFetched);
         attemptStats.failed = true;
-        attemptStats.failure = rawFetched?.indexedJinaConfigured
-          ? 'Blocked source and configured public-index fallback produced 0 usable hints.'
-          : 'Blocked source and public-index fallback produced 0 usable hints. JINA_API_KEY is not configured; Bing/DDG are best-effort only.';
+        attemptStats.failure = rawFetched?.indexedSerpApiConfigured
+          ? 'Blocked source and SerpAPI Google fallback produced 0 usable catalog hints.'
+          : 'Blocked source and public-index fallback produced 0 usable hints. Configure SERPAPI_KEY for Google index snippets.';
         attemptStats.sourceBlocked = true;
         attemptStats.sourceBlockReason = rawFetched.blockReason || null;
         attemptStats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);

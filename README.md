@@ -1,3 +1,7 @@
+## Current WEDOS fallback (v3.6.6)
+
+Configure GitHub Actions secret `SERPAPI_KEY`. The refresh reads Google organic `title`, `link` and `snippet` via SerpAPI without opening the protected Filmbáze page. Brave/Jina are not used by the main refresh path.
+
 # Filmbáze Stremio/Nuvio addon v3.5.1
 
 Táto verzia používa bezpečný inkrementálny refresh navrhnutý tak, aby výrazne znížil riziko blokovania cez WEDOS.
@@ -53,3 +57,8 @@ Po nasadení musí `/health` uvádzať verziu `3.5.0`.
 If Filmbáze returns HTTP 401/WEDOS protection, configure repository secret `JINA_API_KEY`.
 The workflow passes it only as an environment secret and never prints the key value.
 With the key present, authenticated Jina Search is tried before Bing/DDG and is used only to discover the newest Filmbáze window; the historical cache is never replaced by search results.
+
+
+### WEDOS-safe refresh
+
+For the current WEDOS 401 protection, add GitHub Actions secret `BRAVE_SEARCH_API_KEY`. v3.6.5 prefers Brave raw search-index snippets, while Jina is kept only as a secondary fallback.

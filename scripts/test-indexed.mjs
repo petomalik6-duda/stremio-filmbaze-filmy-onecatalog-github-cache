@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseBingRss, parseDuckDuckGoHtml, parseJinaSearch, parseJinaSearchJson, indexedQueries, jinaQueries } from '../src/indexed.js';
+import { parseBingRss, parseDuckDuckGoHtml, parseSerpApiSearchJson, indexedQueries, serpApiQueries } from '../src/indexed.js';
 
 const movieUrl = 'https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu';
 const seriesUrl = 'https://filmbaze.cz/oblibene-serialy-v-cestine';
@@ -40,51 +40,25 @@ const seriesDdgHints = parseDuckDuckGoHtml(ddg, 'series', seriesUrl);
 assert(seriesDdgHints.some(x => x.name === 'Jízda o život'));
 assert(seriesDdgHints.some(x => x.name === 'Montmartre'));
 
-const seriesText = `Result: ${seriesUrl}\n2026. Testovací seriál · Poster for Testovací seriál. 8.0 / 10`;
-const seriesHints = parseJinaSearch(seriesText, 'series', seriesUrl);
-assert(seriesHints.some(x => x.name === 'Testovací seriál' && x.year === 2026));
-
-
-const jinaJson = {
-  code: 200,
-  status: 20000,
-  data: [
-    {
-      title: 'Nové filmy na internetu s českým dabingem',
-      url: movieUrl,
-      content: 'Novinky s českým dabingem ; Poster for Tenkrát v Gaze. 5.4 / 10. Tenkrát v Gaze ; Poster for Julian. 6.7 / 10. Julian ; Poster for Zvukař. 7 / 10. Zvukař'
-    }
-  ]
+const serpApiJson = {
+  search_metadata: { status: 'Success' },
+  organic_results: [{
+    position: 1, title: 'Nové filmy na internetu s českým dabingem', link: movieUrl,
+    snippet: 'Novinky s českým dabingem ; Poster for Tenkrát v Gaze. 5.4 / 10. Tenkrát v Gaze ; Poster for Julian. 6.7 / 10. Julian ; Poster for Zvukař. 7 / 10. Zvukař'
+  }]
 };
-const jinaJsonHints = parseJinaSearchJson(jinaJson, 'movie', movieUrl);
-assert(jinaJsonHints.some(x => x.name === 'Tenkrát v Gaze'));
-assert(jinaJsonHints.some(x => x.name === 'Zvukař'));
+const serpHints = parseSerpApiSearchJson(serpApiJson, 'movie', movieUrl);
+assert(serpHints.some(x => x.name === 'Tenkrát v Gaze'));
+assert(serpHints.some(x => x.name === 'Zvukař'));
+assert(serpHints.every(x => x.indexedEvidence === 'serpapi-google-snippet'));
 
+const unrelatedSerp = { organic_results: [{ title: 'Random title', link: 'https://filmbaze.cz/titles/123/random', snippet: 'Poster for Random title. 8 / 10' }] };
+assert.equal(parseSerpApiSearchJson(unrelatedSerp, 'movie', movieUrl).length, 0);
 
-// Regression for 3.6.3: Jina can keep fresh SERP snippets in `description`
-// while `content` contains only the generic channel intro. Both must be parsed.
-const jinaDescriptionJson = {
-  code: 200,
-  status: 20000,
-  data: [
-    {
-      title: 'Nové filmy na internetu s českým dabingem',
-      url: movieUrl,
-      description: 'Novinky s českým dabingem ; Poster for Tenkrát v Gaze. 5.4 / 10. Tenkrát v Gaze ; Poster for Julian. 6.7 / 10. Julian ; Poster for Zvukař. 7 / 10. Zvukař',
-      content: 'Seznam aktuálních filmů s českým a slovenským dabingem dostupných online.'
-    }
-  ]
-};
-const jinaDescriptionHints = parseJinaSearchJson(jinaDescriptionJson, 'movie', movieUrl);
-assert(jinaDescriptionHints.some(x => x.name === 'Tenkrát v Gaze'));
-assert(jinaDescriptionHints.some(x => x.name === 'Zvukař'));
-
-const jq = jinaQueries('movie', movieUrl);
-assert(jq[0].includes(movieUrl));
-assert(jq[1].includes('Novinky s českým dabingem'));
-
+const sq = serpApiQueries('movie', movieUrl);
+assert(sq[0].includes(movieUrl));
+assert(sq.some(q => q.includes('Novinky s českým dabingem')));
 const movieQueries = indexedQueries('movie', movieUrl);
 assert(movieQueries.length >= 3);
 assert(movieQueries.some(q => q.includes('Novinky s českým dabingem')));
-
 console.log('indexed fallback parser tests: OK');

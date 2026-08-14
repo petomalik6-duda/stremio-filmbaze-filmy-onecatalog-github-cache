@@ -1,3 +1,20 @@
+## 3.6.6
+
+- Replaced Brave/Jina in the main WEDOS fallback with SerpAPI Google organic results.
+- Added `SERPAPI_KEY` GitHub secret support and SerpAPI diagnostics.
+- Limits SerpAPI to two queries per catalog type and stops early after trusted hints are found.
+- Redacts API keys from HTTP error URLs.
+- Disables Jina Reader fallback in the GitHub workflow.
+- Keeps strict TMDB/IMDb validation and historical cache preservation.
+
+## 3.6.5
+
+- Added Brave Search API as the preferred WEDOS-safe public-index fallback.
+- Parses Brave `description` and up to five `extra_snippets` without opening Filmbáze.
+- Jina remains secondary because it fetches result pages and can receive the WEDOS verification page.
+- Added Brave diagnostics to refresh stats and GitHub Actions.
+- Kept strict TMDB/IMDb promotion and full historical-cache preservation.
+
 # 3.6.4
 
 - Fixed Jina JSON parsing when fresh catalog text is in `description` rather than `content`.

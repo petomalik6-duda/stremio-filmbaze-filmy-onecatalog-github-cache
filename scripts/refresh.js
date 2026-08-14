@@ -14,7 +14,7 @@ try {
   console.log(`Starting Filmbáze refresh v${packageVersion}...`);
   console.log('FORCE_FULL_REFRESH:', forceFull);
   console.log('TMDB_API_KEY configured:', Boolean(String(process.env.TMDB_API_KEY || '').trim()));
-  console.log('JINA_API_KEY configured:', Boolean(String(process.env.JINA_API_KEY || '').trim()));
+  console.log('SERPAPI_KEY configured:', Boolean(String(process.env.SERPAPI_KEY || '').trim()));
   const metas = await refreshCache({ forceFull });
   console.log('Refresh done.');
   console.log('Items:', metas.length);
