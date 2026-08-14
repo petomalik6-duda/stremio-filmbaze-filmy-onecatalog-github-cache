@@ -176,6 +176,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.6.3 Jina JSON fallback"
+          git commit -m "Refresh Filmbaze cache v3.6.4 Jina description parser"
           git pull --rebase --autostash
           git push
