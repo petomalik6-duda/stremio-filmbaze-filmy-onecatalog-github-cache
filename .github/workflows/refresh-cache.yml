@@ -92,7 +92,7 @@ jobs:
           FILMBAZE_BETWEEN_CHANNELS_MS: "5000"
           ENABLE_FILMBAZE_DETAIL: "false"
           FILMBAZE_DETAIL_LIMIT: "0"
-          USE_READER_FALLBACK: "false"
+          USE_READER_FALLBACK: "true"
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
           REQUEST_TIMEOUT_MS: "12000"
@@ -113,6 +113,27 @@ jobs:
         env:
           CACHE_FILE: "data/catalog-cache.json"
         run: npm run report-latest
+
+      - name: Verify cache was refreshed recently
+        env:
+          CACHE_FILE: "data/catalog-cache.json"
+          MAX_CACHE_AGE_HOURS: "48"
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = process.env.CACHE_FILE || 'data/catalog-cache.json';
+          const maxHours = Number(process.env.MAX_CACHE_AGE_HOURS || 48);
+          const cache = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const at = Number(cache.at || 0);
+          const ageHours = at ? (Date.now() - at) / 3600000 : Infinity;
+          console.log('Cache generated at:', at ? new Date(at).toISOString() : 'missing');
+          console.log('Cache age hours:', Number.isFinite(ageHours) ? ageHours.toFixed(2) : 'infinite');
+          console.log('Refresh stats:', JSON.stringify(cache.refreshStats || null));
+          if (!at || ageHours > maxHours) {
+            console.error(`Cache is older than ${maxHours} hours. Filmbáze/API and reader fallback did not produce a fresh cache.`);
+            process.exit(1);
+          }
+          NODE
 
       - name: Validate generated cache
         env:
@@ -136,6 +157,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.5.0"
+          git commit -m "Refresh Filmbaze cache v3.5.1"
           git pull --rebase --autostash
           git push
