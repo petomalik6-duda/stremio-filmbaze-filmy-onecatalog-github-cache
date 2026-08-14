@@ -181,7 +181,7 @@ function toMeta(item, resolved = null, previous = null, repair = {}) {
     description: [
       descriptionText,
       'Zdroj: Filmbáze',
-      item.id ? `Filmbáze ID: ${item.id}` : null
+      (!item.indexedFallback && item.id) ? `Filmbáze ID: ${item.id}` : null
     ].filter(Boolean).join('\n\n'),
     releaseInfo: year ? String(year) : undefined,
     year,
@@ -202,7 +202,7 @@ function toMeta(item, resolved = null, previous = null, repair = {}) {
     videos: item.type === 'series' ? seriesVideos : undefined,
     seriesInfo: item.type === 'series' ? { episodeCount: seriesVideos.length } : undefined,
     links: [
-      item.id ? { name: 'Filmbáze', category: 'Info', url: `https://filmbaze.cz/title/${item.id}` } : null,
+      (item.filmbazeUrl || (!item.indexedFallback && item.id) || item.sourceUrl) ? { name: 'Filmbáze', category: 'Info', url: item.filmbazeUrl || (!item.indexedFallback && item.id ? `https://filmbaze.cz/title/${item.id}` : item.sourceUrl) } : null,
       tmdbId ? {
         name: 'TMDB',
         category: 'Info',
@@ -215,7 +215,7 @@ function toMeta(item, resolved = null, previous = null, repair = {}) {
     _addon: {
       ...(previous?._addon || {}),
       key: String(item.id),
-      filmbazeId: item.id,
+      filmbazeId: item.indexedFallback && !item.filmbazeUrl ? (previous?._addon?.filmbazeId || null) : item.id,
       tmdbId: tmdbId || null,
       imdbId: validImdb(imdbId) ? imdbId : null,
       dateAdded: item.dateAdded,
@@ -225,6 +225,8 @@ function toMeta(item, resolved = null, previous = null, repair = {}) {
       originalName: item.originalName || tmdb?.originalName || previous?._addon?.originalName || null,
       detailChecked: Boolean(item.detailChecked),
       sourceTitle: item.name,
+      indexedFallback: Boolean(item.indexedFallback),
+      indexedEvidence: item.indexedEvidence || previous?._addon?.indexedEvidence || null,
       repairAttempts,
       lastRepairAt,
       repairStatus: attempted ? (repair.resolved ? 'resolved' : 'not-found') : (previous?._addon?.repairStatus || null),
@@ -279,6 +281,36 @@ function sourceTitleYearKey(item) {
   return title ? `${item?.type || ''}:${title}:${year || ''}` : '';
 }
 
+function safeIndexedResolution(item, meta) {
+  if (!item?.indexedFallback || !meta) return true;
+  if (!meta.tmdbId || !validImdb(meta.imdbId)) return false;
+  if (meta?._addon?.repairStatus !== 'resolved') return false;
+
+  const expectedYear = Number(item.year || 0);
+  const actualYear = Number(meta.year || meta.releaseInfo || 0);
+  if (expectedYear && actualYear && Math.abs(expectedYear - actualYear) > 1) return false;
+
+  const expected = normalizeSourceTitle(item.name);
+  const names = [meta.name, meta?._addon?.originalName]
+    .map(normalizeSourceTitle)
+    .filter(Boolean);
+
+  if (!expected || !names.length) return false;
+  if (names.some(name => name === expected || (name.length >= 5 && expected.length >= 5 && (name.includes(expected) || expected.includes(name))))) {
+    return true;
+  }
+
+  const expectedTokens = new Set(expected.split(' ').filter(token => token.length > 1));
+  for (const name of names) {
+    const candidateTokens = new Set(name.split(' ').filter(token => token.length > 1));
+    const overlap = [...expectedTokens].filter(token => candidateTokens.has(token)).length;
+    const denominator = Math.max(expectedTokens.size, candidateTokens.size, 1);
+    if (overlap / denominator >= 0.6) return true;
+  }
+
+  return false;
+}
+
 function reconcileReaderItemsWithPrevious(newItems, oldItems) {
   const previousByTitleYear = new Map();
   for (const oldItem of oldItems || []) {
@@ -287,7 +319,7 @@ function reconcileReaderItemsWithPrevious(newItems, oldItems) {
   }
 
   return (newItems || []).map(item => {
-    if (!item?.readerFallback) return item;
+    if (!item?.readerFallback && !item?.indexedFallback) return item;
     const previous = previousByTitleYear.get(sourceTitleYearKey(item));
     if (!previous) return item;
 
@@ -305,7 +337,9 @@ function reconcileReaderItemsWithPrevious(newItems, oldItems) {
       imdbId: previous.imdbId || item.imdbId || null,
       tmdbId: previous.tmdbId || item.tmdbId || null,
       originalName: previous.originalName || item.originalName || null,
-      readerFallback: true
+      readerFallback: Boolean(item.readerFallback),
+      indexedFallback: Boolean(item.indexedFallback),
+      indexedEvidence: item.indexedEvidence || previous.indexedEvidence || null
     };
   });
 }
@@ -450,9 +484,20 @@ export async function refreshCache({ forceFull = false } = {}) {
           .map(meta => [String(meta._addon?.filmbazeId || ''), meta])
           .filter(([key]) => key)
       );
+      const oldByTitleYear = new Map();
+      for (const meta of current.metas || []) {
+        const key = sourceTitleYearKey({
+          type: meta.type,
+          name: meta._addon?.sourceTitle || meta.name,
+          year: meta.year || meta.releaseInfo
+        });
+        if (key && !oldByTitleYear.has(key)) oldByTitleYear.set(key, meta);
+      }
+      const findExisting = item =>
+        oldByFilmbazeId.get(String(item.id)) || oldByTitleYear.get(sourceTitleYearKey(item)) || null;
 
       const repairable = fetched.items.filter(item => {
-        const existing = oldByFilmbazeId.get(String(item.id));
+        const existing = findExisting(item);
         const reasons = repairReasons(existing, item);
         return Boolean(existing && reasons.length && repairAllowed(existing, reasons));
       }).length;
@@ -465,6 +510,10 @@ export async function refreshCache({ forceFull = false } = {}) {
         refreshStats.sourceBlockReason = rawFetched.blockReason || null;
         refreshStats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
         refreshStats.incrementalSourceFetch = Boolean(rawFetched.incremental);
+        refreshStats.indexedFallback = Boolean(rawFetched.indexedFallback);
+        refreshStats.indexedItems = Number(rawFetched.indexedItems || 0);
+        refreshStats.indexedProviders = rawFetched.indexedProviders || [];
+        refreshStats.indexedErrors = rawFetched.indexedErrors || [];
 
         cache = {
           ...current,
@@ -491,14 +540,24 @@ export async function refreshCache({ forceFull = false } = {}) {
       stats.sourceBlockReason = rawFetched.blockReason || null;
       stats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);
       stats.incrementalSourceFetch = Boolean(rawFetched.incremental);
+      stats.indexedFallback = Boolean(rawFetched.indexedFallback);
+      stats.indexedItems = Number(rawFetched.indexedItems || 0);
+      stats.indexedProviders = rawFetched.indexedProviders || [];
+      stats.indexedErrors = rawFetched.indexedErrors || [];
       const metas = [];
+      const acceptedIndexedSourceKeys = new Set();
+      const rejectedIndexedSourceKeys = new Set();
       let movieBudgetUsed = 0;
+      stats.indexedAccepted = 0;
+      stats.indexedRejected = 0;
+      stats.indexedDeferred = 0;
+      stats.indexedKnownMatches = 0;
       let seriesBudgetUsed = 0;
 
       setStage('build-metadata');
 
       for (const item of fetched.items) {
-        const existing = oldByFilmbazeId.get(String(item.id));
+        const existing = findExisting(item);
         const reasons = repairReasons(existing, item);
         const isSeries = item.type === 'series';
         const limit = forceFull
@@ -509,8 +568,34 @@ export async function refreshCache({ forceFull = false } = {}) {
         const isNew = !existing;
         const shouldEnrich = (isNew || eligibleRepair || forceFull) && used < limit;
 
+        if (item.indexedFallback && existing) {
+          stats.indexedKnownMatches += 1;
+          acceptedIndexedSourceKeys.add(sourceItemKey(item));
+        }
+
+        if (isNew && item.indexedFallback && !shouldEnrich) {
+          stats.indexedDeferred += 1;
+          rejectedIndexedSourceKeys.add(sourceItemKey(item));
+          continue;
+        }
+
         if (shouldEnrich) {
           const meta = await enrichItem(item, existing, reasons);
+
+          // Search-index-only candidates are promoted only after strict metadata
+          // resolution confirms TMDB + IMDb, year and a compatible title.
+          if (isNew && item.indexedFallback) {
+            if (!safeIndexedResolution(item, meta)) {
+              stats.indexedRejected += 1;
+              rejectedIndexedSourceKeys.add(sourceItemKey(item));
+              if (isSeries) seriesBudgetUsed += 1;
+              else movieBudgetUsed += 1;
+              continue;
+            }
+            stats.indexedAccepted += 1;
+            acceptedIndexedSourceKeys.add(sourceItemKey(item));
+          }
+
           metas.push(meta);
 
           if (isSeries) {
@@ -538,12 +623,28 @@ export async function refreshCache({ forceFull = false } = {}) {
         }
       }
 
-      validateInMemory(fetched.items, metas);
+      const finalItems = fetched.items.filter(item => {
+        if (!item.indexedFallback) return true;
+        const key = sourceItemKey(item);
+        if (rejectedIndexedSourceKeys.has(key)) return false;
+        return acceptedIndexedSourceKeys.has(key) || Boolean(findExisting(item));
+      });
+      const finalSourceHash = sourceHash(finalItems);
+
+      // When the origin is blocked, a fresh timestamp is allowed only when the
+      // public index confirms at least one known title or one new candidate passes
+      // strict TMDB/IMDb validation. Otherwise leave the old cache untouched.
+      if (rawFetched.blocked && rawFetched.indexedFallback &&
+          stats.indexedKnownMatches === 0 && stats.indexedAccepted === 0) {
+        throw new Error('Hybrid fallback found no verified Filmbáze title; previous cache preserved.');
+      }
+
+      validateInMemory(finalItems, metas);
 
       cache = {
         at: Date.now(),
-        sourceHash: fetched.sourceHash,
-        items: fetched.items,
+        sourceHash: finalSourceHash,
+        items: finalItems,
         metas,
         byId: buildIndex(metas),
         lastError: null,

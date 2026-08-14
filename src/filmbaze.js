@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import * as cheerio from 'cheerio';
 import { getWithRetry, isFilmbazeBlockedError, getFilmbazeRequestState } from './http.js';
+import { fetchIndexedCatalogHints } from './indexed.js';
 
 const MOVIES_URL =
   process.env.FILMBAZE_MOVIES_URL ||
@@ -534,8 +535,6 @@ export async function fetchFilmbazeItems() {
     if (blocked) blockReason = error.message;
   }
 
-  // Avoid simultaneous requests to the same protected host. If WEDOS opened the
-  // circuit, the second channel is skipped without another network request.
   if (!blocked && FILMBAZE_BETWEEN_CHANNELS_MS > 0) {
     await new Promise(resolve => setTimeout(resolve, FILMBAZE_BETWEEN_CHANNELS_MS));
   }
@@ -553,8 +552,36 @@ export async function fetchFilmbazeItems() {
     }
   }
 
-  const items = await enrichFilmbazeDetails([...movieItems, ...seriesItems]);
   const requestState = getFilmbazeRequestState();
+  let indexedFallback = false;
+  let indexedProviders = [];
+  let indexedErrors = [];
+  let indexedItems = [];
+
+  // When WEDOS blocks the origin, discover only a small newest-title window
+  // from public search-index snippets. The complete historical cache is kept
+  // by catalog.js; these hints can only add/re-rank items after strict checks.
+  if (requestState.circuitOpen) {
+    const [movieIndexed, seriesIndexed] = await Promise.all([
+      fetchIndexedCatalogHints('movie', MOVIES_URL),
+      fetchIndexedCatalogHints('series', SERIES_URL)
+    ]);
+
+    indexedItems = [...movieIndexed.items, ...seriesIndexed.items];
+    indexedFallback = indexedItems.length > 0;
+    indexedProviders = [...new Set([...movieIndexed.providers, ...seriesIndexed.providers])];
+    indexedErrors = [...movieIndexed.errors, ...seriesIndexed.errors];
+
+    if (indexedFallback) {
+      console.warn(`[filmbaze] indexed fallback discovered ${indexedItems.length} current catalog hints via ${indexedProviders.join(', ') || 'public index'}`);
+      movieItems = mergeHints(movieItems, indexedItems.filter(item => item.type === 'movie'));
+      seriesItems = mergeHints(seriesItems, indexedItems.filter(item => item.type === 'series'));
+    } else if (indexedErrors.length) {
+      console.warn('[filmbaze] indexed fallback produced no usable hints:', indexedErrors.join(' | '));
+    }
+  }
+
+  const items = await enrichFilmbazeDetails([...movieItems, ...seriesItems]);
 
   const sourceHash = crypto.createHash('sha1')
     .update(items.map(x => `${x.type}|${x.id}|${x.name}|${x.releaseDate}`).join('|'))
@@ -569,9 +596,33 @@ export async function fetchFilmbazeItems() {
     blocked: blocked || requestState.circuitOpen,
     blockReason: blockReason || requestState.reason || null,
     requestState,
-    incremental: FILMBAZE_INCREMENTAL
+    incremental: FILMBAZE_INCREMENTAL,
+    indexedFallback,
+    indexedProviders,
+    indexedErrors,
+    indexedItems: indexedItems.length
   };
 }
+
+function mergeHints(primaryItems, hints) {
+  const out = [];
+  const seenIds = new Set();
+  const titleKey = item => `${item.type}:${clean(item.name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}:${item.year || ''}`;
+  const seenTitles = new Set();
+
+  // Public-index hints represent the newest visible window, so rank them first.
+  for (const item of [...(hints || []), ...(primaryItems || [])]) {
+    const idKey = `${item.type}:${item.id}`.toLowerCase();
+    const key = titleKey(item);
+    if (seenIds.has(idKey) || seenTitles.has(key)) continue;
+    out.push(item);
+    seenIds.add(idKey);
+    seenTitles.add(key);
+  }
+
+  return out.map((item, index) => ({ ...item, channelOrder: index, page: item.page || 1 }));
+}
+
 function normalizeFilmbazeTitle(item, requestedType, sourceUrl) {
   if (!item) return null;
 

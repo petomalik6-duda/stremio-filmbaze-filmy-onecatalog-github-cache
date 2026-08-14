@@ -1,3 +1,13 @@
+# v3.6.0 Hybrid Refresh
+
+- Added public search-index fallback for WEDOS/401 outages.
+- Search-index results are incremental only and can never replace the full cache.
+- New indexed titles require strict TMDB + IMDb + year + title validation.
+- Existing titles can be matched by title/year when the public index has no Filmbáze numeric ID.
+- Added `indexedAccepted`, `indexedRejected`, `indexedKnownMatches`, providers and errors to refresh stats.
+- Cache timestamp is not refreshed from an unverified index response.
+- Added parser self-test to GitHub Actions.
+
 # v3.4.9 – Volný hráč recovery
 
 - Adds Filmbáze title 258618 “Volný hráč” (IMDb tt29942429, TMDB 1001374) to the last valid cache.

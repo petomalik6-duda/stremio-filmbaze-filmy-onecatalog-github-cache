@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "type": "module",
-  "description": "Filmbaze catalog/meta addon with reliable GitHub Actions placement, low-request incremental refresh, safe reader fallback, WEDOS diagnostics and cache preservation.",
+  "description": "Filmbaze catalog/meta addon with hybrid incremental refresh: direct API, safe Reader window, public search-index discovery, strict TMDB/IMDb promotion and WEDOS-safe cache preservation.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,8 @@
     "refresh:full": "FORCE_FULL_REFRESH=true node scripts/refresh.js",
     "validate-cache": "node scripts/validate-cache.cjs",
     "safe-merge-cache": "node scripts/safe-merge-cache.cjs",
-    "report-latest": "node scripts/report-latest.cjs"
+    "report-latest": "node scripts/report-latest.cjs",
+    "test:indexed": "node scripts/test-indexed.mjs"
   },
   "engines": {
     "node": ">=20"
