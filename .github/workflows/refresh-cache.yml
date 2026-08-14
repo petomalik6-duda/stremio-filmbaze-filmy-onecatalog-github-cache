@@ -108,8 +108,9 @@ jobs:
           USE_INDEXED_FALLBACK: "true"
           INDEXED_FALLBACK_MAX_ITEMS: "40"
           INDEXED_SEARCH_MAX_QUERIES: "4"
-          JINA_SEARCH_MAX_QUERIES: "1"
+          JINA_SEARCH_MAX_QUERIES: "2"
           INDEXED_TIMEOUT_MS: "12000"
+          JINA_TIMEOUT_MS: "30000"
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
@@ -175,6 +176,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.6.2 authenticated search fallback"
+          git commit -m "Refresh Filmbaze cache v3.6.3 Jina JSON fallback"
           git pull --rebase --autostash
           git push
