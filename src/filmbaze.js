@@ -569,6 +569,7 @@ export async function fetchFilmbazeItems() {
   let indexedJinaSuccessfulQueries = 0;
   let indexedJinaResponseBytes = 0;
   let indexedJinaJsonResults = 0;
+  let indexedJinaResultSamples = [];
 
   // When WEDOS blocks the origin, discover only a small newest-title window
   // from public search-index snippets. The complete historical cache is kept
@@ -589,10 +590,12 @@ export async function fetchFilmbazeItems() {
     indexedJinaSuccessfulQueries = Number(movieIndexed.jinaSuccessfulQueries || 0) + Number(seriesIndexed.jinaSuccessfulQueries || 0);
     indexedJinaResponseBytes = Number(movieIndexed.jinaResponseBytes || 0) + Number(seriesIndexed.jinaResponseBytes || 0);
     indexedJinaJsonResults = Number(movieIndexed.jinaJsonResults || 0) + Number(seriesIndexed.jinaJsonResults || 0);
+    indexedJinaResultSamples = [...(movieIndexed.jinaResultSamples || []), ...(seriesIndexed.jinaResultSamples || [])].slice(0, 10);
 
     console.log(`[filmbaze] indexed fallback attempted providers: ${indexedAttemptedProviders.join(', ') || 'none'}`);
     console.log(`[filmbaze] indexed fallback queries: ${indexedQueries.join(' || ') || 'none'}`);
     console.log(`[filmbaze] Jina Search configured: ${indexedJinaConfigured}; successful queries: ${indexedJinaSuccessfulQueries}; JSON results: ${indexedJinaJsonResults}; response bytes: ${indexedJinaResponseBytes}`);
+    if (indexedJinaResultSamples.length) console.log('[filmbaze] Jina result samples:', JSON.stringify(indexedJinaResultSamples));
     if (indexedFallback) {
       console.warn(`[filmbaze] indexed fallback discovered ${indexedItems.length} current catalog hints via ${indexedProviders.join(', ') || 'public index'}`);
       console.log('[filmbaze] indexed titles:', indexedItems.slice(0, 20).map(item => `${item.type}:${item.name}${item.year ? ` (${item.year})` : ''}`).join(' | '));
@@ -629,7 +632,8 @@ export async function fetchFilmbazeItems() {
     indexedJinaConfigured,
     indexedJinaSuccessfulQueries,
     indexedJinaResponseBytes,
-    indexedJinaJsonResults
+    indexedJinaJsonResults,
+    indexedJinaResultSamples
   };
 }
 

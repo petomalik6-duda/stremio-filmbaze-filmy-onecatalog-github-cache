@@ -40,7 +40,7 @@ async function fetchText(url, headers = {}, timeoutMs = INDEXED_TIMEOUT_MS) {
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.3)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.4)',
         'Accept-Language': 'cs-CZ,cs;q=0.9,en;q=0.7',
         ...headers
       }
@@ -272,12 +272,22 @@ function jinaResultEntries(payload) {
 
     const url = value.url || value.link || value.sourceUrl || value.source_url || value?.source?.url || '';
     const title = value.title || value.name || '';
-    const content = value.content || value.markdown || value.description || value.text || value.snippet || '';
-    if (url || title || content) {
-      const key = `${url}|${title}|${String(content).slice(0, 100)}`;
+    // Jina Search JSON can expose the SERP snippet in `description` while the
+    // fetched page body is in `content`.  Keep BOTH: in 3.6.3 we preferred
+    // content and silently discarded the useful description, which could turn
+    // valid search results into zero catalog hints.
+    const description = value.description || value.snippet || value.summary || '';
+    const content = value.content || value.markdown || value.text || '';
+    if (url || title || description || content) {
+      const key = `${url}|${title}|${String(description).slice(0, 80)}|${String(content).slice(0, 80)}`;
       if (!seen.has(key)) {
         seen.add(key);
-        out.push({ url: String(url || ''), title: String(title || ''), content: String(content || '') });
+        out.push({
+          url: String(url || ''),
+          title: String(title || ''),
+          description: String(description || ''),
+          content: String(content || '')
+        });
       }
     }
 
@@ -295,23 +305,37 @@ export function parseJinaSearchJson(payload, type, sourceUrl) {
   const entries = jinaResultEntries(payload);
 
   for (const entry of entries) {
-    const combined = clean(`${entry.title} ${entry.content}`);
     if (!entry.url) continue;
-    hints.push(...parseTrustedSnippet({
-      title: entry.title,
-      link: entry.url,
-      description: entry.content,
-      type,
-      sourceUrl,
-      evidence: 'jina-search-json'
-    }));
 
+    // Parse SERP description and fetched content independently.  Search engines
+    // often keep the fresh `Poster for ...` window only in description, while
+    // content starts with a generic channel introduction.
+    const textVariants = [
+      entry.description,
+      entry.content,
+      clean(`${entry.description || ''} ${entry.content || ''}`)
+    ].filter(Boolean);
+
+    for (const text of textVariants) {
+      hints.push(...parseTrustedSnippet({
+        title: entry.title,
+        link: entry.url,
+        description: text,
+        type,
+        sourceUrl,
+        evidence: 'jina-search-json'
+      }));
+    }
+
+    const combined = clean(`${entry.title || ''} ${entry.description || ''} ${entry.content || ''}`);
     // Some Jina JSON responses put the whole page in content while title is
-    // generic. For the exact channel/home page, parse the content directly too.
+    // generic. For the exact channel/home page, parse every text field directly.
     if (trustedIndexPage(entry.url, sourceUrl, type, combined)) {
-      hints.push(...parseLeadingHints(entry.content, type, sourceUrl, 'jina-search-json-content'));
-      hints.push(...parseBeforePosterHints(entry.content, type, sourceUrl, 'jina-search-json-content'));
-      hints.push(...parsePosterHints(entry.content, type, sourceUrl, 'jina-search-json-content'));
+      for (const text of textVariants) {
+        hints.push(...parseLeadingHints(text, type, sourceUrl, 'jina-search-json-content'));
+        hints.push(...parseBeforePosterHints(text, type, sourceUrl, 'jina-search-json-content'));
+        hints.push(...parsePosterHints(text, type, sourceUrl, 'jina-search-json-content'));
+      }
     }
   }
 
@@ -409,16 +433,16 @@ export function jinaQueries(type, sourceUrl) {
 
   if (type === 'series') {
     return [
+      `"${sourceUrl}"`,
       `site:${host} "Oblíbené seriály v češtině"`,
-      `site:${host} "Oblíbené seriály"`,
-      `"${sourceUrl}"`
+      `site:${host} "Oblíbené seriály"`
     ];
   }
 
   return [
+    `"${sourceUrl}"`,
     `site:${host} "Novinky s českým dabingem"`,
-    `site:${host} "Nové filmy na internetu s českým dabingem"`,
-    `"${sourceUrl}"`
+    `site:${host} "Nové filmy na internetu s českým dabingem"`
   ];
 }
 
@@ -464,12 +488,13 @@ async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
 }
 
 async function fetchJinaHints(type, sourceUrl) {
-  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, jsonResults: 0 };
+  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, jsonResults: 0, resultSamples: [] };
   const items = [];
   const errors = [];
   let successfulQueries = 0;
   let responseBytes = 0;
   let jsonResults = 0;
+  const resultSamples = [];
   const queries = jinaQueries(type, sourceUrl).slice(0, JINA_SEARCH_MAX_QUERIES);
 
   for (const query of queries) {
@@ -491,6 +516,10 @@ async function fetchJinaHints(type, sourceUrl) {
       if (parsed) {
         const entries = jinaResultEntries(parsed);
         jsonResults += entries.length;
+        for (const entry of entries.slice(0, 3)) {
+          if (resultSamples.length >= 8) break;
+          resultSamples.push({ title: clean(entry.title).slice(0, 120), url: String(entry.url || '').slice(0, 240), hasDescription: Boolean(clean(entry.description)), hasContent: Boolean(clean(entry.content)) });
+        }
         items.push(...parseJinaSearchJson(parsed, type, sourceUrl));
       } else {
         // Backward compatibility if Jina returns markdown/text despite Accept.
@@ -505,12 +534,12 @@ async function fetchJinaHints(type, sourceUrl) {
     }
   }
 
-  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, jsonResults };
+  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, jsonResults, resultSamples };
 }
 
 export async function fetchIndexedCatalogHints(type, sourceUrl) {
   if (!USE_INDEXED_FALLBACK) {
-    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [], jinaConfigured: Boolean(JINA_API_KEY), jinaResponseBytes: 0, jinaJsonResults: 0, jinaSuccessfulQueries: 0 };
+    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [], jinaConfigured: Boolean(JINA_API_KEY), jinaResponseBytes: 0, jinaJsonResults: 0, jinaSuccessfulQueries: 0, jinaResultSamples: [] };
   }
 
   const queries = indexedQueries(type, sourceUrl);
@@ -521,6 +550,7 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
   let jinaResponseBytes = 0;
   let jinaJsonResults = 0;
   let jinaSuccessfulQueries = 0;
+  const jinaResultSamples = [];
 
   // API-backed search is preferred when configured. Unlike scraping a public
   // search HTML page, s.jina.ai has a documented authenticated API contract.
@@ -530,6 +560,7 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
     jinaResponseBytes += Number(jina.responseBytes || 0);
     jinaJsonResults += Number(jina.jsonResults || 0);
     jinaSuccessfulQueries += Number(jina.successfulQueries || 0);
+    jinaResultSamples.push(...(jina.resultSamples || []));
     errors.push(...jina.errors.map(error => `jina-search: ${error}`));
     if (jina.items.length) {
       providers.push('jina-search');
@@ -571,6 +602,7 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
     jinaConfigured: Boolean(JINA_API_KEY),
     jinaResponseBytes,
     jinaJsonResults,
-    jinaSuccessfulQueries
+    jinaSuccessfulQueries,
+    jinaResultSamples: jinaResultSamples.slice(0, 10)
   };
 }

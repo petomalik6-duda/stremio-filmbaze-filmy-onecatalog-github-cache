@@ -455,6 +455,7 @@ function applyIndexedDiagnostics(stats, rawFetched) {
   stats.indexedJinaSuccessfulQueries = Number(rawFetched?.indexedJinaSuccessfulQueries || 0);
   stats.indexedJinaResponseBytes = Number(rawFetched?.indexedJinaResponseBytes || 0);
   stats.indexedJinaJsonResults = Number(rawFetched?.indexedJinaJsonResults || 0);
+  stats.indexedJinaResultSamples = Array.isArray(rawFetched?.indexedJinaResultSamples) ? rawFetched.indexedJinaResultSamples.slice(0, 10) : [];
   return stats;
 }
 

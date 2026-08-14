@@ -1,3 +1,9 @@
+# 3.6.4
+
+- Fixed Jina JSON parsing when fresh catalog text is in `description` rather than `content`.
+- Exact channel URL is now the first Jina query.
+- Added `indexedJinaResultSamples` diagnostics.
+
 # v3.6.3 – Jina JSON fallback fix
 
 - Jina Search now uses a reliable phrase query first instead of a path-only `site:` query.

@@ -60,9 +60,28 @@ const jinaJsonHints = parseJinaSearchJson(jinaJson, 'movie', movieUrl);
 assert(jinaJsonHints.some(x => x.name === 'Tenkrát v Gaze'));
 assert(jinaJsonHints.some(x => x.name === 'Zvukař'));
 
+
+// Regression for 3.6.3: Jina can keep fresh SERP snippets in `description`
+// while `content` contains only the generic channel intro. Both must be parsed.
+const jinaDescriptionJson = {
+  code: 200,
+  status: 20000,
+  data: [
+    {
+      title: 'Nové filmy na internetu s českým dabingem',
+      url: movieUrl,
+      description: 'Novinky s českým dabingem ; Poster for Tenkrát v Gaze. 5.4 / 10. Tenkrát v Gaze ; Poster for Julian. 6.7 / 10. Julian ; Poster for Zvukař. 7 / 10. Zvukař',
+      content: 'Seznam aktuálních filmů s českým a slovenským dabingem dostupných online.'
+    }
+  ]
+};
+const jinaDescriptionHints = parseJinaSearchJson(jinaDescriptionJson, 'movie', movieUrl);
+assert(jinaDescriptionHints.some(x => x.name === 'Tenkrát v Gaze'));
+assert(jinaDescriptionHints.some(x => x.name === 'Zvukař'));
+
 const jq = jinaQueries('movie', movieUrl);
-assert(jq[0].includes('Novinky s českým dabingem'));
-assert(!jq[0].includes('/novinky-s-ceskym-dabingem-na-netu'));
+assert(jq[0].includes(movieUrl));
+assert(jq[1].includes('Novinky s českým dabingem'));
 
 const movieQueries = indexedQueries('movie', movieUrl);
 assert(movieQueries.length >= 3);
