@@ -72,6 +72,37 @@ function readerUrl(url) {
   return `https://r.jina.ai/${url}`;
 }
 
+function readerPageUrl(baseUrl, page) {
+  const u = new URL(baseUrl);
+  if (page > 1) u.searchParams.set('page', String(page));
+  return readerUrl(u.toString());
+}
+
+async function fetchReaderFallback(baseUrl, page, type, reason = '') {
+  if (!USE_READER_FALLBACK) return null;
+
+  const url = readerPageUrl(baseUrl, page);
+  try {
+    console.warn(`[filmbaze] trying safe reader fallback for ${type} page ${page}${reason ? ` after ${reason}` : ''}`);
+    const response = await getWithRetry(url, {
+      headers: { Accept: 'text/plain,text/markdown;q=0.9,*/*;q=0.8' }
+    }, 1);
+    const text = String(response.data || '');
+    if (!text || isBlockedReaderResponse(text)) {
+      throw new Error('Reader fallback returned no usable Filmbáze content.');
+    }
+    const items = parseReaderText(text, type, baseUrl);
+    if (!items.length) {
+      throw new Error('Reader fallback contained no explicit catalog titles.');
+    }
+    return { payload: { __readerText: text }, mode: 'reader-fallback', url };
+  } catch (error) {
+    logPageError(type, page, 'reader-fallback', url, error.message);
+    console.warn(`[filmbaze] reader fallback failed for ${type} page ${page}: ${error.message}`);
+    return null;
+  }
+}
+
 function isBlockedReaderResponse(text) {
   const value = String(text || '');
   return /WEDOS\.protection|Security verification|Target URL returned error 401|\b401\s*Unauthorized\b|ALTCHA|security challenge|unusual activity from your browser|Req-ID:|Node:\s*ac\d+|Agent:\s*like Gecko/i.test(value);
@@ -103,8 +134,18 @@ async function fetchFilmbazePage(baseUrl, page, type) {
       } catch (error) {
         lastError = error;
         logPageError(type, page, 'channel-api', url, error.message);
-        if (isFilmbazeBlockedError(error)) throw error;
-        if (FILMBAZE_API_ONLY) throw error;
+
+        if (isFilmbazeBlockedError(error)) {
+          const reader = await fetchReaderFallback(baseUrl, page, type, 'WEDOS/API block');
+          if (reader) return reader;
+          throw error;
+        }
+
+        if (FILMBAZE_API_ONLY) {
+          const reader = await fetchReaderFallback(baseUrl, page, type, 'API failure');
+          if (reader) return reader;
+          throw error;
+        }
         continue;
       }
     }
@@ -219,7 +260,12 @@ async function fetchChannelItems({ url, type, maxItems }) {
     const { payload, mode, url: usedUrl } = await fetchFilmbazePage(url, nextPage, type);
 
     if (payload?.__readerText) {
-      const readerItems = parseReaderText(payload.__readerText, type, url);
+      const readerItems = parseReaderText(payload.__readerText, type, url)
+        .map((item, index) => ({
+          ...item,
+          channelOrder: all.length + index,
+          page: nextPage
+        }));
       all.push(...readerItems);
       debugRows.push({ page: nextPage, mode, url: usedUrl, raw: 'reader', normalized: readerItems.length, nextPage: null });
       break;
@@ -287,18 +333,17 @@ function parseReaderText(text, type, sourceUrl) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    let name = null;
-
     const poster = line.match(/Poster for\s+(.+)/i);
-    if (poster) name = cleanTitle(poster[1]);
-    if (!name && isLikelyTitleLine(line)) name = cleanTitle(line);
-    if (!name) continue;
+    if (!poster) continue;
 
-    const nearby = [line, lines[i + 1], lines[i + 2], lines[i - 1]].filter(Boolean).join(' ');
+    const name = cleanTitle(poster[1]);
+    if (!name || !isLikelyTitleLine(name)) continue;
+
+    const nearby = [line, lines[i + 1], lines[i + 2], lines[i + 3], lines[i - 1]].filter(Boolean).join(' ');
     const year = getYear(nearby);
 
     items.push({
-      source: 'Filmbáze',
+      source: 'Filmbáze-reader',
       id: `reader-${type}-${hash(`${name}-${year || ''}`)}`,
       name,
       type,
@@ -314,7 +359,8 @@ function parseReaderText(text, type, sourceUrl) {
       dateAdded: '',
       lang: type === 'series' ? 'CZ' : 'CZ/SK',
       primaryVideo: null,
-      sourceUrl
+      sourceUrl,
+      readerFallback: true
     });
   }
 

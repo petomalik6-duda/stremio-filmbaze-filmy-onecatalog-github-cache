@@ -262,6 +262,54 @@ function sourceItemKey(item) {
   return `${item?.type || ''}:${item?.id || ''}`;
 }
 
+function normalizeSourceTitle(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ł/g, 'l')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sourceTitleYearKey(item) {
+  const title = normalizeSourceTitle(item?.name || item?.title || item?.originalName || '');
+  const year = Number(item?.year || String(item?.releaseDate || '').match(/\b(19\d{2}|20\d{2})\b/)?.[1] || 0);
+  return title ? `${item?.type || ''}:${title}:${year || ''}` : '';
+}
+
+function reconcileReaderItemsWithPrevious(newItems, oldItems) {
+  const previousByTitleYear = new Map();
+  for (const oldItem of oldItems || []) {
+    const key = sourceTitleYearKey(oldItem);
+    if (key && !previousByTitleYear.has(key)) previousByTitleYear.set(key, oldItem);
+  }
+
+  return (newItems || []).map(item => {
+    if (!item?.readerFallback) return item;
+    const previous = previousByTitleYear.get(sourceTitleYearKey(item));
+    if (!previous) return item;
+
+    // Keep the real Filmbáze id and source fields from the previous cache, while
+    // using the reader order to move currently listed titles to the front.
+    return {
+      ...previous,
+      ...item,
+      id: previous.id,
+      poster: previous.poster || item.poster || null,
+      background: previous.background || item.background || null,
+      description: previous.description || item.description || '',
+      releaseDate: previous.releaseDate || item.releaseDate || null,
+      dateAdded: previous.dateAdded || item.dateAdded || '',
+      imdbId: previous.imdbId || item.imdbId || null,
+      tmdbId: previous.tmdbId || item.tmdbId || null,
+      originalName: previous.originalName || item.originalName || null,
+      readerFallback: true
+    };
+  });
+}
+
 function sourceHash(items) {
   return crypto.createHash('sha1')
     .update((items || []).map(x => `${x.type}|${x.id}|${x.name}|${x.releaseDate || ''}`).join('|'))
@@ -269,8 +317,10 @@ function sourceHash(items) {
 }
 
 function preservePreviousSourceOnPartialFetch(fetched, current) {
-  const newItems = Array.isArray(fetched?.items) ? fetched.items : [];
+  const rawNewItems = Array.isArray(fetched?.items) ? fetched.items : [];
   const oldItems = Array.isArray(current?.items) ? current.items : [];
+  const newItems = reconcileReaderItemsWithPrevious(rawNewItems, oldItems);
+  fetched = { ...fetched, items: newItems };
   const forceFullSource = String(process.env.FORCE_FULL_SOURCE_REFRESH || 'false').toLowerCase() === 'true';
   if (forceFullSource || !oldItems.length) return fetched;
 

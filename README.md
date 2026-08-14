@@ -1,4 +1,4 @@
-# Filmbáze Stremio/Nuvio addon v3.5.0
+# Filmbáze Stremio/Nuvio addon v3.5.1
 
 Táto verzia používa bezpečný inkrementálny refresh navrhnutý tak, aby výrazne znížil riziko blokovania cez WEDOS.
 
@@ -37,3 +37,12 @@ Nahraj obsah balíka priamo do koreňa repozitára a spusti **Refresh Filmbaze c
 - `/cache.json`
 
 Po nasadení musí `/health` uvádzať verziu `3.5.0`.
+
+
+## v3.5.1 – oprava automatického refreshu
+
+- Workflow sú uložené v povinnom priečinku `.github/workflows/`.
+- Pri WEDOS blokovaní API sa skúsi jeden bezpečný reader fallback na každý kanál.
+- Reader parser prijíma iba explicitné `Poster for ...` položky, aby nevkladal WEDOS/HTML text ako filmy.
+- Pri reader fallback sa existujúce tituly párujú aj podľa normalizovaného názvu + roku, aby nevznikali duplicity.
+- Workflow po refreshe kontroluje vek cache. Ak sa zdroj nepodarí aktualizovať a cache je staršia ako 48 hodín, run skončí chybou namiesto falošného zeleného úspechu.

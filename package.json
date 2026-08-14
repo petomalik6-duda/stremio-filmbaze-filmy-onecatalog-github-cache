@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "type": "module",
-  "description": "Filmbaze catalog/meta addon with low-request incremental source refresh, WEDOS circuit breaker, safe cache merge and Nuvio series metadata.",
+  "description": "Filmbaze catalog/meta addon with reliable GitHub Actions placement, low-request incremental refresh, safe reader fallback, WEDOS diagnostics and cache preservation.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
