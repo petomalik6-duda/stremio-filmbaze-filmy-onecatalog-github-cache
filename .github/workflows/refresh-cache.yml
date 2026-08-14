@@ -75,11 +75,11 @@ jobs:
       - name: Show fallback configuration
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         shell: bash
         run: |
           if [ -n "$TMDB_API_KEY" ]; then echo "TMDB_API_KEY configured: true"; else echo "TMDB_API_KEY configured: false"; fi
-          if [ -n "$JINA_API_KEY" ]; then echo "JINA_API_KEY configured: true (Jina Search will be preferred)"; else echo "JINA_API_KEY configured: false (Bing/DDG best-effort only)"; fi
+          if [ -n "$SERPAPI_KEY" ]; then echo "SERPAPI_KEY configured: true (Google organic snippets preferred)"; else echo "SERPAPI_KEY configured: false"; fi
 
       - name: Backup last valid cache
         run: |
@@ -104,14 +104,14 @@ jobs:
           FILMBAZE_BETWEEN_CHANNELS_MS: "5000"
           ENABLE_FILMBAZE_DETAIL: "false"
           FILMBAZE_DETAIL_LIMIT: "0"
-          USE_READER_FALLBACK: "true"
+          USE_READER_FALLBACK: "false"
           USE_INDEXED_FALLBACK: "true"
           INDEXED_FALLBACK_MAX_ITEMS: "40"
           INDEXED_SEARCH_MAX_QUERIES: "4"
-          JINA_SEARCH_MAX_QUERIES: "2"
           INDEXED_TIMEOUT_MS: "12000"
-          JINA_TIMEOUT_MS: "30000"
-          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SERPAPI_SEARCH_MAX_QUERIES: "2"
+          SERPAPI_TIMEOUT_MS: "20000"
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
           REQUEST_TIMEOUT_MS: "12000"
@@ -149,7 +149,7 @@ jobs:
           console.log('Cache age hours:', Number.isFinite(ageHours) ? ageHours.toFixed(2) : 'infinite');
           console.log('Refresh stats:', JSON.stringify(cache.refreshStats || null));
           if (!at || ageHours > maxHours) {
-            console.error(`Cache is older than ${maxHours} hours. Filmbáze/API, reader fallback and hybrid public-index fallback did not produce a verified fresh cache.`);
+            console.error(`Cache is older than ${maxHours} hours. Filmbáze/API and SerpAPI/public-index fallback did not produce a verified fresh cache.`);
             process.exit(1);
           }
           NODE
@@ -176,6 +176,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.6.4 Jina description parser"
+          git commit -m "Refresh Filmbaze cache v3.6.6 SerpAPI fallback"
           git pull --rebase --autostash
           git push
