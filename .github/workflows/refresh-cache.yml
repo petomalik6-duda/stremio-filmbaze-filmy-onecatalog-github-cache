@@ -97,7 +97,9 @@ jobs:
           FILMBAZE_DETAIL_LIMIT: "0"
           USE_READER_FALLBACK: "true"
           USE_INDEXED_FALLBACK: "true"
-          INDEXED_FALLBACK_MAX_ITEMS: "20"
+          INDEXED_FALLBACK_MAX_ITEMS: "40"
+          INDEXED_SEARCH_MAX_QUERIES: "4"
+          INDEXED_TIMEOUT_MS: "12000"
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
@@ -163,6 +165,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.6.0 hybrid"
+          git commit -m "Refresh Filmbaze cache v3.6.1 hybrid"
           git pull --rebase --autostash
           git push
