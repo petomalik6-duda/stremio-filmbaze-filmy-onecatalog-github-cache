@@ -86,7 +86,13 @@ async function fetchReaderFallback(baseUrl, page, type, reason = '') {
   try {
     console.warn(`[filmbaze] trying safe reader fallback for ${type} page ${page}${reason ? ` after ${reason}` : ''}`);
     const response = await getWithRetry(url, {
-      headers: { Accept: 'text/plain,text/markdown;q=0.9,*/*;q=0.8' }
+      headers: {
+        Accept: 'text/plain,text/markdown;q=0.9,*/*;q=0.8',
+        // Never trust an old Reader cache as evidence that the Filmbáze window
+        // is current. Jina documents X-No-Cache / X-Cache-Tolerance for this.
+        'X-No-Cache': 'true',
+        'X-Cache-Tolerance': '0'
+      }
     }, 1);
     const text = String(response.data || '');
     if (!text || isBlockedReaderResponse(text)) {
@@ -559,6 +565,7 @@ export async function fetchFilmbazeItems() {
   let indexedQueries = [];
   let indexedErrors = [];
   let indexedItems = [];
+  let indexedJinaConfigured = false;
 
   // When WEDOS blocks the origin, discover only a small newest-title window
   // from public search-index snippets. The complete historical cache is kept
@@ -575,9 +582,11 @@ export async function fetchFilmbazeItems() {
     indexedAttemptedProviders = [...new Set([...(movieIndexed.attemptedProviders || []), ...(seriesIndexed.attemptedProviders || [])])];
     indexedQueries = [...new Set([...(movieIndexed.queries || []), ...(seriesIndexed.queries || [])])];
     indexedErrors = [...movieIndexed.errors, ...seriesIndexed.errors];
+    indexedJinaConfigured = Boolean(movieIndexed.jinaConfigured || seriesIndexed.jinaConfigured);
 
     console.log(`[filmbaze] indexed fallback attempted providers: ${indexedAttemptedProviders.join(', ') || 'none'}`);
     console.log(`[filmbaze] indexed fallback queries: ${indexedQueries.join(' || ') || 'none'}`);
+    console.log(`[filmbaze] Jina Search configured: ${indexedJinaConfigured}`);
     if (indexedFallback) {
       console.warn(`[filmbaze] indexed fallback discovered ${indexedItems.length} current catalog hints via ${indexedProviders.join(', ') || 'public index'}`);
       console.log('[filmbaze] indexed titles:', indexedItems.slice(0, 20).map(item => `${item.type}:${item.name}${item.year ? ` (${item.year})` : ''}`).join(' | '));
@@ -610,7 +619,8 @@ export async function fetchFilmbazeItems() {
     indexedAttemptedProviders,
     indexedQueries,
     indexedErrors,
-    indexedItems: indexedItems.length
+    indexedItems: indexedItems.length,
+    indexedJinaConfigured
   };
 }
 

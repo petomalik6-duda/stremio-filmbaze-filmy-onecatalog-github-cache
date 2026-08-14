@@ -1,3 +1,13 @@
+# 3.6.2
+
+- prefers authenticated Jina Search (`s.jina.ai`) when `JINA_API_KEY` is configured
+- uses only one Jina search query per catalog type by default
+- keeps Bing RSS and DuckDuckGo HTML as best-effort secondary providers
+- records `indexedJinaConfigured` in refresh diagnostics
+- makes Jina Reader direct-page fallback bypass cached content (`X-No-Cache`, `X-Cache-Tolerance: 0`)
+- improves parsing of search snippets where the first title appears before `Poster for ...`
+- preserves the complete previous cache; public-index candidates still require strict TMDB/IMDb validation before insertion
+
 # v3.6.1 Hybrid Refresh Fix
 
 - multi-query Bing RSS discovery

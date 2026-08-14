@@ -426,6 +426,7 @@ function applyIndexedDiagnostics(stats, rawFetched) {
   stats.indexedAttemptedProviders = rawFetched?.indexedAttemptedProviders || [];
   stats.indexedQueries = rawFetched?.indexedQueries || [];
   stats.indexedErrors = rawFetched?.indexedErrors || [];
+  stats.indexedJinaConfigured = Boolean(rawFetched?.indexedJinaConfigured);
   return stats;
 }
 
@@ -483,7 +484,9 @@ export async function refreshCache({ forceFull = false } = {}) {
         console.warn(`[refresh] Keeping previous cache unchanged (${current.metas.length} metas).`);
         attemptStats = applyIndexedDiagnostics(buildRefreshStats({ sourceChanged: false, fetchedItems: 0 }), rawFetched);
         attemptStats.failed = true;
-        attemptStats.failure = 'Blocked source and public-index fallback produced 0 usable hints.';
+        attemptStats.failure = rawFetched?.indexedJinaConfigured
+          ? 'Blocked source and configured public-index fallback produced 0 usable hints.'
+          : 'Blocked source and public-index fallback produced 0 usable hints. JINA_API_KEY is not configured; Bing/DDG are best-effort only.';
         attemptStats.sourceBlocked = true;
         attemptStats.sourceBlockReason = rawFetched.blockReason || null;
         attemptStats.filmbazeRequests = Number(rawFetched.requestState?.requests || 0);

@@ -46,3 +46,10 @@ Po nasadení musí `/health` uvádzať verziu `3.5.0`.
 - Reader parser prijíma iba explicitné `Poster for ...` položky, aby nevkladal WEDOS/HTML text ako filmy.
 - Pri reader fallback sa existujúce tituly párujú aj podľa normalizovaného názvu + roku, aby nevznikali duplicity.
 - Workflow po refreshe kontroluje vek cache. Ak sa zdroj nepodarí aktualizovať a cache je staršia ako 48 hodín, run skončí chybou namiesto falošného zeleného úspechu.
+
+
+## GitHub secret for blocked Filmbáze refresh (v3.6.2)
+
+If Filmbáze returns HTTP 401/WEDOS protection, configure repository secret `JINA_API_KEY`.
+The workflow passes it only as an environment secret and never prints the key value.
+With the key present, authenticated Jina Search is tried before Bing/DDG and is used only to discover the newest Filmbáze window; the historical cache is never replaced by search results.

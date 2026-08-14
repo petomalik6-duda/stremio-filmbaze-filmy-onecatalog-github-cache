@@ -22,3 +22,19 @@ Unverified candidates are discarded for that run.
 ## v3.6.1 public-index fix
 
 When Filmbáze/WEDOS blocks the origin, the refresh now tries multiple Bing RSS queries and a DuckDuckGo HTML fallback. It accepts snippets only from the dedicated Filmbáze channel page or from the Filmbáze homepage when the snippet explicitly identifies the matching section. Indexed candidates never replace the historical cache and are promoted only after strict TMDB + IMDb verification. Current-attempt diagnostics are persisted even when the old cache is preserved.
+
+
+## v3.6.2: authenticated Jina Search fallback
+
+When Filmbáze/WEDOS returns HTTP 401, the reliable public-index fallback is `s.jina.ai`.
+Create a Jina API key and add it to GitHub repository secrets as `JINA_API_KEY`.
+The daily workflow uses one Jina search query for movies and one for series, then strictly verifies any new candidate through TMDB/IMDb before adding it.
+Bing RSS and DuckDuckGo remain best-effort only.
+
+Expected workflow diagnostics:
+
+```text
+JINA_API_KEY configured: true (Jina Search will be preferred)
+[filmbaze] indexed fallback attempted providers: jina-search, ...
+[filmbaze] Jina Search configured: true
+```

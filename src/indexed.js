@@ -4,6 +4,7 @@ const USE_INDEXED_FALLBACK = String(process.env.USE_INDEXED_FALLBACK || 'true').
 const INDEXED_FALLBACK_MAX_ITEMS = Math.max(1, Number(process.env.INDEXED_FALLBACK_MAX_ITEMS || 30));
 const INDEXED_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.INDEXED_SEARCH_MAX_QUERIES || 4));
 const JINA_API_KEY = String(process.env.JINA_API_KEY || '').trim();
+const JINA_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.JINA_SEARCH_MAX_QUERIES || 1));
 const INDEXED_TIMEOUT_MS = Math.max(3000, Number(process.env.INDEXED_TIMEOUT_MS || 12000));
 
 function decodeXml(value) {
@@ -154,6 +155,25 @@ function parseLeadingHints(text, type, sourceUrl, evidence) {
   return hints;
 }
 
+function parseBeforePosterHints(text, type, sourceUrl, evidence) {
+  const raw = clean(text);
+  const hints = [];
+  // Search snippets often expose the first visible title as
+  // "Zvukař · Poster for Dalloway" rather than "Poster for Zvukař".
+  // Treat only the short phrase immediately before "Poster for" as a title.
+  const regex = /(?:^|[.!?…]\s+|\s{2,})([^|·]{2,120}?)\s*[·|]\s*Poster for\s+/gi;
+  let match;
+  while ((match = regex.exec(raw))) {
+    let name = clean(match[1]);
+    name = name.replace(/^(?:Read more|Filmov[eé] novinky|Již brzy[^.!?]{0,80})\s*/i, '').trim();
+    const year = getYear(name);
+    name = normalizeTitle(name);
+    const hint = makeHint({ type, name, year, sourceUrl, evidence });
+    if (hint) hints.push(hint);
+  }
+  return hints;
+}
+
 function canonicalUrl(value) {
   try {
     const u = new URL(value);
@@ -187,6 +207,7 @@ function parseTrustedSnippet({ title, link, description, type, sourceUrl, eviden
   if (!trustedIndexPage(link, sourceUrl, type, combined)) return [];
   return dedupeHints([
     ...parseLeadingHints(combined, type, sourceUrl, evidence),
+    ...parseBeforePosterHints(combined, type, sourceUrl, evidence),
     ...parsePosterHints(combined, type, sourceUrl, evidence)
   ]);
 }
@@ -237,13 +258,42 @@ export function parseDuckDuckGoHtml(html, type, sourceUrl) {
 export function parseJinaSearch(text, type, sourceUrl) {
   const raw = String(text || '');
   const hints = [];
-  const escaped = sourceUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const matches = [...raw.matchAll(new RegExp(escaped, 'gi'))];
+  const contexts = [];
 
-  for (const match of matches) {
-    const context = raw.slice(Math.max(0, match.index - 700), match.index + sourceUrl.length + 2200);
-    hints.push(...parseLeadingHints(context, type, sourceUrl, 'jina-search-source-snippet'));
-    hints.push(...parsePosterHints(context, type, sourceUrl, 'jina-search-source-snippet'));
+  // s.jina.ai returns the top results with URLs and their extracted content.
+  // Capture contexts around either the full channel URL or just its path because
+  // markdown renderers may normalize the scheme/host representation.
+  let channelPath = '';
+  try { channelPath = new URL(sourceUrl).pathname.replace(/\/+$/, ''); } catch {}
+  const needles = [sourceUrl, channelPath].filter(Boolean);
+
+  for (const needle of needles) {
+    let from = 0;
+    while (true) {
+      const index = raw.toLowerCase().indexOf(String(needle).toLowerCase(), from);
+      if (index < 0) break;
+      contexts.push(raw.slice(Math.max(0, index - 900), Math.min(raw.length, index + String(needle).length + 6500)));
+      from = index + String(needle).length;
+      if (contexts.length >= 8) break;
+    }
+    if (contexts.length >= 8) break;
+  }
+
+  // Some search responses omit the literal URL but include the channel heading.
+  if (!contexts.length) {
+    const marker = type === 'series'
+      ? /Obl[ií]ben[eé] seri[aá]ly v č[eé]štin[eě]|Obl[ií]ben[eé] seri[aá]ly/i
+      : /Novinky s česk[ýy]m dabingem|Nov[eé] filmy na internetu s česk[ýy]m dabingem/i;
+    const match = raw.match(marker);
+    if (match && typeof match.index === 'number') {
+      contexts.push(raw.slice(Math.max(0, match.index - 700), Math.min(raw.length, match.index + 7000)));
+    }
+  }
+
+  for (const context of contexts) {
+    hints.push(...parseLeadingHints(context, type, sourceUrl, 'jina-search-source-content'));
+    hints.push(...parseBeforePosterHints(context, type, sourceUrl, 'jina-search-source-content'));
+    hints.push(...parsePosterHints(context, type, sourceUrl, 'jina-search-source-content'));
   }
 
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
@@ -337,7 +387,7 @@ async function fetchJinaHints(type, sourceUrl, queries) {
   const errors = [];
   let successfulQueries = 0;
 
-  for (const query of queries.slice(0, 2)) {
+  for (const query of queries.slice(0, JINA_SEARCH_MAX_QUERIES)) {
     try {
       const url = `https://s.jina.ai/?q=${encodeURIComponent(query)}`;
       const text = await fetchText(url, {
@@ -356,7 +406,7 @@ async function fetchJinaHints(type, sourceUrl, queries) {
 
 export async function fetchIndexedCatalogHints(type, sourceUrl) {
   if (!USE_INDEXED_FALLBACK) {
-    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [] };
+    return { items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [], jinaConfigured: Boolean(JINA_API_KEY) };
   }
 
   const queries = indexedQueries(type, sourceUrl);
@@ -365,15 +415,29 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
   const errors = [];
   const items = [];
 
-  const bing = await fetchBingHints(type, sourceUrl, queries);
-  attemptedProviders.push('bing-rss');
-  errors.push(...bing.errors.map(error => `bing-rss: ${error}`));
-  if (bing.items.length) {
-    providers.push('bing-rss');
-    items.push(...bing.items);
+  // API-backed search is preferred when configured. Unlike scraping a public
+  // search HTML page, s.jina.ai has a documented authenticated API contract.
+  if (JINA_API_KEY) {
+    const jina = await fetchJinaHints(type, sourceUrl, queries);
+    attemptedProviders.push('jina-search');
+    errors.push(...jina.errors.map(error => `jina-search: ${error}`));
+    if (jina.items.length) {
+      providers.push('jina-search');
+      items.push(...jina.items);
+    }
   }
 
-  // If Bing snippets are sparse/stale, use an independent HTML search index.
+  // Keep no-key providers as best-effort secondary discovery only.
+  if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
+    const bing = await fetchBingHints(type, sourceUrl, queries);
+    attemptedProviders.push('bing-rss');
+    errors.push(...bing.errors.map(error => `bing-rss: ${error}`));
+    if (bing.items.length) {
+      providers.push('bing-rss');
+      items.push(...bing.items);
+    }
+  }
+
   if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
     const ddg = await fetchDuckDuckGoHints(type, sourceUrl, queries);
     attemptedProviders.push('duckduckgo-html');
@@ -384,16 +448,6 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
     }
   }
 
-  if (JINA_API_KEY && dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
-    const jina = await fetchJinaHints(type, sourceUrl, queries);
-    attemptedProviders.push('jina-search');
-    errors.push(...jina.errors.map(error => `jina-search: ${error}`));
-    if (jina.items.length) {
-      providers.push('jina-search');
-      items.push(...jina.items);
-    }
-  }
-
   const finalItems = dedupeHints(items).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
   return {
     items: finalItems,
@@ -401,6 +455,7 @@ export async function fetchIndexedCatalogHints(type, sourceUrl) {
     providers: [...new Set(providers)],
     attemptedProviders: [...new Set(attemptedProviders)],
     errors,
-    queries
+    queries,
+    jinaConfigured: Boolean(JINA_API_KEY)
   };
 }
