@@ -114785,7 +114785,7 @@
   ],
   "lastError": "Blocked source and SerpAPI Google fallback produced 0 usable catalog hints.",
   "refreshStats": {
-    "at": "2026-09-06T08:14:54.076Z",
+    "at": "2026-09-06T08:20:36.119Z",
     "sourceChanged": false,
     "fetchedItems": 0,
     "newItems": 0,
@@ -114809,13 +114809,17 @@
       "\"https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu\"",
       "site:filmbaze.cz \"Novinky s českým dabingem\"",
       "site:filmbaze.cz \"Nové filmy\" \"českým dabingem\" 2026",
+      "\"Novinky s českým dabingem\" \"Poster for\"",
       "site:filmbaze.cz/oblibene-serialy-v-cestine",
       "\"https://filmbaze.cz/oblibene-serialy-v-cestine\"",
       "site:filmbaze.cz \"Oblíbené seriály v češtině\"",
-      "site:filmbaze.cz \"Oblíbené seriály\" 2026"
+      "site:filmbaze.cz \"Oblíbené seriály\" 2026",
+      "\"Oblíbené seriály v češtině\" \"Poster for\""
     ],
     "indexedErrors": [
       "serpapi-google: \"https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu\": HTTP 429 from https://serpapi.com/search.json?engine=google&q=%22https%3A%2F%2Ffilmbaze.cz%2Fnovinky-s-ceskym-dabingem-na-netu%22&api_key=REDACTED&hl=cs&gl=cz&google_domain=google.cz&num=20&safe=active",
+      "jina-search: \"https://filmbaze.cz/oblibene-serialy-v-cestine\": HTTP 422 from https://s.jina.ai/?q=%22https%3A%2F%2Ffilmbaze.cz%2Foblibene-serialy-v-cestine%22&site=filmbaze.cz",
+      "jina-search: \"Oblíbené seriály v češtině\" \"Poster for\": HTTP 422 from https://s.jina.ai/?q=%22Obl%C3%ADben%C3%A9+seri%C3%A1ly+v+%C4%8De%C5%A1tin%C4%9B%22+%22Poster+for%22&site=filmbaze.cz",
       "serpapi-google: \"https://filmbaze.cz/oblibene-serialy-v-cestine\": HTTP 429 from https://serpapi.com/search.json?engine=google&q=%22https%3A%2F%2Ffilmbaze.cz%2Foblibene-serialy-v-cestine%22&api_key=REDACTED&hl=cs&gl=cz&google_domain=google.cz&num=20&safe=active"
     ],
     "indexedSerpApiConfigured": true,
