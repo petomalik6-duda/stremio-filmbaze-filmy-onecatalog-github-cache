@@ -1,0 +1,78 @@
+name: Diagnose Jina SERP once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/_diagnose-jina-serp.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.event.head_commit.message == 'Diagnose Jina SERP once'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Jina Search Foundation safely
+        env:
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+        shell: bash
+        run: |
+          node <<'NODE'
+          const queries = [
+            {type:'movie', q:'site:filmbaze.cz "Novinky s českým dabingem"'},
+            {type:'series', q:'site:filmbaze.cz "Oblíbené seriály v češtině"'}
+          ];
+
+          function collect(value, out = [], depth = 0) {
+            if (!value || depth > 6) return out;
+            if (Array.isArray(value)) {
+              for (const child of value) collect(child, out, depth + 1);
+              return out;
+            }
+            if (typeof value !== 'object') return out;
+            const url = value.url || value.link || value.href || value.source_url || value.sourceUrl || '';
+            const title = value.title || value.name || '';
+            const snippet = value.snippet || value.description || value.text || value.content || '';
+            if (url || title || snippet) {
+              out.push({
+                url: String(url || '').slice(0, 240),
+                title: String(title || '').replace(/\s+/g,' ').slice(0, 140),
+                snippet: String(snippet || '').replace(/\s+/g,' ').slice(0, 260)
+              });
+            }
+            for (const [k, child] of Object.entries(value)) {
+              if (['usage','tokens'].includes(k)) continue;
+              if (child && typeof child === 'object') collect(child, out, depth + 1);
+            }
+            return out;
+          }
+
+          for (const item of queries) {
+            const res = await fetch('https://llm-serp.jina.ai', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(process.env.JINA_API_KEY ? {Authorization: `Bearer ${process.env.JINA_API_KEY}`} : {})
+              },
+              body: JSON.stringify({q:item.q, gl:'cz', hl:'cs', num:10})
+            });
+            const text = await res.text();
+            console.log(`JINA_SERP ${item.type}: status=${res.status} bytes=${Buffer.byteLength(text)} content-type=${res.headers.get('content-type') || ''}`);
+            let payload = null;
+            try { payload = JSON.parse(text); } catch {}
+            if (!payload) {
+              console.log(`JINA_SERP ${item.type}: non-json sample=${text.replace(/\s+/g,' ').slice(0,500)}`);
+              continue;
+            }
+            console.log(`JINA_SERP ${item.type}: topKeys=${Object.keys(payload).slice(0,30).join(',')}`);
+            const entries = collect(payload)
+              .filter(x => /filmbaze\.cz/i.test(`${x.url} ${x.snippet}`))
+              .slice(0,12);
+            console.log(`JINA_SERP ${item.type}: filmbazeEntries=${entries.length}`);
+            for (const [i, entry] of entries.entries()) {
+              console.log(`  ${i+1}. ${JSON.stringify(entry)}`);
+            }
+          }
+          NODE
