@@ -76,10 +76,14 @@ jobs:
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
         shell: bash
         run: |
           if [ -n "$TMDB_API_KEY" ]; then echo "TMDB_API_KEY configured: true"; else echo "TMDB_API_KEY configured: false"; fi
-          if [ -n "$SERPAPI_KEY" ]; then echo "SERPAPI_KEY configured: true (Google organic snippets preferred)"; else echo "SERPAPI_KEY configured: false"; fi
+          if [ -n "$JINA_API_KEY" ]; then echo "JINA_API_KEY configured: true"; else echo "JINA_API_KEY configured: false"; fi
+          if [ -n "$BRAVE_SEARCH_API_KEY" ]; then echo "BRAVE_SEARCH_API_KEY configured: true"; else echo "BRAVE_SEARCH_API_KEY configured: false"; fi
+          if [ -n "$SERPAPI_KEY" ]; then echo "SERPAPI_KEY configured: true (used only after other fallbacks)"; else echo "SERPAPI_KEY configured: false"; fi
 
       - name: Backup last valid cache
         run: |
@@ -109,8 +113,14 @@ jobs:
           INDEXED_FALLBACK_MAX_ITEMS: "40"
           INDEXED_SEARCH_MAX_QUERIES: "4"
           INDEXED_TIMEOUT_MS: "12000"
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          JINA_SEARCH_MAX_QUERIES: "2"
+          JINA_TIMEOUT_MS: "30000"
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+          BRAVE_SEARCH_MAX_QUERIES: "2"
+          BRAVE_TIMEOUT_MS: "15000"
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-          SERPAPI_SEARCH_MAX_QUERIES: "2"
+          SERPAPI_SEARCH_MAX_QUERIES: "1"
           SERPAPI_TIMEOUT_MS: "20000"
           MIN_SAFE_SOURCE_ITEMS: "500"
           MIN_SAFE_SOURCE_RATIO: "0.70"
@@ -133,7 +143,7 @@ jobs:
           CACHE_FILE: "data/catalog-cache.json"
         run: npm run report-latest
 
-      - name: Verify cache was refreshed recently
+      - name: Verify cache freshness or safe preservation
         env:
           CACHE_FILE: "data/catalog-cache.json"
           MAX_CACHE_AGE_HOURS: "48"
@@ -145,11 +155,22 @@ jobs:
           const cache = JSON.parse(fs.readFileSync(file, 'utf8'));
           const at = Number(cache.at || 0);
           const ageHours = at ? (Date.now() - at) / 3600000 : Infinity;
+          const stats = cache.refreshStats || {};
           console.log('Cache generated at:', at ? new Date(at).toISOString() : 'missing');
           console.log('Cache age hours:', Number.isFinite(ageHours) ? ageHours.toFixed(2) : 'infinite');
-          console.log('Refresh stats:', JSON.stringify(cache.refreshStats || null));
-          if (!at || ageHours > maxHours) {
-            console.error(`Cache is older than ${maxHours} hours. Filmbáze/API and SerpAPI/public-index fallback did not produce a verified fresh cache.`);
+          console.log('Refresh stats:', JSON.stringify(stats));
+
+          if (!at) {
+            console.error('Cache has no generation timestamp.');
+            process.exit(1);
+          }
+
+          if (ageHours > maxHours) {
+            if (stats.sourceBlocked === true && Array.isArray(cache.metas) && cache.metas.length >= 500) {
+              console.warn(`Cache is older than ${maxHours} hours, but Filmbáze/WEDOS explicitly blocked this run. Preserving ${cache.metas.length} validated metas and allowing the scheduled workflow to finish.`);
+              process.exit(0);
+            }
+            console.error(`Cache is older than ${maxHours} hours and the run was not a verified WEDOS-preservation case.`);
             process.exit(1);
           }
           NODE
@@ -176,6 +197,6 @@ jobs:
             echo "No cache changes (source may have been unchanged or WEDOS-blocked)."
             exit 0
           fi
-          git commit -m "Refresh Filmbaze cache v3.6.6 SerpAPI fallback"
+          git commit -m "Refresh Filmbaze cache resilient fallback"
           git pull --rebase --autostash
           git push
