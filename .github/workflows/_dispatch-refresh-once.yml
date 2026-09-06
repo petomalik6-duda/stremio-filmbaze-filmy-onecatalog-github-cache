@@ -1,0 +1,26 @@
+name: Dispatch Filmbaze refresh once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/_dispatch-refresh-once.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    if: github.event.head_commit.message == 'Trigger Filmbaze refresh once'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch main refresh workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run refresh-cache.yml \
+            --repo "${{ github.repository }}" \
+            --ref main \
+            -f force_full=false \
+            -f deep_source_scan=false
