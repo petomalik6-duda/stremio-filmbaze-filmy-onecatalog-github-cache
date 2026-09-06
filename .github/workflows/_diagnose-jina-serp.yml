@@ -1,4 +1,4 @@
-name: Diagnose broader Jina search once
+name: Diagnose plain Jina SERP once
 
 on:
   push:
@@ -11,65 +11,42 @@ permissions:
 
 jobs:
   diagnose:
-    if: github.event.head_commit.message == 'Diagnose broader Jina search once'
+    if: github.event.head_commit.message == 'Diagnose plain Jina SERP once'
     runs-on: ubuntu-latest
     steps:
-      - name: Probe broader Jina searches safely
+      - name: Probe plain Jina Search Foundation
         env:
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
         shell: bash
         run: |
           node <<'NODE'
-          const probes = [
-            {kind:'llm-serp', type:'movie', q:'Filmbaze Novinky s českým dabingem'},
-            {kind:'llm-serp', type:'series', q:'Filmbaze Oblíbené seriály v češtině'},
-            {kind:'s-jina', type:'movie', q:'Filmbaze Novinky s českým dabingem'},
-            {kind:'s-jina', type:'series', q:'Filmbaze Oblíbené seriály v češtině'}
-          ];
-
-          function compact(value) {
-            if (value == null) return value;
-            if (typeof value === 'string') return value.replace(/\s+/g,' ').slice(0,420);
-            if (Array.isArray(value)) return value.slice(0,8).map(compact);
-            if (typeof value === 'object') {
-              const out = {};
-              for (const [k,v] of Object.entries(value)) {
-                if (['usage','tokens'].includes(k)) continue;
-                if (['url','link','href','title','name','snippet','description','content','text','results','data'].includes(k)) out[k] = compact(v);
-              }
-              return out;
-            }
-            return value;
-          }
-
-          for (const p of probes) {
-            let res;
-            if (p.kind === 'llm-serp') {
-              res = await fetch('https://llm-serp.jina.ai', {
-                method:'POST',
-                headers:{
-                  'Content-Type':'application/json',
-                  ...(process.env.JINA_API_KEY ? {Authorization:`Bearer ${process.env.JINA_API_KEY}`} : {})
-                },
-                body: JSON.stringify({q:p.q, gl:'cz', hl:'cs', num:10})
-              });
-            } else {
-              res = await fetch(`https://s.jina.ai/?q=${encodeURIComponent(p.q)}`, {
-                headers:{
-                  Accept:'application/json',
-                  ...(process.env.JINA_API_KEY ? {Authorization:`Bearer ${process.env.JINA_API_KEY}`} : {})
-                }
-              });
-            }
+          const queries = ['filmbaze', 'filmbaze.cz', 'Filmbaze český dabing'];
+          for (const q of queries) {
+            const res = await fetch('https://llm-serp.jina.ai', {
+              method:'POST',
+              headers:{
+                'Content-Type':'application/json',
+                ...(process.env.JINA_API_KEY ? {Authorization:`Bearer ${process.env.JINA_API_KEY}`} : {})
+              },
+              body: JSON.stringify({q})
+            });
             const text = await res.text();
-            console.log(`PROBE ${p.kind}/${p.type}: status=${res.status} bytes=${Buffer.byteLength(text)}`);
+            console.log(`QUERY ${JSON.stringify(q)} status=${res.status} bytes=${Buffer.byteLength(text)}`);
             let payload = null;
             try { payload = JSON.parse(text); } catch {}
             if (!payload) {
-              console.log(`SAMPLE ${p.kind}/${p.type}: ${text.replace(/\s+/g,' ').slice(0,1200)}`);
+              console.log(text.replace(/\s+/g,' ').slice(0,1000));
               continue;
             }
-            console.log(`KEYS ${p.kind}/${p.type}: ${Object.keys(payload).join(',')}`);
-            console.log(`SAMPLE ${p.kind}/${p.type}: ${JSON.stringify(compact(payload)).slice(0,5000)}`);
+            const results = Array.isArray(payload.results) ? payload.results : [];
+            console.log(`results=${results.length}`);
+            for (const [i,r] of results.slice(0,10).entries()) {
+              const safe = {
+                title:String(r?.title || r?.name || '').replace(/\s+/g,' ').slice(0,160),
+                url:String(r?.url || r?.link || '').slice(0,260),
+                snippet:String(r?.snippet || r?.description || r?.text || '').replace(/\s+/g,' ').slice(0,500)
+              };
+              console.log(`${i+1}. ${JSON.stringify(safe)}`);
+            }
           }
           NODE
