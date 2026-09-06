@@ -13,6 +13,9 @@ on:
         default: "false"
   schedule:
     - cron: "20 3 * * *"
+  push:
+    paths:
+      - "data/filmbaze-source-snapshot.json"
 
 concurrency:
   group: refresh-filmbaze-cache
@@ -84,6 +87,7 @@ jobs:
           if [ -n "$JINA_API_KEY" ]; then echo "JINA_API_KEY configured: true"; else echo "JINA_API_KEY configured: false"; fi
           if [ -n "$BRAVE_SEARCH_API_KEY" ]; then echo "BRAVE_SEARCH_API_KEY configured: true"; else echo "BRAVE_SEARCH_API_KEY configured: false"; fi
           if [ -n "$SERPAPI_KEY" ]; then echo "SERPAPI_KEY configured: true (used only after other fallbacks)"; else echo "SERPAPI_KEY configured: false"; fi
+          if [ -f data/filmbaze-source-snapshot.json ]; then echo "Fresh-source snapshot file present: true"; else echo "Fresh-source snapshot file present: false"; fi
 
       - name: Backup last valid cache
         run: |
@@ -110,6 +114,9 @@ jobs:
           FILMBAZE_DETAIL_LIMIT: "0"
           USE_READER_FALLBACK: "false"
           USE_INDEXED_FALLBACK: "true"
+          USE_SOURCE_SNAPSHOT: "true"
+          FILMBAZE_SOURCE_SNAPSHOT_FILE: "data/filmbaze-source-snapshot.json"
+          FILMBAZE_SOURCE_SNAPSHOT_MAX_AGE_HOURS: "36"
           INDEXED_FALLBACK_MAX_ITEMS: "40"
           INDEXED_SEARCH_MAX_QUERIES: "4"
           INDEXED_TIMEOUT_MS: "12000"
