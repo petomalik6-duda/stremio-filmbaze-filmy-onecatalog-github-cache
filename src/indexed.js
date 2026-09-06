@@ -3,16 +3,23 @@ import crypto from 'crypto';
 const USE_INDEXED_FALLBACK = String(process.env.USE_INDEXED_FALLBACK || 'true').toLowerCase() !== 'false';
 const INDEXED_FALLBACK_MAX_ITEMS = Math.max(1, Number(process.env.INDEXED_FALLBACK_MAX_ITEMS || 30));
 const INDEXED_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.INDEXED_SEARCH_MAX_QUERIES || 4));
+const INDEXED_TIMEOUT_MS = Math.max(3000, Number(process.env.INDEXED_TIMEOUT_MS || 12000));
+
 const JINA_API_KEY = String(process.env.JINA_API_KEY || '').trim();
 const JINA_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.JINA_SEARCH_MAX_QUERIES || 2));
+const JINA_TIMEOUT_MS = Math.max(5000, Number(process.env.JINA_TIMEOUT_MS || 30000));
+
 const BRAVE_SEARCH_API_KEY = String(process.env.BRAVE_SEARCH_API_KEY || '').trim();
 const BRAVE_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.BRAVE_SEARCH_MAX_QUERIES || 2));
-const INDEXED_TIMEOUT_MS = Math.max(3000, Number(process.env.INDEXED_TIMEOUT_MS || 12000));
-const JINA_TIMEOUT_MS = Math.max(5000, Number(process.env.JINA_TIMEOUT_MS || 30000));
 const BRAVE_TIMEOUT_MS = Math.max(5000, Number(process.env.BRAVE_TIMEOUT_MS || 15000));
+
 const SERPAPI_KEY = String(process.env.SERPAPI_KEY || '').trim();
-const SERPAPI_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.SERPAPI_SEARCH_MAX_QUERIES || 2));
+const SERPAPI_SEARCH_MAX_QUERIES = Math.max(1, Number(process.env.SERPAPI_SEARCH_MAX_QUERIES || 1));
 const SERPAPI_TIMEOUT_MS = Math.max(5000, Number(process.env.SERPAPI_TIMEOUT_MS || 20000));
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function decodeXml(value) {
   return String(value || '')
@@ -37,6 +44,18 @@ function xmlTag(block, tag) {
   return match ? clean(stripTags(match[1])) : '';
 }
 
+function safeUrlForLog(url) {
+  try {
+    const u = new URL(url);
+    for (const key of ['api_key', 'key', 'token']) {
+      if (u.searchParams.has(key)) u.searchParams.set(key, 'REDACTED');
+    }
+    return u.toString();
+  } catch {
+    return String(url);
+  }
+}
+
 async function fetchText(url, headers = {}, timeoutMs = INDEXED_TIMEOUT_MS) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -46,24 +65,24 @@ async function fetchText(url, headers = {}, timeoutMs = INDEXED_TIMEOUT_MS) {
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.6)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FilmbazeCatalogRefresh/3.6.7)',
         'Accept-Language': 'cs-CZ,cs;q=0.9,en;q=0.7',
         ...headers
       }
     });
     if (!response.ok) {
-      let safeUrl = String(url);
-      try {
-        const u = new URL(url);
-        for (const key of ['api_key', 'key', 'token']) if (u.searchParams.has(key)) u.searchParams.set(key, 'REDACTED');
-        safeUrl = u.toString();
-      } catch {}
-      throw new Error(`HTTP ${response.status} from ${safeUrl}`);
+      const error = new Error(`HTTP ${response.status} from ${safeUrlForLog(url)}`);
+      error.status = response.status;
+      throw error;
     }
     return await response.text();
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function isRateLimited(error) {
+  return Number(error?.status || 0) === 429 || /\bHTTP 429\b/i.test(String(error?.message || error));
 }
 
 function normalizeTitle(value) {
@@ -173,9 +192,6 @@ function parseLeadingHints(text, type, sourceUrl, evidence) {
 function parseBeforePosterHints(text, type, sourceUrl, evidence) {
   const raw = clean(text);
   const hints = [];
-  // Search snippets often expose the first visible title as
-  // "Zvukař · Poster for Dalloway" rather than "Poster for Zvukař".
-  // Treat only the short phrase immediately before "Poster for" as a title.
   const regex = /(?:^|[.!?…]\s+|\s{2,})([^|·]{2,120}?)\s*[·|]\s*Poster for\s+/gi;
   let match;
   while ((match = regex.exec(raw))) {
@@ -207,8 +223,6 @@ function trustedIndexPage(link, sourceUrl, type, combinedText = '') {
   if (!a || !b || a.host !== b.host) return false;
   if (a.path === b.path) return true;
 
-  // Filmbáze home page exposes the same newest-movie / popular-series windows
-  // and is frequently indexed more recently than the dedicated channel page.
   if (a.path === '/') {
     if (type === 'series') return /obl[ií]ben[eé]\s+seri[aá]ly|seri[aá]ly\s+v\s+č[eé]štin[eě]/i.test(combinedText);
     return /novinky\s+s\s+česk[ýy]m\s+dabingem|nov[eé]\s+filmy|česk[ýy]m\s+a\s+slovensk[ýy]m\s+dabingem/i.test(combinedText);
@@ -230,14 +244,12 @@ function parseTrustedSnippet({ title, link, description, type, sourceUrl, eviden
 export function parseBingRss(xml, type, sourceUrl) {
   const hints = [];
   const itemBlocks = String(xml || '').match(/<item\b[^>]*>[\s\S]*?<\/item>/gi) || [];
-
   for (const block of itemBlocks) {
     const title = xmlTag(block, 'title');
     const link = xmlTag(block, 'link');
     const description = xmlTag(block, 'description');
     hints.push(...parseTrustedSnippet({ title, link, description, type, sourceUrl, evidence: 'bing-rss-snippet' }));
   }
-
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
 
@@ -259,22 +271,19 @@ export function parseDuckDuckGoHtml(html, type, sourceUrl) {
   const raw = String(html || '');
   const regex = /<a\b[^>]*class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>[\s\S]*?<[^>]*class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\//gi;
   let match;
-
   while ((match = regex.exec(raw))) {
     const link = decodeSearchRedirect(decodeXml(match[1]));
     const title = clean(stripTags(match[2]));
     const description = clean(stripTags(match[3]));
     hints.push(...parseTrustedSnippet({ title, link, description, type, sourceUrl, evidence: 'duckduckgo-html-snippet' }));
   }
-
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
 
-function jinaResultEntries(payload) {
+function jinaEntries(payload) {
   const out = [];
   const seen = new Set();
   const stack = [payload];
-
   while (stack.length) {
     const value = stack.shift();
     if (!value) continue;
@@ -286,22 +295,13 @@ function jinaResultEntries(payload) {
 
     const url = value.url || value.link || value.sourceUrl || value.source_url || value?.source?.url || '';
     const title = value.title || value.name || '';
-    // Jina Search JSON can expose the SERP snippet in `description` while the
-    // fetched page body is in `content`.  Keep BOTH: in 3.6.3 we preferred
-    // content and silently discarded the useful description, which could turn
-    // valid search results into zero catalog hints.
     const description = value.description || value.snippet || value.summary || '';
     const content = value.content || value.markdown || value.text || '';
     if (url || title || description || content) {
       const key = `${url}|${title}|${String(description).slice(0, 80)}|${String(content).slice(0, 80)}`;
       if (!seen.has(key)) {
         seen.add(key);
-        out.push({
-          url: String(url || ''),
-          title: String(title || ''),
-          description: String(description || ''),
-          content: String(content || '')
-        });
+        out.push({ url: String(url), title: String(title), description: String(description), content: String(content) });
       }
     }
 
@@ -310,27 +310,15 @@ function jinaResultEntries(payload) {
       if (child && typeof child === 'object') stack.push(child);
     }
   }
-
   return out;
 }
 
 export function parseJinaSearchJson(payload, type, sourceUrl) {
   const hints = [];
-  const entries = jinaResultEntries(payload);
-
-  for (const entry of entries) {
+  for (const entry of jinaEntries(payload)) {
     if (!entry.url) continue;
-
-    // Parse SERP description and fetched content independently.  Search engines
-    // often keep the fresh `Poster for ...` window only in description, while
-    // content starts with a generic channel introduction.
-    const textVariants = [
-      entry.description,
-      entry.content,
-      clean(`${entry.description || ''} ${entry.content || ''}`)
-    ].filter(Boolean);
-
-    for (const text of textVariants) {
+    const variants = [entry.description, entry.content, clean(`${entry.description} ${entry.content}`)].filter(Boolean);
+    for (const text of variants) {
       hints.push(...parseTrustedSnippet({
         title: entry.title,
         link: entry.url,
@@ -340,71 +328,42 @@ export function parseJinaSearchJson(payload, type, sourceUrl) {
         evidence: 'jina-search-json'
       }));
     }
-
-    const combined = clean(`${entry.title || ''} ${entry.description || ''} ${entry.content || ''}`);
-    // Some Jina JSON responses put the whole page in content while title is
-    // generic. For the exact channel/home page, parse every text field directly.
-    if (trustedIndexPage(entry.url, sourceUrl, type, combined)) {
-      for (const text of textVariants) {
-        hints.push(...parseLeadingHints(text, type, sourceUrl, 'jina-search-json-content'));
-        hints.push(...parseBeforePosterHints(text, type, sourceUrl, 'jina-search-json-content'));
-        hints.push(...parsePosterHints(text, type, sourceUrl, 'jina-search-json-content'));
-      }
-    }
   }
-
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
-
 
 export function parseSerpApiSearchJson(payload, type, sourceUrl) {
   const hints = [];
   const results = Array.isArray(payload?.organic_results) ? payload.organic_results : [];
-
   for (const result of results) {
     const url = String(result?.link || result?.redirect_link || '');
     if (!url) continue;
     const title = clean(stripTags(result?.title || ''));
-    const snippets = [result?.snippet, result?.description]
-      .map(value => clean(stripTags(value || ''))).filter(Boolean);
-
+    const snippets = [result?.snippet, result?.description].map(value => clean(stripTags(value || ''))).filter(Boolean);
     for (const snippet of snippets) {
       hints.push(...parseTrustedSnippet({
-        title, link: url, description: snippet, type, sourceUrl,
+        title,
+        link: url,
+        description: snippet,
+        type,
+        sourceUrl,
         evidence: 'serpapi-google-snippet'
       }));
     }
-
-    const combined = clean(`${title} ${snippets.join(' ')}`);
-    if (trustedIndexPage(url, sourceUrl, type, combined)) {
-      for (const snippet of snippets) {
-        hints.push(...parseLeadingHints(snippet, type, sourceUrl, 'serpapi-google-snippet'));
-        hints.push(...parseBeforePosterHints(snippet, type, sourceUrl, 'serpapi-google-snippet'));
-        hints.push(...parsePosterHints(snippet, type, sourceUrl, 'serpapi-google-snippet'));
-      }
-    }
   }
-
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
 
 export function parseBraveSearchJson(payload, type, sourceUrl) {
   const hints = [];
   const results = Array.isArray(payload?.web?.results) ? payload.web.results : [];
-
   for (const result of results) {
     const url = String(result?.url || '');
     if (!url) continue;
     const title = clean(stripTags(result?.title || ''));
-    const snippets = [
-      result?.description,
-      ...(Array.isArray(result?.extra_snippets) ? result.extra_snippets : [])
-    ].map(value => clean(stripTags(value || ''))).filter(Boolean);
-
-    // Brave returns search-index snippets directly. It does not need the addon
-    // to open the Filmbaze result URL, so WEDOS on the origin cannot replace
-    // these snippets with a security page. Only trust the exact channel/home
-    // page to avoid promoting unrelated Filmbaze title pages.
+    const snippets = [result?.description, ...(Array.isArray(result?.extra_snippets) ? result.extra_snippets : [])]
+      .map(value => clean(stripTags(value || '')))
+      .filter(Boolean);
     for (const snippet of snippets) {
       hints.push(...parseTrustedSnippet({
         title,
@@ -415,61 +374,7 @@ export function parseBraveSearchJson(payload, type, sourceUrl) {
         evidence: 'brave-search-snippet'
       }));
     }
-
-    const combined = clean(`${title} ${snippets.join(' ')}`);
-    if (trustedIndexPage(url, sourceUrl, type, combined)) {
-      for (const snippet of snippets) {
-        hints.push(...parseLeadingHints(snippet, type, sourceUrl, 'brave-search-snippet'));
-        hints.push(...parseBeforePosterHints(snippet, type, sourceUrl, 'brave-search-snippet'));
-        hints.push(...parsePosterHints(snippet, type, sourceUrl, 'brave-search-snippet'));
-      }
-    }
   }
-
-  return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
-}
-
-export function parseJinaSearch(text, type, sourceUrl) {
-  const raw = String(text || '');
-  const hints = [];
-  const contexts = [];
-
-  // s.jina.ai returns the top results with URLs and their extracted content.
-  // Capture contexts around either the full channel URL or just its path because
-  // markdown renderers may normalize the scheme/host representation.
-  let channelPath = '';
-  try { channelPath = new URL(sourceUrl).pathname.replace(/\/+$/, ''); } catch {}
-  const needles = [sourceUrl, channelPath].filter(Boolean);
-
-  for (const needle of needles) {
-    let from = 0;
-    while (true) {
-      const index = raw.toLowerCase().indexOf(String(needle).toLowerCase(), from);
-      if (index < 0) break;
-      contexts.push(raw.slice(Math.max(0, index - 900), Math.min(raw.length, index + String(needle).length + 6500)));
-      from = index + String(needle).length;
-      if (contexts.length >= 8) break;
-    }
-    if (contexts.length >= 8) break;
-  }
-
-  // Some search responses omit the literal URL but include the channel heading.
-  if (!contexts.length) {
-    const marker = type === 'series'
-      ? /Obl[ií]ben[eé] seri[aá]ly v č[eé]štin[eě]|Obl[ií]ben[eé] seri[aá]ly/i
-      : /Novinky s česk[ýy]m dabingem|Nov[eé] filmy na internetu s česk[ýy]m dabingem/i;
-    const match = raw.match(marker);
-    if (match && typeof match.index === 'number') {
-      contexts.push(raw.slice(Math.max(0, match.index - 700), Math.min(raw.length, match.index + 7000)));
-    }
-  }
-
-  for (const context of contexts) {
-    hints.push(...parseLeadingHints(context, type, sourceUrl, 'jina-search-source-content'));
-    hints.push(...parseBeforePosterHints(context, type, sourceUrl, 'jina-search-source-content'));
-    hints.push(...parsePosterHints(context, type, sourceUrl, 'jina-search-source-content'));
-  }
-
   return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
 }
 
@@ -477,7 +382,6 @@ function dedupeHints(items) {
   const seenIds = new Set();
   const seenTitleYears = new Set();
   const out = [];
-
   for (const item of items || []) {
     if (!item) continue;
     const idKey = `${item.type}:${item.id}`.toLowerCase();
@@ -487,7 +391,6 @@ function dedupeHints(items) {
     seenTitleYears.add(titleKey);
     out.push(item);
   }
-
   return out;
 }
 
@@ -499,10 +402,8 @@ export function indexedQueries(type, sourceUrl) {
     host = u.hostname.replace(/^www\./, '');
     path = u.pathname.replace(/\/+$/, '');
   } catch {}
-
   const year = new Date().getUTCFullYear();
   const base = [`site:${host}${path}`, `"${sourceUrl}"`];
-
   if (type === 'series') {
     base.push(`site:${host} "Oblíbené seriály v češtině"`);
     base.push(`site:${host} "Oblíbené seriály" ${year}`);
@@ -510,15 +411,12 @@ export function indexedQueries(type, sourceUrl) {
     base.push(`site:${host} "Novinky s českým dabingem"`);
     base.push(`site:${host} "Nové filmy" "českým dabingem" ${year}`);
   }
-
   return [...new Set(base)].slice(0, INDEXED_SEARCH_MAX_QUERIES);
 }
-
 
 export function serpApiQueries(type, sourceUrl) {
   let host = 'filmbaze.cz';
   try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
-
   if (type === 'series') {
     return [
       `"${sourceUrl}"`,
@@ -526,7 +424,6 @@ export function serpApiQueries(type, sourceUrl) {
       `site:${host} "Oblíbené seriály v češtině"`
     ];
   }
-
   return [
     `"${sourceUrl}"`,
     `site:${host} "Novinky s českým dabingem" "Poster for"`,
@@ -537,46 +434,25 @@ export function serpApiQueries(type, sourceUrl) {
 export function braveQueries(type, sourceUrl) {
   let host = 'filmbaze.cz';
   try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
-
   if (type === 'series') {
-    return [
-      `site:${host} "Oblíbené seriály v češtině"`,
-      `"${sourceUrl}"`,
-      `site:${host} "Oblíbené seriály" "Poster for"`
-    ];
+    return [`site:${host} "Oblíbené seriály v češtině"`, `"${sourceUrl}"`];
   }
-
-  return [
-    `site:${host} "Novinky s českým dabingem"`,
-    `"${sourceUrl}"`,
-    `site:${host} "Novinky s českým dabingem" "Poster for"`
-  ];
+  return [`site:${host} "Novinky s českým dabingem"`, `"${sourceUrl}"`];
 }
 
 export function jinaQueries(type, sourceUrl) {
   let host = 'filmbaze.cz';
   try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
-
   if (type === 'series') {
-    return [
-      `"${sourceUrl}"`,
-      `site:${host} "Oblíbené seriály v češtině"`,
-      `site:${host} "Oblíbené seriály"`
-    ];
+    return [`"${sourceUrl}"`, `site:${host} "Oblíbené seriály v češtině"`];
   }
-
-  return [
-    `"${sourceUrl}"`,
-    `site:${host} "Novinky s českým dabingem"`,
-    `site:${host} "Nové filmy na internetu s českým dabingem"`
-  ];
+  return [`"${sourceUrl}"`, `site:${host} "Novinky s českým dabingem"`];
 }
 
 async function fetchBingHints(type, sourceUrl, queries) {
   const items = [];
   const errors = [];
   let successfulQueries = 0;
-
   for (const query of queries) {
     try {
       const url = `https://www.bing.com/search?format=rss&q=${encodeURIComponent(query)}`;
@@ -586,19 +462,18 @@ async function fetchBingHints(type, sourceUrl, queries) {
       if (dedupeHints(items).length >= INDEXED_FALLBACK_MAX_ITEMS) break;
     } catch (error) {
       errors.push(`${query}: ${error.message}`);
+      if (isRateLimited(error)) break;
     }
   }
-
-  return { items: dedupeHints(items), errors, successfulQueries };
+  return { items: dedupeHints(items), errors, successfulQueries, queries };
 }
 
 async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
   const items = [];
   const errors = [];
   let successfulQueries = 0;
-
-  // Two DDG queries are enough as a secondary provider and keep public-search load low.
-  for (const query of queries.slice(0, 2)) {
+  const selected = queries.slice(0, 2);
+  for (const query of selected) {
     try {
       const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
       const text = await fetchText(url, { Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8' });
@@ -607,29 +482,102 @@ async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
       if (dedupeHints(items).length >= INDEXED_FALLBACK_MAX_ITEMS) break;
     } catch (error) {
       errors.push(`${query}: ${error.message}`);
+      if (isRateLimited(error)) break;
     }
   }
-
-  return { items: dedupeHints(items), errors, successfulQueries };
+  return { items: dedupeHints(items), errors, successfulQueries, queries: selected };
 }
 
+async function fetchJinaHints(type, sourceUrl) {
+  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [] };
+  const items = [];
+  const errors = [];
+  let successfulQueries = 0;
+  const queries = jinaQueries(type, sourceUrl).slice(0, JINA_SEARCH_MAX_QUERIES);
+  for (let index = 0; index < queries.length; index += 1) {
+    const query = queries[index];
+    try {
+      const text = await fetchText(`https://s.jina.ai/?q=${encodeURIComponent(query)}`, {
+        Authorization: `Bearer ${JINA_API_KEY}`,
+        Accept: 'application/json'
+      }, JINA_TIMEOUT_MS);
+      successfulQueries += 1;
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch {}
+      if (parsed) items.push(...parseJinaSearchJson(parsed, type, sourceUrl));
+      if (dedupeHints(items).length >= Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) break;
+      if (index + 1 < queries.length) await sleep(1100);
+    } catch (error) {
+      errors.push(`${query}: ${error.message}`);
+      if (isRateLimited(error)) break;
+    }
+  }
+  return { items: dedupeHints(items), errors, successfulQueries, queries };
+}
+
+async function fetchBraveHints(type, sourceUrl) {
+  if (!BRAVE_SEARCH_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [] };
+  const items = [];
+  const errors = [];
+  let successfulQueries = 0;
+  const queries = braveQueries(type, sourceUrl).slice(0, BRAVE_SEARCH_MAX_QUERIES);
+  for (let index = 0; index < queries.length; index += 1) {
+    const query = queries[index];
+    try {
+      const params = new URLSearchParams({
+        q: query,
+        count: '20',
+        country: 'CZ',
+        search_lang: 'cs',
+        safesearch: 'moderate',
+        extra_snippets: 'true'
+      });
+      const text = await fetchText(`https://api.search.brave.com/res/v1/web/search?${params.toString()}`, {
+        Accept: 'application/json',
+        'X-Subscription-Token': BRAVE_SEARCH_API_KEY
+      }, BRAVE_TIMEOUT_MS);
+      successfulQueries += 1;
+      items.push(...parseBraveSearchJson(JSON.parse(text), type, sourceUrl));
+      if (dedupeHints(items).length >= Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) break;
+      if (index + 1 < queries.length) await sleep(1100);
+    } catch (error) {
+      errors.push(`${query}: ${error.message}`);
+      if (isRateLimited(error)) break;
+    }
+  }
+  return { items: dedupeHints(items), errors, successfulQueries, queries };
+}
 
 async function fetchSerpApiHints(type, sourceUrl) {
-  if (!SERPAPI_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, results: 0, resultSamples: [] };
-  const items = []; const errors = []; const resultSamples = [];
-  let successfulQueries = 0; let responseBytes = 0; let resultCount = 0;
+  if (!SERPAPI_KEY) return {
+    items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, results: 0, resultSamples: []
+  };
+
+  const items = [];
+  const errors = [];
+  const resultSamples = [];
+  let successfulQueries = 0;
+  let responseBytes = 0;
+  let resultCount = 0;
   const queries = serpApiQueries(type, sourceUrl).slice(0, SERPAPI_SEARCH_MAX_QUERIES);
 
   for (const query of queries) {
     try {
       const params = new URLSearchParams({
-        engine: 'google', q: query, api_key: SERPAPI_KEY, hl: 'cs', gl: 'cz',
-        google_domain: 'google.cz', num: '20', safe: 'active'
+        engine: 'google',
+        q: query,
+        api_key: SERPAPI_KEY,
+        hl: 'cs',
+        gl: 'cz',
+        google_domain: 'google.cz',
+        num: '20',
+        safe: 'active'
       });
       const text = await fetchText(`https://serpapi.com/search.json?${params.toString()}`, {
-        Accept: 'application/json', 'Cache-Control': 'no-cache'
+        Accept: 'application/json'
       }, SERPAPI_TIMEOUT_MS);
-      successfulQueries += 1; responseBytes += Buffer.byteLength(text, 'utf8');
+      successfulQueries += 1;
+      responseBytes += Buffer.byteLength(text, 'utf8');
       const parsed = JSON.parse(text);
       if (parsed?.error) throw new Error(`SerpAPI: ${String(parsed.error).slice(0, 300)}`);
       const results = Array.isArray(parsed?.organic_results) ? parsed.organic_results : [];
@@ -647,160 +595,110 @@ async function fetchSerpApiHints(type, sourceUrl) {
       if (dedupeHints(items).length > 0) break;
     } catch (error) {
       errors.push(`${query}: ${String(error?.message || error).replace(/api_key=[^&\s]+/gi, 'api_key=REDACTED')}`);
-    }
-  }
-  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, results: resultCount, resultSamples };
-}
-
-async function fetchBraveHints(type, sourceUrl) {
-  if (!BRAVE_SEARCH_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, results: 0, resultSamples: [] };
-
-  const items = [];
-  const errors = [];
-  let successfulQueries = 0;
-  let responseBytes = 0;
-  let resultCount = 0;
-  const resultSamples = [];
-  const queries = braveQueries(type, sourceUrl).slice(0, BRAVE_SEARCH_MAX_QUERIES);
-
-  for (const query of queries) {
-    try {
-      const params = new URLSearchParams({
-        q: query,
-        count: '20',
-        country: 'CZ',
-        search_lang: 'cs',
-        safesearch: 'moderate',
-        extra_snippets: 'true'
-      });
-      const url = `https://api.search.brave.com/res/v1/web/search?${params.toString()}`;
-      const text = await fetchText(url, {
-        Accept: 'application/json',
-        'Accept-Encoding': 'gzip',
-        'X-Subscription-Token': BRAVE_SEARCH_API_KEY,
-        'Cache-Control': 'no-cache'
-      }, BRAVE_TIMEOUT_MS);
-
-      successfulQueries += 1;
-      responseBytes += Buffer.byteLength(text, 'utf8');
-      const parsed = JSON.parse(text);
-      const results = Array.isArray(parsed?.web?.results) ? parsed.web.results : [];
-      resultCount += results.length;
-
-      for (const result of results.slice(0, 5)) {
-        if (resultSamples.length >= 10) break;
-        resultSamples.push({
-          title: clean(stripTags(result?.title || '')).slice(0, 120),
-          url: String(result?.url || '').slice(0, 240),
-          hasDescription: Boolean(clean(stripTags(result?.description || ''))),
-          extraSnippets: Array.isArray(result?.extra_snippets) ? result.extra_snippets.length : 0
-        });
-      }
-
-      items.push(...parseBraveSearchJson(parsed, type, sourceUrl));
-      if (dedupeHints(items).length > 0) break;
-    } catch (error) {
-      errors.push(`${query}: ${error.message}`);
+      if (isRateLimited(error)) break;
     }
   }
 
   return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, results: resultCount, resultSamples };
-}
-
-async function fetchJinaHints(type, sourceUrl) {
-  if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [], responseBytes: 0, jsonResults: 0, resultSamples: [] };
-  const items = [];
-  const errors = [];
-  let successfulQueries = 0;
-  let responseBytes = 0;
-  let jsonResults = 0;
-  const resultSamples = [];
-  const queries = jinaQueries(type, sourceUrl).slice(0, JINA_SEARCH_MAX_QUERIES);
-
-  for (const query of queries) {
-    try {
-      // Current Jina Reader/Search docs support ?q= and JSON output. JSON is
-      // considerably more stable than parsing the rendered markdown wrapper.
-      const url = `https://s.jina.ai/?q=${encodeURIComponent(query)}`;
-      const text = await fetchText(url, {
-        Authorization: `Bearer ${JINA_API_KEY}`,
-        Accept: 'application/json',
-        'X-No-Cache': 'true',
-        'X-Timeout': '30'
-      }, JINA_TIMEOUT_MS);
-      successfulQueries += 1;
-      responseBytes += Buffer.byteLength(text, 'utf8');
-
-      let parsed = null;
-      try { parsed = JSON.parse(text); } catch {}
-      if (parsed) {
-        const entries = jinaResultEntries(parsed);
-        jsonResults += entries.length;
-        for (const entry of entries.slice(0, 3)) {
-          if (resultSamples.length >= 8) break;
-          resultSamples.push({ title: clean(entry.title).slice(0, 120), url: String(entry.url || '').slice(0, 240), hasDescription: Boolean(clean(entry.description)), hasContent: Boolean(clean(entry.content)) });
-        }
-        items.push(...parseJinaSearchJson(parsed, type, sourceUrl));
-      } else {
-        // Backward compatibility if Jina returns markdown/text despite Accept.
-        items.push(...parseJinaSearch(text, type, sourceUrl));
-      }
-
-      // One trusted Filmbáze channel/home result is enough. Try the second Jina
-      // query only if the first produced no usable catalog hint.
-      if (dedupeHints(items).length > 0) break;
-    } catch (error) {
-      errors.push(`${query}: ${error.message}`);
-    }
-  }
-
-  return { items: dedupeHints(items), errors, successfulQueries, queries, responseBytes, jsonResults, resultSamples };
 }
 
 export async function fetchIndexedCatalogHints(type, sourceUrl) {
-  if (!USE_INDEXED_FALLBACK) return {
-    items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [],
-    serpApiConfigured: Boolean(SERPAPI_KEY), serpApiResponseBytes: 0, serpApiResults: 0,
-    serpApiSuccessfulQueries: 0, serpApiResultSamples: []
-  };
+  if (!USE_INDEXED_FALLBACK) {
+    return {
+      items: [], used: false, providers: [], attemptedProviders: [], errors: [], queries: [],
+      serpApiConfigured: Boolean(SERPAPI_KEY), serpApiResponseBytes: 0, serpApiResults: 0,
+      serpApiSuccessfulQueries: 0, serpApiResultSamples: []
+    };
+  }
 
-  const queries = indexedQueries(type, sourceUrl);
-  const providers = []; const attemptedProviders = []; const errors = []; const items = [];
-  let serpApiResponseBytes = 0; let serpApiResults = 0; let serpApiSuccessfulQueries = 0;
+  const items = [];
+  const providers = [];
+  const attemptedProviders = [];
+  const errors = [];
+  const allQueries = [];
+  const baseQueries = indexedQueries(type, sourceUrl);
+  allQueries.push(...baseQueries);
+
+  let serpApiResponseBytes = 0;
+  let serpApiResults = 0;
+  let serpApiSuccessfulQueries = 0;
   const serpApiResultSamples = [];
 
-  if (SERPAPI_KEY) {
+  // Start with keyless public indexes. They cost nothing and avoid burning paid
+  // provider quota every day while WEDOS rejects GitHub-hosted source requests.
+  const bing = await fetchBingHints(type, sourceUrl, baseQueries);
+  attemptedProviders.push('bing-rss');
+  errors.push(...bing.errors.map(error => `bing-rss: ${error}`));
+  if (bing.items.length) {
+    providers.push('bing-rss');
+    items.push(...bing.items);
+  }
+
+  if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
+    const ddg = await fetchDuckDuckGoHints(type, sourceUrl, baseQueries);
+    attemptedProviders.push('duckduckgo-html');
+    errors.push(...ddg.errors.map(error => `duckduckgo-html: ${error}`));
+    if (ddg.items.length) {
+      providers.push('duckduckgo-html');
+      items.push(...ddg.items);
+    }
+  }
+
+  // Jina Search and Brave Search were already implemented in the repository but
+  // were never called. Use them before SerpAPI when keys are configured.
+  if (JINA_API_KEY && dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
+    const jina = await fetchJinaHints(type, sourceUrl);
+    attemptedProviders.push('jina-search');
+    allQueries.push(...jina.queries);
+    errors.push(...jina.errors.map(error => `jina-search: ${error}`));
+    if (jina.items.length) {
+      providers.push('jina-search');
+      items.push(...jina.items);
+    }
+  }
+
+  if (BRAVE_SEARCH_API_KEY && dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
+    const brave = await fetchBraveHints(type, sourceUrl);
+    attemptedProviders.push('brave-search');
+    allQueries.push(...brave.queries);
+    errors.push(...brave.errors.map(error => `brave-search: ${error}`));
+    if (brave.items.length) {
+      providers.push('brave-search');
+      items.push(...brave.items);
+    }
+  }
+
+  // SerpAPI is last because an exhausted account currently returns 429. One 429
+  // stops this provider immediately so a daily run does not waste more requests.
+  if (SERPAPI_KEY && dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
     const serp = await fetchSerpApiHints(type, sourceUrl);
     attemptedProviders.push('serpapi-google');
+    allQueries.push(...serp.queries);
     serpApiResponseBytes += Number(serp.responseBytes || 0);
     serpApiResults += Number(serp.results || 0);
     serpApiSuccessfulQueries += Number(serp.successfulQueries || 0);
     serpApiResultSamples.push(...(serp.resultSamples || []));
     errors.push(...serp.errors.map(error => `serpapi-google: ${error}`));
-    if (serp.items.length) { providers.push('serpapi-google'); items.push(...serp.items); }
-    if (serp.queries?.length) queries.push(...serp.queries);
-  }
-
-  if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
-    const bing = await fetchBingHints(type, sourceUrl, queries);
-    attemptedProviders.push('bing-rss');
-    errors.push(...bing.errors.map(error => `bing-rss: ${error}`));
-    if (bing.items.length) { providers.push('bing-rss'); items.push(...bing.items); }
-  }
-
-  if (dedupeHints(items).length < Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) {
-    const ddg = await fetchDuckDuckGoHints(type, sourceUrl, queries);
-    attemptedProviders.push('duckduckgo-html');
-    errors.push(...ddg.errors.map(error => `duckduckgo-html: ${error}`));
-    if (ddg.items.length) { providers.push('duckduckgo-html'); items.push(...ddg.items); }
+    if (serp.items.length) {
+      providers.push('serpapi-google');
+      items.push(...serp.items);
+    }
   }
 
   const finalItems = dedupeHints(items).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
   return {
-    items: finalItems, used: finalItems.length > 0, providers: [...new Set(providers)],
-    attemptedProviders: [...new Set(attemptedProviders)], errors, queries: [...new Set(queries)],
-    serpApiConfigured: Boolean(SERPAPI_KEY), serpApiResponseBytes, serpApiResults,
-    serpApiSuccessfulQueries, serpApiResultSamples: serpApiResultSamples.slice(0, 10)
+    items: finalItems,
+    used: finalItems.length > 0,
+    providers: [...new Set(providers)],
+    attemptedProviders: [...new Set(attemptedProviders)],
+    errors,
+    queries: [...new Set(allQueries)],
+    serpApiConfigured: Boolean(SERPAPI_KEY),
+    serpApiResponseBytes,
+    serpApiResults,
+    serpApiSuccessfulQueries,
+    serpApiResultSamples: serpApiResultSamples.slice(0, 10),
+    jinaConfigured: Boolean(JINA_API_KEY),
+    braveConfigured: Boolean(BRAVE_SEARCH_API_KEY)
   };
 }
-
