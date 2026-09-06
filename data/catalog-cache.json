@@ -114783,25 +114783,50 @@
       }
     }
   ],
-  "lastError": null,
+  "lastError": "Blocked source and SerpAPI Google fallback produced 0 usable catalog hints.",
   "refreshStats": {
-    "at": "2026-07-11T20:00:00.000Z",
-    "sourceChanged": true,
-    "fetchedItems": 1146,
-    "newItems": 1,
-    "reusedItems": 1145,
+    "at": "2026-09-06T08:14:54.076Z",
+    "sourceChanged": false,
+    "fetchedItems": 0,
+    "newItems": 0,
+    "reusedItems": 0,
     "repairedItems": 0,
     "repairFailed": 0,
     "repairDeferred": 0,
     "enrichedMovies": 0,
     "enrichedSeries": 0,
-    "partialFetch": true,
-    "preservedSourceItems": 1145,
-    "blockedFetchRejected": true,
-    "blockedFetchedItems": 34,
-    "sanitizedBlockedReaderItems": 37,
-    "sanitizedBlockedReaderMetas": 37,
-    "dataSanitized": true,
-    "manualRecoveryItems": 1
+    "indexedFallback": false,
+    "indexedItems": 0,
+    "indexedProviders": [],
+    "indexedAttemptedProviders": [
+      "bing-rss",
+      "duckduckgo-html",
+      "jina-search",
+      "serpapi-google"
+    ],
+    "indexedQueries": [
+      "site:filmbaze.cz/novinky-s-ceskym-dabingem-na-netu",
+      "\"https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu\"",
+      "site:filmbaze.cz \"Novinky s českým dabingem\"",
+      "site:filmbaze.cz \"Nové filmy\" \"českým dabingem\" 2026",
+      "site:filmbaze.cz/oblibene-serialy-v-cestine",
+      "\"https://filmbaze.cz/oblibene-serialy-v-cestine\"",
+      "site:filmbaze.cz \"Oblíbené seriály v češtině\"",
+      "site:filmbaze.cz \"Oblíbené seriály\" 2026"
+    ],
+    "indexedErrors": [
+      "serpapi-google: \"https://filmbaze.cz/novinky-s-ceskym-dabingem-na-netu\": HTTP 429 from https://serpapi.com/search.json?engine=google&q=%22https%3A%2F%2Ffilmbaze.cz%2Fnovinky-s-ceskym-dabingem-na-netu%22&api_key=REDACTED&hl=cs&gl=cz&google_domain=google.cz&num=20&safe=active",
+      "serpapi-google: \"https://filmbaze.cz/oblibene-serialy-v-cestine\": HTTP 429 from https://serpapi.com/search.json?engine=google&q=%22https%3A%2F%2Ffilmbaze.cz%2Foblibene-serialy-v-cestine%22&api_key=REDACTED&hl=cs&gl=cz&google_domain=google.cz&num=20&safe=active"
+    ],
+    "indexedSerpApiConfigured": true,
+    "indexedSerpApiSuccessfulQueries": 0,
+    "indexedSerpApiResponseBytes": 0,
+    "indexedSerpApiResults": 0,
+    "indexedSerpApiResultSamples": [],
+    "failed": true,
+    "failure": "Blocked source and SerpAPI Google fallback produced 0 usable catalog hints.",
+    "sourceBlocked": true,
+    "sourceBlockReason": "Filmbáze/WEDOS blocked the refresh with HTTP 401; no further source requests will be made.",
+    "filmbazeRequests": 1
   }
 }
