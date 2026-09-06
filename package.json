@@ -1,8 +1,8 @@
 {
   "name": "stremio-filmbaze-json-addon",
-  "version": "3.6.6",
+  "version": "3.6.7",
   "type": "module",
-  "description": "Filmbaze catalog/meta addon with hybrid incremental refresh: direct API, SerpAPI Google organic snippets, strict TMDB/IMDb promotion, diagnostics and WEDOS-safe cache preservation.",
+  "description": "Filmbaze catalog/meta addon with WEDOS-safe source snapshots, incremental cache merge, strict TMDB/IMDb promotion and defensive fallbacks.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,8 @@
     "validate-cache": "node scripts/validate-cache.cjs",
     "safe-merge-cache": "node scripts/safe-merge-cache.cjs",
     "report-latest": "node scripts/report-latest.cjs",
-    "test:indexed": "node scripts/test-indexed.mjs"
+    "test:indexed": "node scripts/test-indexed.mjs",
+    "snapshot:local": "node scripts/update-source-snapshot-local.mjs"
   },
   "engines": {
     "node": ">=20"

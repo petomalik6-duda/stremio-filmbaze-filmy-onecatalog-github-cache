@@ -1,3 +1,19 @@
+## WEDOS-safe source snapshot (v3.6.7)
+
+GitHub/Azure cloud IPs can be blocked by WEDOS before the first Filmbáze API response. v3.6.7 therefore supports a small source snapshot created from a network where Filmbáze permits normal access. No CAPTCHA or security challenge is bypassed.
+
+On an allowed computer/network:
+
+```bash
+npm ci
+npm run snapshot:local
+git add data/filmbaze-source-snapshot.json
+git commit -m "Update Filmbaze source snapshot"
+git push
+```
+
+A fresh snapshot contains only the newest page of movies and series. The normal incremental refresh merges it with the validated historical cache. A snapshot is accepted only when it contains both movies and series and is at most 36 hours old. If the local network is WEDOS-blocked too, `snapshot:local` fails instead of attempting to bypass the challenge.
+
 ## Current WEDOS fallback (v3.6.6)
 
 Configure GitHub Actions secret `SERPAPI_KEY`. The refresh reads Google organic `title`, `link` and `snippet` via SerpAPI without opening the protected Filmbáze page. Brave/Jina are not used by the main refresh path.

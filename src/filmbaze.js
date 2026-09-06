@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
 import * as cheerio from 'cheerio';
 import { getWithRetry, isFilmbazeBlockedError, getFilmbazeRequestState } from './http.js';
 import { fetchIndexedCatalogHints } from './indexed.js';
@@ -29,6 +31,57 @@ const FILMBAZE_API_ONLY = String(process.env.FILMBAZE_API_ONLY || 'false').toLow
 const FILMBAZE_BETWEEN_CHANNELS_MS = Math.max(0, Number(process.env.FILMBAZE_BETWEEN_CHANNELS_MS || 4000));
 const MAX_MOVIE_PAGES = Math.max(1, Number(process.env.MAX_MOVIE_PAGES || (FILMBAZE_INCREMENTAL ? 1 : MAX_PAGES)));
 const MAX_SERIES_PAGES = Math.max(1, Number(process.env.MAX_SERIES_PAGES || (FILMBAZE_INCREMENTAL ? 1 : MAX_PAGES)));
+
+
+const USE_SOURCE_SNAPSHOT = String(process.env.USE_SOURCE_SNAPSHOT || 'true').toLowerCase() !== 'false';
+const FILMBAZE_SOURCE_SNAPSHOT_FILE = process.env.FILMBAZE_SOURCE_SNAPSHOT_FILE || path.join(process.cwd(), 'data', 'filmbaze-source-snapshot.json');
+const FILMBAZE_SOURCE_SNAPSHOT_MAX_AGE_HOURS = Math.max(1, Number(process.env.FILMBAZE_SOURCE_SNAPSHOT_MAX_AGE_HOURS || 36));
+
+export async function loadFilmbazeSourceSnapshot(
+  filePath = FILMBAZE_SOURCE_SNAPSHOT_FILE,
+  maxAgeHours = FILMBAZE_SOURCE_SNAPSHOT_MAX_AGE_HOURS
+) {
+  if (!USE_SOURCE_SNAPSHOT) return null;
+  try {
+    const raw = JSON.parse(await fs.readFile(filePath, 'utf8'));
+    const generatedAt = String(raw?.generatedAt || raw?.createdAt || '');
+    const generatedMs = Date.parse(generatedAt);
+    if (!Number.isFinite(generatedMs)) {
+      console.warn('[filmbaze] source snapshot ignored: missing/invalid generatedAt');
+      return null;
+    }
+    const ageMs = Date.now() - generatedMs;
+    if (ageMs < -10 * 60 * 1000) {
+      console.warn('[filmbaze] source snapshot ignored: timestamp is in the future');
+      return null;
+    }
+    if (ageMs > Number(maxAgeHours) * 60 * 60 * 1000) {
+      console.warn(`[filmbaze] source snapshot ignored: ${Math.round(ageMs / 3600000)}h old (max ${maxAgeHours}h)`);
+      return null;
+    }
+    const items = Array.isArray(raw?.items)
+      ? raw.items.filter(item => item && ['movie', 'series'].includes(item.type) && item.id && clean(item.name))
+      : [];
+    const movies = items.filter(item => item.type === 'movie').length;
+    const series = items.filter(item => item.type === 'series').length;
+    if (!items.length || movies < 1 || series < 1) {
+      console.warn(`[filmbaze] source snapshot ignored: incomplete (${movies} movies, ${series} series)`);
+      return null;
+    }
+    return {
+      generatedAt,
+      ageHours: Math.max(0, ageMs / 3600000),
+      sourceHash: String(raw?.sourceHash || ''),
+      items: dedupe(items),
+      movies,
+      series,
+      filePath
+    };
+  } catch (error) {
+    if (error?.code !== 'ENOENT') console.warn(`[filmbaze] source snapshot ignored: ${error.message}`);
+    return null;
+  }
+}
 
 let lastDebug = {
   movies: [],
@@ -526,6 +579,49 @@ async function enrichFilmbazeDetails(items) {
 
 export async function fetchFilmbazeItems() {
   lastDebug = { movies: [], series: [], errors: [] };
+
+
+  // Prefer a fresh snapshot created from an IP that Filmbáze permits.
+  // A fresh snapshot makes the GitHub refresh send zero requests to
+  // Filmbáze, avoiding repeated WEDOS hits from cloud ranges.
+  const sourceSnapshot = await loadFilmbazeSourceSnapshot();
+  if (sourceSnapshot) {
+    const items = sourceSnapshot.items.map((item, index) => ({
+      ...item,
+      channelOrder: Number.isFinite(item.channelOrder) ? item.channelOrder : index,
+      page: item.page || 1
+    }));
+    const sourceHash = sourceSnapshot.sourceHash || crypto.createHash('sha1')
+      .update(items.map(x => `${x.type}|${x.id}|${x.name}|${x.releaseDate || ''}`).join('|'))
+      .digest('hex');
+    console.warn(`[filmbaze] using fresh source snapshot: ${sourceSnapshot.movies} movies + ${sourceSnapshot.series} series; age=${sourceSnapshot.ageHours.toFixed(2)}h`);
+    return {
+      sourceUrl: MOVIES_URL,
+      moviesUrl: MOVIES_URL,
+      seriesUrl: SERIES_URL,
+      sourceHash,
+      items,
+      blocked: false,
+      blockReason: null,
+      requestState: getFilmbazeRequestState(),
+      incremental: true,
+      snapshotFallback: true,
+      snapshotGeneratedAt: sourceSnapshot.generatedAt,
+      snapshotAgeHours: sourceSnapshot.ageHours,
+      snapshotItems: items.length,
+      indexedFallback: false,
+      indexedProviders: [],
+      indexedAttemptedProviders: [],
+      indexedQueries: [],
+      indexedErrors: [],
+      indexedItems: 0,
+      indexedSerpApiConfigured: false,
+      indexedSerpApiSuccessfulQueries: 0,
+      indexedSerpApiResponseBytes: 0,
+      indexedSerpApiResults: 0,
+      indexedSerpApiResultSamples: []
+    };
+  }
 
   let movieItems = [];
   let seriesItems = [];
