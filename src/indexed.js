@@ -444,9 +444,15 @@ export function jinaQueries(type, sourceUrl) {
   let host = 'filmbaze.cz';
   try { host = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
   if (type === 'series') {
-    return [`"${sourceUrl}"`, `site:${host} "Oblíbené seriály v češtině"`];
+    return [
+      `"${sourceUrl}"`,
+      `"Oblíbené seriály v češtině" "Poster for"`
+    ];
   }
-  return [`"${sourceUrl}"`, `site:${host} "Novinky s českým dabingem"`];
+  return [
+    `"${sourceUrl}"`,
+    `"Novinky s českým dabingem" "Poster for"`
+  ];
 }
 
 async function fetchBingHints(type, sourceUrl, queries) {
@@ -488,23 +494,91 @@ async function fetchDuckDuckGoHints(type, sourceUrl, queries) {
   return { items: dedupeHints(items), errors, successfulQueries, queries: selected };
 }
 
+export function parseJinaSearchText(text, type, sourceUrl) {
+  const raw = String(text || '');
+  if (!raw) return [];
+
+  let sourcePath = '';
+  let host = 'filmbaze.cz';
+  try {
+    const parsed = new URL(sourceUrl);
+    sourcePath = parsed.pathname.replace(/\/+$/, '');
+    host = parsed.hostname.replace(/^www\./, '');
+  } catch {}
+
+  const normalized = raw
+    .replace(/\n/g, ' ')
+    .replace(/\t/g, ' ')
+    .replace(/\"/g, '"');
+  const lower = normalized.toLowerCase();
+  const contexts = [];
+  const needles = [sourceUrl, `${host}${sourcePath}`, sourcePath]
+    .filter(Boolean)
+    .map(value => String(value).toLowerCase());
+
+  for (const needle of needles) {
+    let from = 0;
+    while (from < lower.length) {
+      const index = lower.indexOf(needle, from);
+      if (index < 0) break;
+      contexts.push(normalized.slice(Math.max(0, index - 900), Math.min(normalized.length, index + needle.length + 9000)));
+      from = index + Math.max(needle.length, 1);
+      if (contexts.length >= 10) break;
+    }
+    if (contexts.length >= 10) break;
+  }
+
+  const sectionMarker = type === 'series'
+    ? /Obl[ií]ben[eé] seri[aá]ly v č[eé]štin[eě]|Obl[ií]ben[eé] seri[aá]ly/i
+    : /Novinky s česk[ýy]m dabingem|Nov[eé] filmy na internetu s česk[ýy]m dabingem/i;
+
+  if (!contexts.length) {
+    const marker = normalized.match(sectionMarker);
+    if (marker && typeof marker.index === 'number') {
+      contexts.push(normalized.slice(Math.max(0, marker.index - 700), Math.min(normalized.length, marker.index + 9000)));
+    }
+  }
+
+  const hints = [];
+  for (const context of contexts) {
+    const contextLower = context.toLowerCase();
+    const exactPage = Boolean(sourcePath && contextLower.includes(sourcePath.toLowerCase()));
+    const correctSection = sectionMarker.test(context);
+    if (!exactPage && !correctSection) continue;
+
+    hints.push(...parseLeadingHints(context, type, sourceUrl, 'jina-search-text'));
+    hints.push(...parseBeforePosterHints(context, type, sourceUrl, 'jina-search-text'));
+    hints.push(...parsePosterHints(context, type, sourceUrl, 'jina-search-text'));
+  }
+
+  return dedupeHints(hints).slice(0, INDEXED_FALLBACK_MAX_ITEMS);
+}
+
 async function fetchJinaHints(type, sourceUrl) {
   if (!JINA_API_KEY) return { items: [], errors: [], successfulQueries: 0, queries: [] };
   const items = [];
   const errors = [];
   let successfulQueries = 0;
   const queries = jinaQueries(type, sourceUrl).slice(0, JINA_SEARCH_MAX_QUERIES);
+
   for (let index = 0; index < queries.length; index += 1) {
     const query = queries[index];
     try {
-      const text = await fetchText(`https://s.jina.ai/?q=${encodeURIComponent(query)}`, {
+      const params = new URLSearchParams({ q: query });
+      params.append('site', 'filmbaze.cz');
+      const text = await fetchText(`https://s.jina.ai/?${params.toString()}`, {
         Authorization: `Bearer ${JINA_API_KEY}`,
-        Accept: 'application/json'
+        Accept: 'application/json',
+        'X-Locale': 'cs-CZ',
+        'X-Timeout': '30'
       }, JINA_TIMEOUT_MS);
       successfulQueries += 1;
+
       let parsed = null;
       try { parsed = JSON.parse(text); } catch {}
       if (parsed) items.push(...parseJinaSearchJson(parsed, type, sourceUrl));
+      items.push(...parseJinaSearchText(text, type, sourceUrl));
+
       if (dedupeHints(items).length >= Math.min(6, INDEXED_FALLBACK_MAX_ITEMS)) break;
       if (index + 1 < queries.length) await sleep(1100);
     } catch (error) {
